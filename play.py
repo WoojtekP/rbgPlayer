@@ -19,7 +19,7 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["semisplitFlat", "semisplitMcts", "semisplitNodalMcts", "orthodoxFlat", "orthodoxMcts"])
+available_players = set(["semisplitFlat", "semisplitMcts", "semisplitNodalMcts", "orthodoxFlat", "orthodoxMcts", "random"])
 semisplit_players = set(["semisplitFlat", "semisplitMcts", "semisplitNodalMcts"])
 
 def player_kind_to_make_target(player_kind):
@@ -145,6 +145,7 @@ def compile_player(num_of_threads, player_kind, player_id):
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
+    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id))
     subprocess.run(["make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id)]) # again, assume everything is ok
 
 def connect_to_server(server_address, server_port):

@@ -20,6 +20,7 @@ ORTHODOX_MCTS := orthodox_mcts
 SEMISPLIT_COMMON := semisplit_common
 SEMISPLIT_FLAT := semisplit_flat
 SEMISPLIT_MCTS := semisplit_mcts
+RANDOM := random
 
 C := g++
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s
@@ -50,10 +51,11 @@ ifeq (1, $$(words $$(findstring $(MAKECMDGOALS), $(2))))
 endif
 endef
 
-$(eval $(call PLAYER_KIND_RULES,ORTHODOX_MCTS,orthodoxMcts,$(ORTHODOX_MCTS) $(ORTHODOX_COMMON) $(COMMON) $(MCTS_COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,ORTHODOX_FLAT,orthodoxFlat,$(FLAT_COMMON) $(ORTHODOX_COMMON) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_FLAT,semisplitFlat,$(FLAT_COMMON) $(SEMISPLIT_COMMON) $(SEMISPLIT_FLAT) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_MCTS,semisplitMcts,$(SEMISPLIT_COMMON) $(SEMISPLIT_MCTS) $(COMMON) $(MCTS_COMMON) $(GEN_DIR)))
+# $(eval $(call PLAYER_KIND_RULES,ORTHODOX_MCTS,orthodoxMcts,$(ORTHODOX_MCTS) $(ORTHODOX_COMMON) $(COMMON) $(MCTS_COMMON) $(GEN_DIR)))
+# $(eval $(call PLAYER_KIND_RULES,ORTHODOX_FLAT,orthodoxFlat,$(FLAT_COMMON) $(ORTHODOX_COMMON) $(COMMON) $(GEN_DIR)))
+# $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_FLAT,semisplitFlat,$(FLAT_COMMON) $(SEMISPLIT_COMMON) $(SEMISPLIT_FLAT) $(COMMON) $(GEN_DIR)))
+# $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_MCTS,semisplitMcts,$(SEMISPLIT_COMMON) $(SEMISPLIT_MCTS) $(COMMON) $(MCTS_COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)
