@@ -1,3 +1,10 @@
+# Directories
+/.vscode
+/obj*
+/dep*
+/gen*
+/bin*
+
 # Prerequisites
 *.d
 
