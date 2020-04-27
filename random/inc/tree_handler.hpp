@@ -24,6 +24,7 @@ class tree_handler{
         reasoner::resettable_bitarray_stack cache;
         std::mt19937 random_numbers_generator;
         concurrent_queue<client_response>& responses_to_server;
+        std::vector<reasoner::move> move_list;
         void go_to_completion();
         void handle_status(void);
     public:

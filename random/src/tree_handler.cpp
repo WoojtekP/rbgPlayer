@@ -29,21 +29,18 @@ tree_handler::tree_handler(const reasoner::game_state& initial_state,
 }
 
 void tree_handler::handle_status(void){
-    uint current_player = state.get_current_player();
     game_status_indication status;
-    if (current_player == 0) {
+    state.get_all_moves(cache, move_list);
+    if (move_list.empty()) {
         status = end_game;
     }
-    else if (current_player == own_player_index)
-        status = own_turn;
-    else
-        status = opponent_turn;
+    else {
+        status = (state.get_current_player() == own_player_index) ? own_turn : opponent_turn;
+    }
     responses_to_server.emplace_back(client_response{status});
 }
 
 void tree_handler::handle_move_request(void){
-    std::vector<reasoner::move> move_list;
-    state.get_all_moves(cache, move_list);
     assert(!move_list.empty());
     uint move_id = std::uniform_int_distribution<uint>(0,move_list.size()-1)(random_numbers_generator);
     std::cout << "[PLAYER] Performing random move" << std::endl;
