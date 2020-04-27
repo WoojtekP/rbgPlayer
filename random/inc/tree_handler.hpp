@@ -19,7 +19,7 @@ namespace reasoner{
 }
 
 class tree_handler{
-        uint own_player_index;
+        int own_player_index;
         reasoner::game_state state;
         reasoner::resettable_bitarray_stack cache;
         std::mt19937 random_numbers_generator;

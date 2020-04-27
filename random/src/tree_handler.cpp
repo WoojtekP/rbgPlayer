@@ -6,7 +6,7 @@
 #include"tree_handler.hpp"
 
 namespace{
-uint get_player_index(const std::string& name){
+int get_player_index(const std::string& name){
     for(uint i=0;i<reasoner::NUMBER_OF_PLAYERS-1;++i)
         if(reasoner::variable_to_string(i) == name)
             return i + 1;
