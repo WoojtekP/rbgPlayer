@@ -13,8 +13,7 @@ namespace reasoner{
     class game_state;
 }
 
-void run_tree_worker(concurrent_queue<simulation_request>& requests_to_workers,
-                     concurrent_queue<client_response>& responses_to_server,
+void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
                      concurrent_queue<tree_indication>& tree_indications);
 
 #endif

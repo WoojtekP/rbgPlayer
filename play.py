@@ -19,8 +19,8 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["semisplitFlat", "semisplitMcts", "semisplitNodalMcts", "orthodoxFlat", "orthodoxMcts", "random"])
-semisplit_players = set(["semisplitFlat", "semisplitMcts", "semisplitNodalMcts"])
+available_players = set(["random", "mcts"])
+semisplit_players = set()
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":

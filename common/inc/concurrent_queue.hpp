@@ -39,6 +39,10 @@ class concurrent_queue{
             return collection.size();
         }
 
+        bool empty(){
+            return collection.empty();
+        }
+
         T pop_front(void)noexcept{
             std::unique_lock<std::mutex> lock{mutex};
             while(collection.empty())

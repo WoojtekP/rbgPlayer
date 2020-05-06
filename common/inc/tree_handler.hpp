@@ -3,8 +3,6 @@
 
 #include"tree.hpp"
 #include"types.hpp"
-#include"node_address.hpp"
-#include"tree_history.hpp"
 
 #include<string>
 
@@ -22,15 +20,8 @@ namespace reasoner{
 class tree_handler{
         tree t;
         uint own_player_index;
-        tree_history history;
         uint simulations_count = 0;
-        bool should_perform_move = false;
-        concurrent_queue<simulation_request>& requests_to_workers;
         concurrent_queue<client_response>& responses_to_server;
-        void create_more_requests(void);
-        bool address_still_usable(const simulation_response& response)const;
-        node_address extract_usable_address(const simulation_response& response)const;
-        void handle_simulations_counter(void);
         void handle_status(void);
     public:
         tree_handler(void)=delete;
@@ -40,12 +31,12 @@ class tree_handler{
         tree_handler& operator=(tree_handler&&)=default;
         ~tree_handler(void)=default;
         tree_handler(const reasoner::game_state& initial_state,
-                     concurrent_queue<simulation_request>& requests,
                      concurrent_queue<client_response>& responses_to_server);
-        void handle_simulation_response(const simulation_response& response);
         void handle_move_request(void);
         void handle_move_indication(const reasoner::move& m);
         void handle_reset_request(const reasoner::game_state& initial_state);
+        void perform_simulation();
+        bool end_of_game();
 };
 
 #endif
