@@ -1,141 +1,61 @@
-#include <algorithm>
 #include <random>
 
-#include "constants.hpp"
 #include "node.hpp"
 #include "reasoner.hpp"
+#include "constants.hpp"
 
-node::node(const reasoner::game_state& state, node* parent, const reasoner::resettable_bitarray_stack& cache) :
-    parent(parent),
-    state(state),
-    cache(cache) {
-    complete_turn();
-    (this->state).get_all_moves(this->cache, moves);
-    children.reserve(moves.size());
+Node::Node(reasoner::game_state& state, const int& child_index) {
+    state.get_all_moves(Node::cache, moves);
+    // std::shuffle(moves.begin(), moves.end()); // zamiast późniejszego losowania w get_random_child (???)
+    children = std::make_pair(child_index, child_index + moves.size());
 }
 
-node::node(const reasoner::game_state& state) : node(state, nullptr, {}) {}
-
-void node::complete_turn() {
-    while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
+bool Node::is_leaf() const {
+    return moves.size() == 0;
 }
 
-void node::increment_simulations_counter() {
-    simulations_counter++;
+bool Node::is_fully_expanded() const {
+    return child_counter == (int)moves.size();
 }
 
-void node::increment_wins_counter() {
-    wins_counter++;
+void Node::update_stats(int current_player, const simulation_result& results) {
+    simulation_counter++;
+    if (current_player != KEEPER)   // czy to możliwe aby stworzyć węzeł ze stanem, w którym ruch ma KEEPER? może liść?
+        total_score += results[current_player-1] / 100.0;   // czy dzielenie przez 100.0 jest potrzebne???
 }
 
-void node::set_parent(node* parent) {
-    this->parent = parent;
+std::pair<int, int> Node::get_children() const {
+    return children;
 }
 
-void node::set_root() {
-    parent = nullptr;
-    for (auto& child : children) {
-        child.set_parent(this);
-    }
+int Node::get_simulation_counter() const {
+    return simulation_counter;
 }
 
-void node::reset(const reasoner::game_state& game_state) {
-    parent = nullptr;
-    state = game_state;
-    cache = {};
-    moves.clear();
-    children.clear();
-    simulations_counter = 0;
-    wins_counter = 0;
-    complete_turn();
-    state.get_all_moves(cache, moves);
-    children.reserve(moves.size());
+double Node::get_total_score() const {
+    return total_score;
 }
 
-
-int node::get_current_player() const {
-    return state.get_current_player();
+reasoner::move Node::get_move_by_child_index(int child_index) const {
+    return moves[child_index - children.first];
 }
 
-int node::get_simulations_count() const {
-    return simulations_counter;
+std::pair<reasoner::move, int> Node::get_random_move_and_child_index(std::mt19937& random_numbers_generator) {
+    std::uniform_int_distribution<int> dist(child_counter, moves.size() - 1);
+    auto move_id = dist(random_numbers_generator);
+    if (child_counter != move_id)
+        std::swap(moves[child_counter], moves[move_id]);
+    child_counter++;     // TODO pozbyć się child_counter
+    return std::make_pair(moves[child_counter-1], children.first + child_counter-1);
 }
 
-double node::get_priority() const {
-    return static_cast<double>(wins_counter) / simulations_counter +
-           EXPLORATION_CONSTANT * std::sqrt(std::log(parent->get_simulations_count()) / simulations_counter);
-}
-
-bool node::is_root() const {
-    return parent == nullptr;
-}
-
-bool node::is_leaf() const {
-    return moves.empty();
-}
-
-bool node::is_fully_expanded() const {
-    return children.size() == moves.size();
-}
-
-node* node::get_best_uct() {
-    std::vector<double> priorities;
-    std::transform(children.begin(), children.end(), std::back_inserter(priorities),
-        [](const auto& e) {
-            return e.get_priority();
-        });
-    auto best_node = std::distance(priorities.begin(), std::max_element(priorities.begin(), priorities.end()));
-    return &children[best_node];
-}
-
-node* node::get_random_child(std::mt19937& rand_gen) {
-    int offset = children.size();
-    std::uniform_int_distribution<int> dist(offset, moves.size()-1);
-    int move_id = dist(rand_gen);
-    if (offset != move_id) {
-        std::swap(moves[offset], moves[move_id]);
-    }
-    reasoner::game_state next_state = state;
-    next_state.apply_move(moves[offset]);
-    children.emplace_back(next_state, this, cache);
-    return &children.back();
-}
-
-node&& node::get_node_by_move(const reasoner::move& move) {
-    const auto size = children.size();
-    for (unsigned i = 0; i < size; ++i) {
-        if (moves[i] == move) {
-            return std::move(children[i]);
+int Node::get_child_index_by_move(const reasoner::move& move) const {
+    int i = children.first;
+    for (const auto& child_move : moves) {
+        if (child_move == move) {
+            return i;
         }
+        i++;
     }
-    reasoner::game_state next_state = state;
-    next_state.apply_move(move);
-    children.emplace_back(next_state, this, cache);
-    return std::move(children.back());
-}
-
-node* node::get_parent() {
-    return parent;
-}
-
-reasoner::move node::choose_best_move() {
-    std::vector<int> simulations_counters;
-    std::transform(children.begin(), children.end(), std::back_inserter(simulations_counters),
-        [](const auto& e) {
-            return e.get_simulations_count();
-        });
-    auto move_id = std::distance(simulations_counters.begin(), std::max_element(simulations_counters.begin(), simulations_counters.end()));
-    return moves[move_id];
-}
-
-reasoner::game_state node::get_game_state() const {
-    return state;
-}
-
-reasoner::resettable_bitarray_stack node::get_cache() const {
-    return cache;
-}
-
-std::vector<reasoner::move> node::get_move_list() const {
-    return moves;
+    assert(false);
 }

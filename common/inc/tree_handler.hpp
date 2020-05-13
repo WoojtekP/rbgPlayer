@@ -18,7 +18,7 @@ namespace reasoner{
 }
 
 class tree_handler{
-        tree t;
+        Tree t;
         uint own_player_index;
         uint simulations_count = 0;
         concurrent_queue<client_response>& responses_to_server;

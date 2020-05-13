@@ -8,26 +8,32 @@
 #include"types.hpp"
 #include"node.hpp"
 
-typedef int simulation_result;
+typedef std::vector<int> simulation_result;
 
-class tree {
+class Tree {
 private:
-    node root;
+    reasoner::game_state root_state;
+    int root_index = 0;
+    std::vector<Node> nodes;
+    std::vector<int> children;
     std::mt19937 random_numbers_generator;
-    node* traverse(node* state);
-    simulation_result play(const node* state);
-    void backpropagate(node* state, const simulation_result& winner);
-    simulation_result mcts(node* state);
+
+    int create_node(reasoner::game_state&);
+    void play(reasoner::game_state&, simulation_result&);
+    void mcts(reasoner::game_state&, int, simulation_result&);
+    void complete_turn(reasoner::game_state&) const;
+    int get_best_uct_and_change_state(const Node&, reasoner::game_state&) const;
+    int get_random_child_and_change_state(Node&, reasoner::game_state&);
 public:
-    tree(void)=delete;
-    tree(const tree&)=delete;
-    tree(tree&&)=default;
-    tree& operator=(const tree&)=delete;
-    tree& operator=(tree&&)=default;
-    ~tree(void)=default;
-    tree(const reasoner::game_state& initial_state);
+    Tree(void)=delete;
+    Tree(const Tree&)=delete;
+    Tree(Tree&&)=default;
+    Tree& operator=(const Tree&)=delete;
+    Tree& operator=(Tree&&)=default;
+    ~Tree(void)=default;
+    Tree(const reasoner::game_state& initial_state);
     game_status_indication get_status(int player_index) const;
-    int get_simulations_count();
+    int get_simulation_counter();
     reasoner::move choose_best_move();
     void reparent_along_move(const reasoner::move& move);
     void perform_simulation();
