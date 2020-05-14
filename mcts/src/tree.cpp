@@ -64,10 +64,12 @@ void Tree::complete_turn(reasoner::game_state& state) const {
     while (state.get_current_player() == KEEPER && state.apply_any_move(Node::cache));
 }
 
-int Tree::get_best_uct_and_change_state(const Node& node, reasoner::game_state& state) const {
+int Tree::get_best_uct_and_change_state(const Node& node, reasoner::game_state& state) {
+    static std::vector<int> best_children_indices;
+    best_children_indices.clear();
     double logN = std::log(node.get_simulation_counter());
     auto [fst, lst] = node.get_children();
-    int best_child_index = fst;
+    best_children_indices.push_back(fst);
     double maxPriority = nodes[children[fst]].get_total_score() / nodes[children[fst]].get_simulation_counter() +
                          EXPLORATION_CONSTANT * std::sqrt(logN / nodes[children[fst]].get_simulation_counter());
     for (int i = fst+1; i < lst; ++i) {
@@ -76,8 +78,17 @@ int Tree::get_best_uct_and_change_state(const Node& node, reasoner::game_state& 
                           EXPLORATION_CONSTANT * std::sqrt(logN / nodes[node_index].get_simulation_counter());
         if (priority > maxPriority) {
             maxPriority = priority;
-            best_child_index = i;
+            best_children_indices.resize(1);
+            best_children_indices[0] = i;
         }
+        else if (priority == maxPriority) {
+            best_children_indices.push_back(i);
+        }
+    }
+    int best_child_index = best_children_indices.front();
+    if (best_children_indices.size() > 1) {
+        std::uniform_int_distribution<int> dist(0, best_children_indices.size() - 1);
+        best_child_index = best_children_indices[dist(random_numbers_generator)];
     }
     reasoner::move best_move = node.get_move_by_child_index(best_child_index);
     state.apply_move(best_move);

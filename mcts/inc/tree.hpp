@@ -22,7 +22,7 @@ private:
     void play(reasoner::game_state&, simulation_result&);
     void mcts(reasoner::game_state&, int, simulation_result&);
     void complete_turn(reasoner::game_state&) const;
-    int get_best_uct_and_change_state(const Node&, reasoner::game_state&) const;
+    int get_best_uct_and_change_state(const Node&, reasoner::game_state&);
     int get_random_child_and_change_state(Node&, reasoner::game_state&);
 public:
     Tree(void)=delete;

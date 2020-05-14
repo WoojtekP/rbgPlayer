@@ -20,7 +20,7 @@ bool Node::is_fully_expanded() const {
 
 void Node::update_stats(int current_player, const simulation_result& results) {
     simulation_counter++;
-    if (current_player != KEEPER)   // czy to możliwe aby stworzyć węzeł ze stanem, w którym ruch ma KEEPER? może liść?
+    if (current_player != KEEPER)
         total_score += results[current_player-1] / 100.0;   // czy dzielenie przez 100.0 jest potrzebne???
 }
 
