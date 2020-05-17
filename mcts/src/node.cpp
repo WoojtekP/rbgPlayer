@@ -55,7 +55,7 @@ uint Node::get_child_index_by_move(const reasoner::move& move) const {
 
 std::pair<reasoner::move, uint> Node::get_best_uct_and_child_index(std::mt19937& random_numbers_generator) {
     static std::vector<uint> best_children_indices;
-    best_children_indices.clear();
+    best_children_indices.resize(0);
     double logN = std::log(simulation_counter);
     auto [fst, lst] = children;
     best_children_indices.push_back(fst);

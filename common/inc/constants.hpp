@@ -17,5 +17,6 @@ constexpr uint MILISECONDS_TIME_GRANULATION = 10;
 constexpr uint BUFFER_TIME = 100;
 constexpr uint SOCKET_BUFFER_SIZE = 1024;
 constexpr uint CHARGES = 0;
+constexpr uint MEBIBYTE = 1048576;
 
 #endif

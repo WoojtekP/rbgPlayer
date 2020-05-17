@@ -7,6 +7,8 @@ Tree::Tree(const reasoner::game_state& initial_state) :
     random_numbers_generator(std::random_device{}()) {
     complete_turn(root_state);
     create_node(root_state);
+    nodes.reserve(4 * MEBIBYTE / sizeof(Node));
+    children.reserve(4 * MEBIBYTE / sizeof(uint));
 }
 
 uint Tree::create_node(reasoner::game_state& state) {
@@ -95,8 +97,8 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     auto child_index = nodes[root_index].get_child_index_by_move(move);
     root_index = children[child_index];
     if (root_index == 0) {
-        nodes.clear();
-        children.clear();
+        nodes.resize(0);
+        children.resize(0);
         create_node(root_state);
         return;
     }
