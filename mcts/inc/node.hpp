@@ -16,7 +16,7 @@ private:
     std::pair<uint, uint> children;
     uint simulation_counter = 0;
 public:
-    Node(void)=delete;
+    Node(void)=default;
     Node(const Node&)=default;
     Node(Node&&)=default;
     Node& operator=(const Node&)=default;
