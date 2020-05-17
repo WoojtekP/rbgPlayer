@@ -6,15 +6,15 @@
 #include "reasoner.hpp"
 #include "types.hpp"
 
-typedef std::vector<int> simulation_result;
+typedef std::vector<uint> simulation_result;
 
 class Node {
 private:
     std::vector<reasoner::move> moves;  // jeden ruch (którym doszliśmy do tego węzła) zamiast wektora ruchów na dzieci ???
+    std::vector<uint> simulation_counters;
+    std::vector<uint> total_scores;
     std::pair<uint, uint> children;
-    uint child_counter = 0;  // można obliczać na podstawie simulation_counter ???
-    uint simulation_counter = 0;
-    double total_score = 0;
+    uint simulation_counter = 1;
 public:
     Node(void)=default;
     Node(const Node&)=default;
@@ -24,16 +24,16 @@ public:
     ~Node(void)=default;
     Node(reasoner::game_state&, const uint&);
 
-    bool is_leaf() const;
+    void update_stats(int, uint, const simulation_result&);
+    bool is_terminal() const;
     bool is_fully_expanded() const;
-    void update_stats(int, const simulation_result&);
     std::pair<uint, uint> get_children() const;
     uint get_simulation_counter() const;
-    double get_total_score() const;
     reasoner::move get_move_by_child_index(uint) const;
-    std::pair<reasoner::move, uint> get_random_move_and_child_index(std::mt19937&);
     uint get_child_index_by_move(const reasoner::move&) const;
-    
+    std::pair<reasoner::move, uint> get_best_uct_and_child_index(std::mt19937&);
+    std::pair<reasoner::move, uint> get_random_move_and_child_index(std::mt19937&);
+    reasoner::move choose_best_move() const;
     static reasoner::resettable_bitarray_stack cache;
 };
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <random>
 
 #include "node.hpp"
@@ -6,24 +7,27 @@
 
 Node::Node(reasoner::game_state& state, const uint& child_index) {
     state.get_all_moves(Node::cache, moves);
-    // std::shuffle(moves.begin(), moves.end()); // zamiast późniejszego losowania w get_random_child (???)
-    children = std::make_pair(child_index, child_index + moves.size());
+    const auto size = moves.size();
+    children = std::make_pair(child_index, child_index + size);
+    simulation_counters.reserve(size);
+    total_scores.reserve(size);
 }
 
-bool Node::is_leaf() const {
+bool Node::is_terminal() const {
     return moves.empty();
 }
 
 bool Node::is_fully_expanded() const {
-    return child_counter == moves.size();
+    return simulation_counters.size() == moves.size();
 }
 
-void Node::update_stats(int current_player, const simulation_result& results) {
+void Node::update_stats(int current_player, uint child_index, const simulation_result& results) {
     simulation_counter++;
-    if (current_player != KEEPER)
-        total_score += results[(current_player ^ 0b11) - 1] / 100.0;
-    else
-        total_score += 1.0;
+    if (child_index != 0) {
+        child_index -= children.first;
+        simulation_counters[child_index]++;
+        total_scores[child_index] += results[current_player - 1];
+    }
 }
 
 std::pair<uint, uint> Node::get_children() const {
@@ -34,21 +38,8 @@ uint Node::get_simulation_counter() const {
     return simulation_counter;
 }
 
-double Node::get_total_score() const {
-    return total_score;
-}
-
 reasoner::move Node::get_move_by_child_index(uint child_index) const {
     return moves[child_index - children.first];
-}
-
-std::pair<reasoner::move, uint> Node::get_random_move_and_child_index(std::mt19937& random_numbers_generator) {
-    std::uniform_int_distribution<uint> dist(child_counter, moves.size() - 1);
-    auto move_id = dist(random_numbers_generator);
-    if (child_counter != move_id)
-        std::swap(moves[child_counter], moves[move_id]);
-    child_counter++;     // TODO pozbyć się child_counter
-    return std::make_pair(moves[child_counter - 1], children.first + child_counter - 1);
 }
 
 uint Node::get_child_index_by_move(const reasoner::move& move) const {
@@ -60,4 +51,49 @@ uint Node::get_child_index_by_move(const reasoner::move& move) const {
         i++;
     }
     assert(false);
+}
+
+std::pair<reasoner::move, uint> Node::get_best_uct_and_child_index(std::mt19937& random_numbers_generator) {
+    static std::vector<uint> best_children_indices;
+    best_children_indices.clear();
+    double logN = std::log(simulation_counter);
+    auto [fst, lst] = children;
+    best_children_indices.push_back(fst);
+    double maxPriority = total_scores.front() / 100.0 / simulation_counters.front() +
+                         EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters.front());
+    for (uint i = fst + 1; i < lst; ++i) {
+        double priority = total_scores[i - fst] / 100.0 / simulation_counters[i - fst] +
+                          EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters[i - fst]);
+        if (priority > maxPriority) {
+            maxPriority = priority;
+            best_children_indices.resize(1);
+            best_children_indices[0] = i;
+        }
+        else if (priority == maxPriority) {
+            best_children_indices.push_back(i);
+        }
+    }
+    uint best_child_index = best_children_indices.front();
+    if (best_children_indices.size() > 1) {
+        std::uniform_int_distribution<> dist(0, best_children_indices.size() - 1);
+        best_child_index = best_children_indices[dist(random_numbers_generator)];
+    }
+    return { moves[best_child_index - fst], best_child_index };
+}
+
+
+std::pair<reasoner::move, uint> Node::get_random_move_and_child_index(std::mt19937& random_numbers_generator) {
+    auto child_counter = simulation_counters.size();
+    std::uniform_int_distribution<uint> dist(child_counter, moves.size() - 1);
+    auto move_id = dist(random_numbers_generator);
+    if (child_counter != move_id)
+        std::swap(moves[child_counter], moves[move_id]);
+    simulation_counters.push_back(0);
+    total_scores.push_back(0.0);
+    return { moves[child_counter], children.first + child_counter };
+}
+
+reasoner::move Node::choose_best_move() const {
+    auto mx = std::max_element(simulation_counters.begin(), simulation_counters.end());
+    return moves[std::distance(simulation_counters.begin(), mx)];
 }

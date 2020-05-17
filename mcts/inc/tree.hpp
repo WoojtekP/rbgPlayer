@@ -8,7 +8,7 @@
 #include"types.hpp"
 #include"node.hpp"
 
-typedef std::vector<int> simulation_result;
+typedef std::vector<uint> simulation_result;
 
 class Tree {
 private:
