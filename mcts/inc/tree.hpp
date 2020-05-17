@@ -33,7 +33,6 @@ public:
     ~Tree(void)=default;
     Tree(const reasoner::game_state& initial_state);
     game_status_indication get_status(int player_index) const;
-    uint get_simulation_counter();
     reasoner::move choose_best_move();
     void reparent_along_move(const reasoner::move& move);
     void perform_simulation();

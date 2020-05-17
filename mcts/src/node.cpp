@@ -34,10 +34,6 @@ std::pair<uint, uint> Node::get_children() const {
     return children;
 }
 
-uint Node::get_simulation_counter() const {
-    return simulation_counter;
-}
-
 reasoner::move Node::get_move_by_child_index(uint child_index) const {
     return moves[child_index - children.first];
 }

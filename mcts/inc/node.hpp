@@ -14,7 +14,7 @@ private:
     std::vector<uint> simulation_counters;
     std::vector<uint> total_scores;
     std::pair<uint, uint> children;
-    uint simulation_counter = 1;
+    uint simulation_counter = 0;
 public:
     Node(void)=default;
     Node(const Node&)=default;
@@ -28,12 +28,12 @@ public:
     bool is_terminal() const;
     bool is_fully_expanded() const;
     std::pair<uint, uint> get_children() const;
-    uint get_simulation_counter() const;
     reasoner::move get_move_by_child_index(uint) const;
     uint get_child_index_by_move(const reasoner::move&) const;
     std::pair<reasoner::move, uint> get_best_uct_and_child_index(std::mt19937&);
     std::pair<reasoner::move, uint> get_random_move_and_child_index(std::mt19937&);
     reasoner::move choose_best_move() const;
+
     static reasoner::resettable_bitarray_stack cache;
 };
 

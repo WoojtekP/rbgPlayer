@@ -81,10 +81,6 @@ game_status_indication Tree::get_status(int player_index) const {
     return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }
 
-uint Tree::get_simulation_counter() {
-    return nodes[root_index].get_simulation_counter();
-}
-
 reasoner::move Tree::choose_best_move() {
     return nodes[root_index].choose_best_move();
 }
