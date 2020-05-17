@@ -59,10 +59,10 @@ std::pair<reasoner::move, uint> Node::get_best_uct_and_child_index(std::mt19937&
     double logN = std::log(simulation_counter);
     auto [fst, lst] = children;
     best_children_indices.push_back(fst);
-    double maxPriority = total_scores.front() / 100.0 / simulation_counters.front() +
+    double maxPriority = total_scores.front() / EXPECTED_MAX_SCORE / simulation_counters.front() +
                          EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters.front());
     for (uint i = fst + 1; i < lst; ++i) {
-        double priority = total_scores[i - fst] / 100.0 / simulation_counters[i - fst] +
+        double priority = total_scores[i - fst] / EXPECTED_MAX_SCORE / simulation_counters[i - fst] +
                           EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters[i - fst]);
         if (priority > maxPriority) {
             maxPriority = priority;
