@@ -47,15 +47,15 @@ uint Node::get_child_index_by_move(const reasoner::move& move) const {
 
 std::pair<reasoner::move, uint> Node::get_best_uct_and_child_index(std::mt19937& random_numbers_generator) {
     static std::vector<uint> best_children_indices;
-    best_children_indices.resize(0);
+    best_children_indices.resize(1);
+    best_children_indices[0] = 0;
     double logN = std::log(simulation_counter);
-    auto [fst, lst] = children;
-    best_children_indices.push_back(fst);
     double maxPriority = total_scores.front() / EXPECTED_MAX_SCORE / simulation_counters.front() +
                          EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters.front());
-    for (uint i = fst + 1; i < lst; ++i) {
-        double priority = total_scores[i - fst] / EXPECTED_MAX_SCORE / simulation_counters[i - fst] +
-                          EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters[i - fst]);
+    const uint size = children.second - children.first;
+    for (uint i = 1; i < size; ++i) {
+        double priority = total_scores[i] / EXPECTED_MAX_SCORE / simulation_counters[i] +
+                          EXPLORATION_CONSTANT * std::sqrt(logN / simulation_counters[i]);
         if (priority > maxPriority) {
             maxPriority = priority;
             best_children_indices.resize(1);
@@ -70,7 +70,7 @@ std::pair<reasoner::move, uint> Node::get_best_uct_and_child_index(std::mt19937&
         std::uniform_int_distribution<> dist(0, best_children_indices.size() - 1);
         best_child_index = best_children_indices[dist(random_numbers_generator)];
     }
-    return { moves[best_child_index - fst], best_child_index };
+    return { moves[best_child_index], best_child_index + children.first };
 }
 
 
