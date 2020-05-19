@@ -13,7 +13,6 @@ typedef std::vector<uint> simulation_result;
 class Tree {
 private:
     reasoner::game_state root_state;
-    uint root_index = 0;
     std::vector<Node> nodes;
     std::vector<uint> children;
     std::mt19937 random_numbers_generator;
@@ -34,6 +33,7 @@ public:
     game_status_indication get_status(int player_index) const;
     reasoner::move choose_best_move();
     void reparent_along_move(const reasoner::move& move);
+    uint fix_tree(std::vector<Node>&, std::vector<uint>&, uint);
     void perform_simulation();
 };
 

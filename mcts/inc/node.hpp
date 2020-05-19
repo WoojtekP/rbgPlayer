@@ -25,6 +25,7 @@ public:
     Node(reasoner::game_state&, const uint&);
 
     void update_stats(int, uint, const simulation_result&);
+    void set_children(const uint&);
     bool is_terminal() const;
     bool is_fully_expanded() const;
     std::pair<uint, uint> get_children() const;

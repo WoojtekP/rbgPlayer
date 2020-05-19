@@ -30,6 +30,10 @@ void Node::update_stats(int current_player, uint child_index, const simulation_r
     }
 }
 
+void Node::set_children(const uint& fst) {
+    children = std::make_pair(fst, fst + moves.size());
+}
+
 std::pair<uint, uint> Node::get_children() const {
     return children;
 }

@@ -75,33 +75,55 @@ void Tree::complete_turn(reasoner::game_state& state) const {
 }
 
 game_status_indication Tree::get_status(int player_index) const {
-    if (nodes[root_index].is_terminal()) {
+    if (nodes.front().is_terminal()) {
         return end_game;
     }
     return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }
 
 reasoner::move Tree::choose_best_move() {
-    return nodes[root_index].choose_best_move();
+    return nodes.front().choose_best_move();
 }
 
 void Tree::reparent_along_move(const reasoner::move& move) {
-    // TODO przebudować drzewo usuwając niepotrzebne węzły a następnie
-    // usunąć zmienną root_index (korzeń powinien być zawsze pierwszy w wektorze węzłów)
     root_state.apply_move(move);
     complete_turn(root_state);
-    auto child_index = nodes[root_index].get_child_index_by_move(move);
-    root_index = children[child_index];
+    auto root_index = children[nodes.front().get_child_index_by_move(move)];
     if (root_index == 0) {
         nodes.resize(0);
         children.resize(0);
         create_node(root_state);
         return;
     }
+    static std::vector<Node> nodes_tmp;
+    static std::vector<uint> children_tmp;
+    nodes_tmp.reserve(nodes.size());
+    children_tmp.reserve(children.size());
+    fix_tree(nodes_tmp, children_tmp, root_index);
+    nodes = nodes_tmp;
+    children = children_tmp;
+    nodes_tmp.resize(0);
+    children_tmp.resize(0);
+}
+
+uint Tree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<uint>& children_tmp, uint index) {
+    auto new_index = nodes_tmp.size();
+    nodes_tmp.push_back(nodes[index]);
+    auto first_child_index = children_tmp.size();
+    nodes_tmp[new_index].set_children(first_child_index);
+    auto [fst, lst] = nodes[index].get_children();
+    children_tmp.insert(children_tmp.end(), lst - fst, 0);
+    for (uint i = 0; i < lst - fst; ++i) {
+        if (children[fst + i] == 0) {
+            break;
+        }
+        children_tmp[first_child_index + i] = fix_tree(nodes_tmp, children_tmp, children[fst + i]);
+    }
+    return new_index;
 }
 
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
     reasoner::game_state root_state_copy = root_state;
-    mcts(root_state_copy, root_index, results);
+    mcts(root_state_copy, 0, results);
 }
