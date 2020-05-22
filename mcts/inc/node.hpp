@@ -8,33 +8,29 @@
 
 typedef std::vector<uint> simulation_result;
 
-class Node {
-private:
-    std::vector<reasoner::move> moves;
-    std::vector<uint> simulation_counters;
-    std::vector<uint> total_scores;
-    std::pair<uint, uint> children;
-    uint simulation_counter = 0;
-public:
+struct Node {
+    std::pair<uint, uint> children_range;
+    uint sim_count = 0;
     Node(void)=default;
     Node(const Node&)=default;
     Node(Node&&)=default;
     Node& operator=(const Node&)=default;
     Node& operator=(Node&&)=default;
     ~Node(void)=default;
-    Node(reasoner::game_state&, const uint&);
-
-    void update_stats(int, uint, const simulation_result&);
-    void set_children(const uint&);
+    Node(const uint&, const uint&);
     bool is_terminal() const;
-    bool is_fully_expanded() const;
-    std::pair<uint, uint> get_children() const;
-    uint get_child_index_by_move(const reasoner::move&) const;
-    std::pair<reasoner::move, uint> get_best_uct_and_child_index(std::mt19937&);
-    std::pair<reasoner::move, uint> get_random_move_and_child_index(std::mt19937&);
-    reasoner::move choose_best_move() const;
 
     static reasoner::resettable_bitarray_stack cache;
+};
+
+struct Child {
+    uint index = 0;
+    uint sim_count = 0;
+    uint total_score = 0;
+    reasoner::move move;
+    Child(void) = default;
+    Child(const reasoner::move& move);
+    void update_stats(const uint& current_player, simulation_result& results);
 };
 
 #endif
