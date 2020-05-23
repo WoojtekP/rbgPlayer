@@ -14,6 +14,7 @@ DEP_DIR := dep_$(PLAYER_ID)
 GEN_DIR := gen_$(PLAYER_ID)
 COMMON := common
 RANDOM := random
+SBS := simple_best_select
 MCTS := mcts
 
 C := g++
@@ -46,6 +47,7 @@ endif
 endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MCTS,mcts,$(MCTS) $(COMMON) $(GEN_DIR)))
 
 $(DEP_DIR):
