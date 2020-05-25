@@ -10,8 +10,3 @@ bool Node::is_terminal() const {
 
 Child::Child(const reasoner::move& move)
     : move(move) {}
-
-void Child::update_stats(const uint& current_player, simulation_result& results) {
-    sim_count++;
-    total_score += results[current_player];
-}

@@ -1,7 +1,6 @@
-#include"tree.hpp"
-#include"node.hpp"
-#include"constants.hpp"
-#include <iostream>
+#include "tree.hpp"
+#include "node.hpp"
+#include "constants.hpp"
 
 
 Tree::Tree(const reasoner::game_state& initial_state) : 
@@ -109,14 +108,14 @@ uint Tree::get_best_child_index_for_simulation(const uint& node_index) {
 }
 
 game_status_indication Tree::get_status(int player_index) const {
-    if (nodes[root_index].is_terminal()) {
+    if (nodes.front().is_terminal()) {
         return end_game;
     }
     return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }
 
 reasoner::move Tree::choose_best_move() {
-    const auto& [fst, lst] = nodes[root_index].children_range;
+    const auto& [fst, lst] = nodes.front().children_range;
     auto max_sim = children[fst].sim_count;
     auto best_node = fst;
     for (auto i = fst + 1; i < lst; ++i) {
@@ -132,7 +131,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     root_state.apply_move(move);
     complete_turn(root_state);
     uint root_index = 0;
-    auto [fst, lst] = nodes[root_index].children_range;
+    auto [fst, lst] = nodes.front().children_range;
     for ( ; fst < lst; ++fst) {
         if (children[fst].move == move) {
             root_index = children[fst].index;
@@ -177,5 +176,5 @@ uint Tree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_t
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
     reasoner::game_state root_state_copy = root_state;
-    mcts(root_state_copy, root_index, results);
+    mcts(root_state_copy, 0, results);
 }

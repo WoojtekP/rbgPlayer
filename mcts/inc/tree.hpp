@@ -1,19 +1,18 @@
 #ifndef TREE
 #define TREE
 
-#include<random>
-#include<vector>
+#include <random>
+#include <vector>
 
-#include"reasoner.hpp"
-#include"types.hpp"
-#include"node.hpp"
+#include "reasoner.hpp"
+#include "types.hpp"
+#include "node.hpp"
 
 typedef std::vector<uint> simulation_result;
 
 class Tree {
 private:
     reasoner::game_state root_state;
-    uint root_index = 0;
     std::vector<Node> nodes;
     std::vector<Child> children;
     std::mt19937 random_numbers_generator;

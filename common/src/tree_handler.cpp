@@ -51,7 +51,3 @@ void tree_handler::perform_simulation() {
     t.perform_simulation();
     simulations_count++;
 }
-
-bool tree_handler::end_of_game() {
-    return t.get_status(own_player_index) == end_game;
-}

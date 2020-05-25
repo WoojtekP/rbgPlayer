@@ -30,7 +30,6 @@ struct Child {
     reasoner::move move;
     Child(void) = default;
     Child(const reasoner::move& move);
-    void update_stats(const uint& current_player, simulation_result& results);
 };
 
 #endif

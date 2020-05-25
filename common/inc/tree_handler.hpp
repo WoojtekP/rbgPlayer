@@ -36,7 +36,6 @@ class tree_handler{
         void handle_move_indication(const reasoner::move& m);
         void handle_reset_request(const reasoner::game_state& initial_state);
         void perform_simulation();
-        bool end_of_game();
 };
 
 #endif
