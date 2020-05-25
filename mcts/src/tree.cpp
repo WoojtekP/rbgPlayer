@@ -52,7 +52,6 @@ void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result&
     auto current_player = state.get_current_player();
     if (nodes[node_index].is_terminal()) {
         play(state, results);
-        nodes[node_index].sim_count++;
     }
     else {
         auto child_index = get_best_child_index_for_simulation(node_index);
@@ -68,6 +67,7 @@ void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result&
         children[child_index].sim_count++;
         children[child_index].total_score += results[current_player - 1];
     }
+    nodes[node_index].sim_count++;
 }
 
 void Tree::complete_turn(reasoner::game_state& state) const {
@@ -103,15 +103,14 @@ uint Tree::get_best_child_index_for_simulation(const uint& node_index) {
         std::uniform_int_distribution<> dist(0, best_children_indices.size() - 1);
         best_child_index = best_children_indices[dist(random_numbers_generator)];
     }
-    nodes[node_index].sim_count++;
     return best_child_index;
 }
 
-game_status_indication Tree::get_status(int player_index) const {
+game_status_indication Tree::get_status(const uint& player_index) const {
     if (nodes.front().is_terminal()) {
         return end_game;
     }
-    return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
+    return (uint)root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }
 
 reasoner::move Tree::choose_best_move() {
@@ -124,6 +123,7 @@ reasoner::move Tree::choose_best_move() {
             best_node = i;
         }
     }
+    assert(!(children[best_node].move == reasoner::move{}));
     return children[best_node].move;
 }
 
@@ -139,8 +139,8 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         }
     }
     if (root_index == 0) {
-        nodes.resize(0);
-        children.resize(0);
+        nodes.clear();
+        children.clear();
         create_node(root_state);
         return;
     }
@@ -166,7 +166,7 @@ uint Tree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_t
     for (uint i = 0; i < child_count; ++i) {
         children_tmp[first_child_index + i] = children[fst + i];
         if (children[fst + i].index == 0) {
-            break;
+            continue;
         }
         children_tmp[first_child_index + i].index = fix_tree(nodes_tmp, children_tmp, children[fst + i].index);
     }

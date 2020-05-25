@@ -31,7 +31,7 @@ public:
     Tree(const reasoner::game_state& initial_state);
 
     uint get_best_child_index_for_simulation(const uint&);
-    game_status_indication get_status(int player_index) const;
+    game_status_indication get_status(const uint& player_index) const;
     reasoner::move choose_best_move();
     void reparent_along_move(const reasoner::move& move);
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, uint);
