@@ -19,7 +19,7 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["random", "mcts", "simple_best_select"])
+available_players = set(["random", "mcts", "mast", "simple_best_select"])
 semisplit_players = set()
 
 def player_kind_to_make_target(player_kind):
