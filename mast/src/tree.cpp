@@ -2,7 +2,6 @@
 #include "node.hpp"
 #include "constants.hpp"
 
-#include <iostream>
 
 Tree::Tree(const reasoner::game_state& initial_state) : 
     root_state(initial_state),
