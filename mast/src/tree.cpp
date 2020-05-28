@@ -49,7 +49,8 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
     }
 }
 
-void Tree::mast(reasoner::game_state& state, uint node_index, simulation_result& results) {
+void Tree::mast(reasoner::game_state& state, uint node_index, simulation_result& results, uint& depth) {
+    depth++;
     if (nodes[node_index].is_terminal()) {
         play(state, results);
     }
@@ -63,10 +64,12 @@ void Tree::mast(reasoner::game_state& state, uint node_index, simulation_result&
             play(state, results);
         }
         else {
-            mast(state, children[child_index].index, results);
+            mast(state, children[child_index].index, results, depth);
         }
         const auto& move = children[child_index].move;
-        moves.insert_or_update(move, results[player_index - 1]);
+        auto weight = 1.0 / depth;
+        auto score = static_cast<double>(results[player_index - 1]) / depth;
+        moves.insert_or_update(move, weight, score);
     }
 }
 
@@ -94,26 +97,8 @@ game_status_indication Tree::get_status(const uint& player_index) const {
 }
 
 reasoner::move Tree::choose_best_move() {
-    static std::vector<uint> best_children_indices;
-    best_children_indices.resize(1);
-    const auto& [fst, lst] = nodes.front().children_range;
-    best_children_indices[0] = fst;
-    auto max_score = moves.get_score_or_default_value(children[fst].move);
-    for (auto i = fst + 1; i < lst; ++i) {
-        auto score = moves.get_score_or_default_value(children[i].move);
-        if (score > max_score) {
-            best_children_indices.resize(1);
-            best_children_indices[0] = i;
-        }
-        else if (score == max_score) {
-            best_children_indices.push_back(i);
-        }
-    }
-    auto best_child_index = best_children_indices.front();
-    if (best_children_indices.size() > 1) {
-        std::uniform_int_distribution<> dist(0, best_children_indices.size() - 1);
-        best_child_index = best_children_indices[dist(random_numbers_generator)];
-    }
+    uint root_index = 0;
+    auto best_child_index = get_best_child_index_for_simulation(root_index);
     return children[best_child_index].move;
 }
 
@@ -166,5 +151,6 @@ uint Tree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_t
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
     reasoner::game_state root_state_copy = root_state;
-    mast(root_state_copy, 0, results);
+    uint depth = 0;
+    mast(root_state_copy, 0, results, depth);
 }
