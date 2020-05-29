@@ -28,12 +28,13 @@ public:
     Tree& operator=(const Tree&)=delete;
     Tree& operator=(Tree&&)=default;
     ~Tree(void)=default;
-    Tree(const reasoner::game_state& initial_state);
+    Tree(const reasoner::game_state&);
 
-    uint get_best_child_index_for_simulation(const uint&);
-    game_status_indication get_status(const uint& player_index) const;
+    uint get_best_uct_child_index(const uint&);
+    uint get_unvisited_child_index(const uint&);
+    game_status_indication get_status(const uint&) const;
     reasoner::move choose_best_move();
-    void reparent_along_move(const reasoner::move& move);
+    void reparent_along_move(const reasoner::move&);
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, uint);
     void perform_simulation();
 };

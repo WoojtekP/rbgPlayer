@@ -19,6 +19,7 @@ struct Node {
     ~Node(void)=default;
     Node(const uint&, const uint&);
     bool is_terminal() const;
+    bool is_fully_expanded() const;
 
     static reasoner::resettable_bitarray_stack cache;
 };

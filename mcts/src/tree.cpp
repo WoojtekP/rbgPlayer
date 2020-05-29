@@ -2,6 +2,7 @@
 #include "node.hpp"
 #include "constants.hpp"
 
+#include <iostream>
 
 Tree::Tree(const reasoner::game_state& initial_state) : 
     root_state(initial_state),
@@ -54,15 +55,19 @@ void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result&
         play(state, results);
     }
     else {
-        auto child_index = get_best_child_index_for_simulation(node_index);
-        state.apply_move(children[child_index].move);
-        complete_turn(state);
-        if (children[child_index].index == 0) {
-            children[child_index].index = create_node(state);
-            play(state, results);
+        uint child_index;
+        if (nodes[node_index].is_fully_expanded()) {
+            child_index = get_best_uct_child_index(node_index);
+            state.apply_move(children[child_index].move);
+            complete_turn(state);
+            mcts(state, children[child_index].index, results);
         }
         else {
-            mcts(state, children[child_index].index, results);
+            child_index = get_unvisited_child_index(node_index);
+            state.apply_move(children[child_index].move);
+            complete_turn(state);
+            children[child_index].index = create_node(state);
+            play(state, results);
         }
         children[child_index].sim_count++;
         children[child_index].total_score += results[current_player - 1];
@@ -74,20 +79,16 @@ void Tree::complete_turn(reasoner::game_state& state) const {
     while (state.get_current_player() == KEEPER && state.apply_any_move(Node::cache));
 }
 
-uint Tree::get_best_child_index_for_simulation(const uint& node_index) {
+uint Tree::get_best_uct_child_index(const uint& node_index) {
     static std::vector<uint> best_children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
     best_children_indices.resize(1);
     best_children_indices[0] = fst;
     double logN = std::log(nodes[node_index].sim_count);
-    double max_priority = children[fst].sim_count == 0
-                       ? INF
-                       : children[fst].total_score / EXPECTED_MAX_SCORE / children[fst].sim_count +
+    double max_priority = children[fst].total_score / EXPECTED_MAX_SCORE / children[fst].sim_count +
                          EXPLORATION_CONSTANT * std::sqrt(logN / children[fst].sim_count);
     for (uint i = fst + 1; i < lst; ++i) {
-        double priority = children[i].sim_count == 0
-                        ? INF
-                        : children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count +
+        double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count +
                           EXPLORATION_CONSTANT * std::sqrt(logN / children[i].sim_count);
         if (priority > max_priority) {
             max_priority = priority;
@@ -104,6 +105,27 @@ uint Tree::get_best_child_index_for_simulation(const uint& node_index) {
         best_child_index = best_children_indices[dist(random_numbers_generator)];
     }
     return best_child_index;
+}
+
+uint Tree::get_unvisited_child_index(const uint& node_index) {
+    static std::vector<uint> children_indices;
+    const auto& [fst, lst] = nodes[node_index].children_range;
+    const auto unvisited = (lst - fst) - nodes[node_index].sim_count;
+    children_indices.resize(unvisited);
+    uint j = 0;
+    for (auto i = fst; i < lst; ++i) {
+        if (children[i].index == 0) {
+            children_indices[j] = i;
+            j++;
+        }
+    }
+    assert(j == unvisited);
+    uint child_index = children_indices.front();
+    if (unvisited > 1) {
+        std::uniform_int_distribution<> dist(0, unvisited - 1);
+        child_index = children_indices[dist(random_numbers_generator)];
+    }
+    return child_index;
 }
 
 game_status_indication Tree::get_status(const uint& player_index) const {
@@ -123,7 +145,6 @@ reasoner::move Tree::choose_best_move() {
             best_node = i;
         }
     }
-    assert(!(children[best_node].move == reasoner::move{}));
     return children[best_node].move;
 }
 
