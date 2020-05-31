@@ -129,14 +129,14 @@ uint Tree::get_unvisited_child_index(const uint& node_index, const uint& player_
     for (auto i = fst; i < lst; ++i) {
         if (children[i].index == 0) {
             children_indices[j] = i;
-            weights[j] = moves[player_index - 1].get_score_or_default_value(children[i].move);
+            weights[j] = std::exp(moves[player_index - 1].get_score_or_default_value(children[i].move) / tau);
             j++;
         }
     }
     assert(j == unvisited);
     uint child_index = children_indices.front();
     if (unvisited > 1) {
-        std::discrete_distribution<> dist({weights.begin(), weights.end()});
+        std::discrete_distribution<> dist(weights.begin(), weights.end());
         child_index = children_indices[dist(random_numbers_generator)];
     }
     return child_index;
