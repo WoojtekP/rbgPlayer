@@ -56,19 +56,18 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
     }
 }
 
-void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result& results, uint& depth) {
+void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result& results) {
     auto current_player = state.get_current_player();
     if (nodes[node_index].is_terminal()) {
         play(state, results);
     }
     else {
-        depth++;
         uint child_index;
         if (nodes[node_index].is_fully_expanded()) {
             child_index = get_best_uct_child_index(node_index);
             state.apply_move(children[child_index].move);
             complete_turn(state);
-            mcts(state, children[child_index].index, results, depth);
+            mcts(state, children[child_index].index, results);
         }
         else {
             child_index = get_unvisited_child_index(node_index, current_player);
@@ -79,9 +78,7 @@ void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result&
         }
         children[child_index].sim_count++;
         children[child_index].total_score += results[current_player - 1];
-        double weight = 1.0 / depth;
-        double score = results[current_player - 1] / depth;
-        moves[current_player - 1].insert_or_update(children[child_index].move, weight, score);
+        moves[current_player - 1].insert_or_update(children[child_index].move, results[current_player - 1]);
     }
     nodes[node_index].sim_count++;
 }
@@ -211,6 +208,5 @@ uint Tree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_t
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
     reasoner::game_state root_state_copy = root_state;
-    uint depth = 0;
-    mcts(root_state_copy, 0, results, depth);
+    mcts(root_state_copy, 0, results);
 }

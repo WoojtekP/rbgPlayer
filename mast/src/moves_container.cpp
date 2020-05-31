@@ -11,13 +11,13 @@ std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
     return seed;
 }
 
-void moves_container::insert_or_update(const reasoner::move& move, const double& weight, const double& score) {
+void moves_container::insert_or_update(const reasoner::move& move, const uint& score) {
     auto it = map.find(move);
     if (it == map.end()) {
-        map.insert({move, {weight, score}});
+        map.insert({move, {1, score}});
     }
     else {
-        it->second.first += weight;
+        it->second.first++;
         it->second.second += score;
     }
 }
@@ -28,6 +28,6 @@ double moves_container::get_score_or_default_value(const reasoner::move& move) {
         return default_value;
     }
     else {
-        return it->second.second / it->second.first;
+        return static_cast<double>(it->second.second) / it->second.first;
     }
 }

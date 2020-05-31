@@ -8,9 +8,9 @@ struct move_hash {
 
 class moves_container {
 private:
-    std::unordered_map<reasoner::move, std::pair<double, double>, move_hash> map;
-    double default_value = 50.0;
+    std::unordered_map<reasoner::move, std::pair<uint, uint>, move_hash> map;
+    double default_value = 100.0;
 public:
-    void insert_or_update(const reasoner::move&, const double&, const double&);
+    void insert_or_update(const reasoner::move&, const uint&);
     double get_score_or_default_value(const reasoner::move&);
 };

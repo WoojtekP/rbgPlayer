@@ -22,7 +22,7 @@ private:
 
     uint create_node(reasoner::game_state&);
     void play(reasoner::game_state&, simulation_result&);
-    void mcts(reasoner::game_state&, uint, simulation_result&, uint&);
+    void mcts(reasoner::game_state&, uint, simulation_result&);
     void complete_turn(reasoner::game_state&) const;
 public:
     Tree(void)=delete;
