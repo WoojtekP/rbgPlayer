@@ -16,7 +16,7 @@ private:
     reasoner::game_state root_state;
     std::vector<Node> nodes;
     std::vector<Child> children;
-    double tau = 50.0;
+    double tau = 10.0;
     moves_container moves[reasoner::NUMBER_OF_PLAYERS - 1];
     std::mt19937 random_numbers_generator;
 
