@@ -17,6 +17,7 @@ RANDOM := random
 SBS := simple_best_select
 MCTS := mcts
 MAST := mast
+MAST_SPLIT := mast_semisplit
 
 C := g++
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s
@@ -51,6 +52,7 @@ $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MCTS,mcts,$(MCTS) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MAST) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MAST_SPLIT,mast_semisplit,$(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
 
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)
