@@ -50,7 +50,7 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
 
 void Tree::mcts(reasoner::game_state& state, uint node_index, simulation_result& results) {
     if (nodes[node_index].is_terminal()) {
-        play(state, results);
+        Tree::play(state, results);
     }
     else {
         uint current_player = state.get_current_player();
