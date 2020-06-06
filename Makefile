@@ -15,7 +15,8 @@ GEN_DIR := gen_$(PLAYER_ID)
 COMMON := common
 RANDOM := random
 SBS := simple_best_select
-MCTS := mcts
+ORTHODOXMCTS := orthodox_mcts
+MCTSCOMMON := mcts_common
 MAST := mast
 MAST_SPLIT := mast_semisplit
 
@@ -50,7 +51,7 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS,mcts,$(MCTS) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS,orthodoxMcts,$(MCTSCOMMON) $(ORTHODOXMCTS) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MAST) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST_SPLIT,mast_semisplit,$(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
 
