@@ -2,7 +2,6 @@
 #include "node.hpp"
 #include "constants.hpp"
 
-#include <iostream>
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : 
     root_state(initial_state),
@@ -24,29 +23,6 @@ uint MctsTree::create_node(reasoner::game_state& state) {
         children.emplace_back(move);
     }
     return nodes.size() - 1;
-}
-
-void MctsTree::play(reasoner::game_state& state, simulation_result& results) {
-    static std::vector<reasoner::move> move_list;
-    while (true) {
-        state.get_all_moves(cache, move_list);
-        if(move_list.empty()) {
-            break;
-        }
-        else {
-            std::uniform_int_distribution<> dist(0, move_list.size() - 1);
-            uint chosen_move = dist(random_numbers_generator);
-            state.apply_move(move_list[chosen_move]);
-        }
-        while (state.get_current_player() == KEEPER) {
-            if (not state.apply_any_move(cache)) {
-                break;
-            }
-        }
-    }
-    for (int i = 1; i <= reasoner::NUMBER_OF_PLAYERS; ++i) {
-        results[i - 1] = state.get_player_score(i);
-    }
 }
 
 void MctsTree::complete_turn(reasoner::game_state& state) {
@@ -145,11 +121,4 @@ uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& childr
         children_tmp[first_child_index + i].index = fix_tree(nodes_tmp, children_tmp, children[fst + i].index);
     }
     return new_index;
-}
-
-void MctsTree::perform_simulation() {
-    static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
-    reasoner::game_state root_state_copy = root_state;
-    depth = 0;
-    mcts(root_state_copy, 0, results);
 }
