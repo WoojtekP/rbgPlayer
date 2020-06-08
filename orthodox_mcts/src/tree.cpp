@@ -76,8 +76,12 @@ void Tree::mcts(reasoner::game_state& state, const uint& node_index, simulation_
 }
 
 void Tree::perform_simulation() {
-    static simulation_result results(reasoner::NUMBER_OF_PLAYERS);
+    static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
     reasoner::game_state root_state_copy = root_state;
     static const uint root_index = 0;
     mcts(root_state_copy, root_index, results);
+}
+
+void Tree::apply_move(const reasoner::move& move) {
+    reparent_along_move(move);
 }

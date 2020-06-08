@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "constants.hpp"
 #include "moves_container.hpp"
 
 
@@ -31,12 +32,12 @@ double moves_container::get_score_or_default_value(const reasoner::move& move) {
         total_score += map[action_index].second;
         weight_sum += map[action_index].first;
     }
-    return (weight_sum == 0) ? default_value : (total_score / weight_sum);
+    return (weight_sum == 0) ? EXPECTED_MAX_SCORE : (total_score / weight_sum);
 }
 
 void moves_container::apply_decay_factor() {
     for (uint i = 0; i < moves_container::size; ++i) {
-        map[i].first *= decay_factor;
-        map[i].second *= decay_factor;
+        map[i].first *= DECAY_FACTOR;
+        map[i].second *= DECAY_FACTOR;
     }
 }

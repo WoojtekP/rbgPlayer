@@ -36,7 +36,7 @@ void tree_handler::handle_move_request(void){
 
 void tree_handler::handle_move_indication(const reasoner::move& m){
     simulations_count = 0;
-    t.reparent_along_move(m);
+    t.apply_move(m);
     handle_status();
 }
 

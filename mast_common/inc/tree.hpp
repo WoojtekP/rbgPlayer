@@ -16,7 +16,6 @@ private:
     moves_container moves[reasoner::NUMBER_OF_PLAYERS - 1];
     std::uniform_real_distribution<double> prob;
     uint depth;
-    double epsilon = 0.2;  // TODO przenieśc do config.hpp
     uint get_unvisited_child_index(const uint&, const uint&);
     void play(reasoner::game_state&, simulation_result&);
     void mcts(reasoner::game_state&, const uint&, simulation_result&);
@@ -29,6 +28,7 @@ public:
     ~Tree(void)=default;
     Tree(const reasoner::game_state&);
     void perform_simulation();
+    void apply_move(const reasoner::move&);
 };
 
 #endif

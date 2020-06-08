@@ -23,6 +23,7 @@ protected:
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, uint);
     void complete_turn(reasoner::game_state&);
     uint get_best_uct_child_index(const uint&);
+    void reparent_along_move(const reasoner::move&);
 public:
     MctsTree(void)=delete;
     MctsTree(const MctsTree&)=delete;
@@ -33,7 +34,6 @@ public:
     MctsTree(const reasoner::game_state&);
     game_status_indication get_status(const uint&) const;
     reasoner::move choose_best_move();
-    void reparent_along_move(const reasoner::move&);
 };
 
 #endif

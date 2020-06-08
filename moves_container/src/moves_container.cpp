@@ -1,6 +1,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "config.hpp"
+#include "constants.hpp"
 #include "moves_container.hpp"
 
 std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
@@ -14,7 +15,7 @@ std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
 
 void moves_container::insert_or_update(const reasoner::move& move, const uint& score, [[maybe_unused]] const uint& depth) {
     auto it = map.find(move);
-    if constexpr (WEIGHT_SCALING == 1) {  // stała z config.hpp
+    if constexpr (WEIGHT_SCALING) {
         if (it == map.end()) {
             map.insert({move, {1.0 / depth, static_cast<double>(score) / depth}});
         }
@@ -37,7 +38,7 @@ void moves_container::insert_or_update(const reasoner::move& move, const uint& s
 double moves_container::get_score_or_default_value(const reasoner::move& move) {
     auto it = map.find(move);
     if (it == map.end()) {
-        return default_value;
+        return EXPECTED_MAX_SCORE;
     }
     else {
         return it->second.second / it->second.first;
@@ -45,8 +46,8 @@ double moves_container::get_score_or_default_value(const reasoner::move& move) {
 }
 
 void moves_container::apply_decay_factor() {
-    for (auto& [key, val] : map) {
-        val.first *= decay_factor;
-        val.second *= decay_factor;
+    for (auto& el : map) {
+        el.second.first *= DECAY_FACTOR;
+        el.second.second *= DECAY_FACTOR;
     }
 }

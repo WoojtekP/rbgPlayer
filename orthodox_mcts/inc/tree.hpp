@@ -25,6 +25,7 @@ public:
     ~Tree(void)=default;
     Tree(const reasoner::game_state&);
     void perform_simulation();
+    void apply_move(const reasoner::move&);
 };
 
 #endif
