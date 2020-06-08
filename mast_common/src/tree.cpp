@@ -11,7 +11,7 @@ uint Tree::get_unvisited_child_index(const uint& node_index, const uint& current
     children_indices.resize(1);
     double best_score = 0.0;
     uint child_index = 0;
-    if (prob(random_numbers_generator) <= epsilon) {
+    if (prob(random_numbers_generator) < epsilon) {
         for (uint i = fst; i < lst; ++i) {
             if (children[i].index == 0) {
                 double score = moves[current_player - 1].get_score_or_default_value(children[i].move);
@@ -58,7 +58,7 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
             const auto current_player = state.get_current_player();
             const auto size = legal_moves.size();
             uint chosen_move;
-            if (prob(random_numbers_generator) <= epsilon) {
+            if (prob(random_numbers_generator) < epsilon) {
                 double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front());
                 moves_indices.resize(1);
                 moves_indices[0] = 0;
