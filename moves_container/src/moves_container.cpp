@@ -16,7 +16,7 @@ void moves_container::insert_or_update(const reasoner::move& move, const uint& s
     auto it = map.find(move);
     if constexpr (WEIGHT_SCALING == 1) {  // stała z config.hpp
         if (it == map.end()) {
-            map.insert({move, {cumulative_decay_factor / depth, cumulative_decay_factor * score / depth}});
+            map.insert({move, {1.0 / depth, static_cast<double>(score) / depth}});
         }
         else {
             it->second.first += 1.0 / depth;
@@ -25,11 +25,11 @@ void moves_container::insert_or_update(const reasoner::move& move, const uint& s
     }
     else {
         if (it == map.end()) {
-            map.insert({move, {cumulative_decay_factor, cumulative_decay_factor * score}});
+            map.insert({move, {1.0, static_cast<double>(score)}});
         }
         else {
-            it->second.first++;
-            it->second.second += score;
+            it->second.first += 1.0;
+            it->second.second += static_cast<double>(score);
         }
     }
 }
@@ -49,5 +49,4 @@ void moves_container::apply_decay_factor() {
         val.first *= decay_factor;
         val.second *= decay_factor;
     }
-    cumulative_decay_factor *= decay_factor;
 }
