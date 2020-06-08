@@ -13,8 +13,15 @@ void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
     reasoner::game_state initial_state;
     tree_handler th(initial_state, responses_to_server);
     while(true){
-        while (tree_indications.empty()) {
-            th.perform_simulation();
+        if constexpr (SIMULATIONS_PER_MOVE == -1) {
+            while (tree_indications.empty()) {
+                th.perform_simulation();
+            }
+        }
+        else {
+            for (int i = 0; i < SIMULATIONS_PER_MOVE; ++i) {
+                th.perform_simulation();
+            }
         }
         const auto indication = tree_indications.pop_front();
         std::visit(overloaded{

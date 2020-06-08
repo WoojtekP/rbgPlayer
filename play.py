@@ -19,7 +19,7 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["random", "mcts", "mast", "simple_best_select"])
+available_players = set(["random", "orthodoxMcts", "mast", "mast_semisplit", "simple_best_select"])
 semisplit_players = set()
 
 def player_kind_to_make_target(player_kind):
@@ -94,10 +94,12 @@ class PlayerConfig:
             config_file.write("constexpr uint PORT = "+str(self.port_to_connect)+";\n")
             config_file.write("constexpr uint WORKERS_COUNT = "+str(max(self.number_of_threads-1,1))+";\n")
             config_file.write("constexpr uint MILISECONDS_PER_MOVE = "+str(self.miliseconds_per_move)+";\n")
-            config_file.write("constexpr uint SIMULATIONS_PER_MOVE = "+str(self.simulations_limit)+";\n")
+            config_file.write("constexpr int SIMULATIONS_PER_MOVE = "+str(self.simulations_limit)+";\n")
             config_file.write("constexpr uint SEMIMOVES_SIMULATIONS_LENGTH = "+str(self.semimoves_simulations_length)+";\n")
             config_file.write("constexpr uint SEMIMOVES_TREE_LENGTH = "+str(self.semimoves_tree_length)+";\n")
             config_file.write("const std::string NAME = \""+self.player_name+"\";\n")
+            config_file.write("constexpr bool TREE_ONLY = false;\n")
+            config_file.write("constexpr bool WEIGHT_SCALING = false;\n")
             config_file.write("constexpr bool SHOULD_REACH_NODAL_STATES = "+("true" if program_args.player_kind=="semisplitNodalMcts" else "false")+";\n")
             config_file.write("\n")
             config_file.write("#endif\n")

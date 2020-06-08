@@ -15,8 +15,11 @@ GEN_DIR := gen_$(PLAYER_ID)
 COMMON := common
 RANDOM := random
 SBS := simple_best_select
-MCTS := mcts
-MAST := mast
+ORTHODOX_MCTS := orthodox_mcts
+MCTS_COMMON := mcts_common
+MAST_COMMON := mast_common
+MAST := moves_container
+MAST_SEMISPLIT := moves_container_semisplit
 
 C := g++
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s
@@ -49,8 +52,9 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS,mcts,$(MCTS) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MAST) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS,orthodoxMcts,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MCTS_COMMON) $(MAST_COMMON) $(MAST) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MAST_SEMISPLIT,mast_semisplit,$(MCTS_COMMON) $(MAST_COMMON) $(MAST_SEMISPLIT) $(COMMON) $(GEN_DIR)))
 
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)
