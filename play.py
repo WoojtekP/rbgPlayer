@@ -9,6 +9,8 @@ import time
 import argparse
 from argparse import RawTextHelpFormatter
 import signal
+import json
+from itertools import chain
 
 def gen_directory(player_id):
     return "gen_"+str(player_id)
@@ -70,15 +72,11 @@ class Cd:
         os.chdir(self.saved_path)
 
 class PlayerConfig:
-    def __init__(self, program_args, player_name, player_port):
-        self.player_kind = program_args.player_kind
+    def __init__(self, player_kind, constants, player_name, player_port):
+        self.player_kind = player_kind
+        self.config_constants = constants
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
-        self.number_of_threads = program_args.number_of_threads
-        self.miliseconds_per_move = program_args.miliseconds_per_move
-        self.simulations_limit = program_args.simulations_limit
-        self.semimoves_simulations_length = program_args.semimoves_simulations_length
-        self.semimoves_tree_length = program_args.semimoves_tree_length
         self.player_name = player_name
     def runnable_list(self):
         return ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
@@ -92,17 +90,34 @@ class PlayerConfig:
             config_file.write("\n")
             config_file.write("const std::string ADDRESS = \""+self.address_to_connect+"\";\n")
             config_file.write("constexpr uint PORT = "+str(self.port_to_connect)+";\n")
-            config_file.write("constexpr uint WORKERS_COUNT = "+str(max(self.number_of_threads-1,1))+";\n")
-            config_file.write("constexpr uint MILISECONDS_PER_MOVE = "+str(self.miliseconds_per_move)+";\n")
-            config_file.write("constexpr int SIMULATIONS_PER_MOVE = "+str(self.simulations_limit)+";\n")
-            config_file.write("constexpr uint SEMIMOVES_SIMULATIONS_LENGTH = "+str(self.semimoves_simulations_length)+";\n")
-            config_file.write("constexpr uint SEMIMOVES_TREE_LENGTH = "+str(self.semimoves_tree_length)+";\n")
             config_file.write("const std::string NAME = \""+self.player_name+"\";\n")
-            config_file.write("constexpr bool TREE_ONLY = false;\n")
-            config_file.write("constexpr bool WEIGHT_SCALING = false;\n")
-            config_file.write("constexpr bool SHOULD_REACH_NODAL_STATES = "+("true" if program_args.player_kind=="semisplitNodalMcts" else "false")+";\n")
+            for t, variables in self.config_constants.items():
+                for name, val in variables.items():
+                    config_file.write("constexpr {} {} = {};\n".format(t, name, val))
             config_file.write("\n")
             config_file.write("#endif\n")
+
+def parse_config_file(file_name):
+    with open(file_name) as config_file:
+        config = json.load(config_file)
+        player_kind = config["heuristic_configuration"]["name"].lower()
+        if config["heuristic_configuration"]["name"] == "ORTHODOX":
+            player_kind = config["player_configuration"]["name"].lower() + "_orthodox"
+        elif config["heuristic_configuration"]["semisplit"]:
+            player_kind += "_semisplit"
+        constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
+        for k, v in chain(config["game_configuration"].items(), \
+                          config["player_configuration"]["parameters"].items(), \
+                          config["heuristic_configuration"]["parameters"].items()):
+            if isinstance(v, bool):
+                constants["bool"][k.upper()] = v.__str__().lower()
+            elif isinstance(v, float):
+                constants["double"][k.upper()] = v.__str__()
+            elif v > 0:
+                constants["uint"][k.upper()] = v.__str__()
+            else:
+                constants["int"][k.upper()] = v.__str__()
+        return player_kind, constants
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -197,14 +212,9 @@ def cleanup_process(player_process):
     player_process.terminate()
 
 parser = argparse.ArgumentParser(description='Setup and start rbg player.', formatter_class=RawTextHelpFormatter)
-parser.add_argument('player_kind', metavar='player-kind', type=str, choices=available_players, help='kind of player backend (available: '+', '.join(available_players)+')')
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')
-parser.add_argument('--number-of-threads', dest='number_of_threads', type=int, default=2, help='number of player and makefile threads (default: 2)\nnote that player always consist of at least two worker threads: tree manager and simulator')
-parser.add_argument('--miliseconds-per-move', dest='miliseconds_per_move', type=int, default=2000, help='time limit for player\'s turn in miliseconds (default: 2000)')
-parser.add_argument('--simulations-limit', dest='simulations_limit', type=int, default=1000000, help='simulations limit for player\'s turn (default: 1000000)')
-parser.add_argument('--semimoves-simulations-length', dest='semimoves_simulations_length', type=int, default=1, help='length of semimoves in simulations module (default: 1)\nonly applicable to semisplit player kinds')
-parser.add_argument('--semimoves-tree-length', dest='semimoves_tree_length', type=int, default=1, help='length of semimoves in tree module (default: 1)\nonly applicable to semisplit player kinds')
+parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
 program_args = parser.parse_args()
 
 server_socket = BufferedSocket(connect_to_server(program_args.server_address, program_args.server_port))
@@ -218,10 +228,13 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_config = PlayerConfig(program_args, player_name, player_port)
+player_kind, constants = parse_config_file(program_args.player_config)
+print("Player kind:", player_kind)
+
+player_config = PlayerConfig(player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(program_args.number_of_threads, program_args.player_kind, player_port)
+compile_player(2, player_kind, player_port)
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 

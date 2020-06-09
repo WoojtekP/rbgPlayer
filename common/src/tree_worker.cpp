@@ -19,7 +19,7 @@ void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
             }
         }
         else {
-            for (int i = 0; i < SIMULATIONS_PER_MOVE; ++i) {
+            for (uint i = 0; i < SIMULATIONS_PER_MOVE; ++i) {
                 th.perform_simulation();
             }
         }

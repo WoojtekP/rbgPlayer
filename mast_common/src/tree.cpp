@@ -1,5 +1,4 @@
 #include "constants.hpp"
-#include "config.hpp"
 #include "tree.hpp"
 #include "node.hpp"
 #include "moves_container.hpp"

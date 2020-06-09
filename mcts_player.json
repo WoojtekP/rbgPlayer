@@ -1,0 +1,19 @@
+{
+    "game_configuration" : {
+        "simulations_per_move" : 1000,
+        "miliseconds_per_move" : 10,
+        "buffer_time" : 100
+    },
+    "player_configuration" : {
+        "name" : "MCTS",
+        "semisplit" : false,
+        "parameters" : {
+            "exploration_constant" : 1.41421356237
+        }
+    },
+    "heuristic_configuration" : {
+        "name" : "ORTHODOX",
+        "semisplit" : false,
+        "parameters" : {}
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "game_configuration" : {
+        "simulations_per_move" : 1000,
+        "miliseconds_per_move" : 10,
+        "buffer_time" : 100
+    },
+    "player_configuration" : {
+        "name" : "MCTS",
+        "semisplit" : false,
+        "parameters" : {
+            "exploration_constant" : 1.41421356237
+        }
+    },
+    "heuristic_configuration" : {
+        "name" : "MAST",
+        "semisplit" : false,
+        "parameters" : {
+            "tree_only" : false,
+            "weight_scaling" : false,
+            "decay_factor" : 0.2,
+            "epsilon" : 0.4
+        }
+    }
+}

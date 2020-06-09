@@ -52,7 +52,7 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS,orthodoxMcts,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS,mcts_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MCTS_COMMON) $(MAST_COMMON) $(MAST) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST_SEMISPLIT,mast_semisplit,$(MCTS_COMMON) $(MAST_COMMON) $(MAST_SEMISPLIT) $(COMMON) $(GEN_DIR)))
 

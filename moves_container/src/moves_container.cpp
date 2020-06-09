@@ -1,6 +1,5 @@
 #include <boost/functional/hash.hpp>
 
-#include "config.hpp"
 #include "constants.hpp"
 #include "moves_container.hpp"
 

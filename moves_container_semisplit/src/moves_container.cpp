@@ -1,4 +1,3 @@
-#include "config.hpp"
 #include "constants.hpp"
 #include "moves_container.hpp"
 
