@@ -42,14 +42,14 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
             }
         }
     }
-    for (int i = 1; i <= reasoner::NUMBER_OF_PLAYERS; ++i) {
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }
 }
 
 void Tree::mcts(reasoner::game_state& state, const uint& node_index, simulation_result& results) {
     if (nodes[node_index].is_terminal()) {
-        for (int i = 1; i <= reasoner::NUMBER_OF_PLAYERS; ++i) {
+        for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
             results[i - 1] = state.get_player_score(i);
         }
     }
