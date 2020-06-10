@@ -30,10 +30,10 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
 }
 
 uint MctsTree::get_best_uct_child_index(const uint& node_index) {
-    static std::vector<uint> best_children_indices;
+    static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
-    best_children_indices.resize(1);
-    best_children_indices[0] = fst;
+    children_indices.resize(1);
+    children_indices[0] = fst;
     double logN = std::log(nodes[node_index].sim_count);
     double max_priority = children[fst].total_score / EXPECTED_MAX_SCORE / children[fst].sim_count +
                          EXPLORATION_CONSTANT * std::sqrt(logN / children[fst].sim_count);
@@ -42,19 +42,15 @@ uint MctsTree::get_best_uct_child_index(const uint& node_index) {
                           EXPLORATION_CONSTANT * std::sqrt(logN / children[i].sim_count);
         if (priority > max_priority) {
             max_priority = priority;
-            best_children_indices.resize(1);
-            best_children_indices[0] = i;
+            children_indices.resize(1);
+            children_indices[0] = i;
         }
         else if (priority == max_priority) {
-            best_children_indices.push_back(i);
+            children_indices.push_back(i);
         }
     }
-    uint best_child_index = best_children_indices.front();
-    if (best_children_indices.size() > 1) {
-        std::uniform_int_distribution<> dist(0, best_children_indices.size() - 1);
-        best_child_index = best_children_indices[dist(random_numbers_generator)];
-    }
-    return best_child_index;
+    std::uniform_int_distribution<uint> dist(0, children_indices.size() - 1);
+    return children_indices[dist(random_numbers_generator)];
 }
 
 game_status_indication MctsTree::get_status(const int& player_index) const {

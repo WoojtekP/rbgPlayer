@@ -33,13 +33,8 @@ uint Tree::get_unvisited_child_index(const uint& node_index, const uint& current
             }
         }
     }
-    assert(!children_indices.empty());
-    uint child_index = children_indices.front();
-    if (children_indices.size() > 1) {
-        std::uniform_int_distribution<uint> dist(0, children_indices.size() - 1);
-        child_index = children_indices[dist(random_numbers_generator)];
-    }
-    return child_index;
+    std::uniform_int_distribution<uint> dist(0, children_indices.size() - 1);
+    return children_indices[dist(random_numbers_generator)];
 }
 
 void Tree::play(reasoner::game_state& state, simulation_result& results) {
@@ -70,11 +65,8 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
                         moves_indices.push_back(i);
                     }
                 }
-                chosen_move = moves_indices.front();
-                if (moves_indices.size() > 1) {
-                    std::uniform_int_distribution<uint> dist(0, moves_indices.size() - 1);
-                    chosen_move = moves_indices[dist(random_numbers_generator)];
-                }
+                std::uniform_int_distribution<uint> dist(0, moves_indices.size() - 1);
+                chosen_move = moves_indices[dist(random_numbers_generator)];
             }
             else {
                 std::uniform_int_distribution<uint> dist(0, size - 1);
