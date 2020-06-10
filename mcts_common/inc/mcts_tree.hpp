@@ -20,9 +20,9 @@ protected:
     std::mt19937 random_numbers_generator;
 
     uint create_node(reasoner::game_state&);
-    uint fix_tree(std::vector<Node>&, std::vector<Child>&, uint);
+    uint fix_tree(std::vector<Node>&, std::vector<Child>&, const uint);
     void complete_turn(reasoner::game_state&);
-    uint get_best_uct_child_index(const uint&);
+    uint get_best_uct_child_index(const uint);
     void reparent_along_move(const reasoner::move&);
 public:
     MctsTree(void)=delete;
@@ -32,7 +32,7 @@ public:
     MctsTree& operator=(MctsTree&&)=default;
     ~MctsTree(void)=default;
     MctsTree(const reasoner::game_state&);
-    game_status_indication get_status(const int&) const;
+    game_status_indication get_status(const int) const;
     reasoner::move choose_best_move();
 };
 

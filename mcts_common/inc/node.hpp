@@ -17,7 +17,7 @@ struct Node {
     Node& operator=(const Node&)=default;
     Node& operator=(Node&&)=default;
     ~Node(void)=default;
-    Node(const uint&, const uint&);
+    Node(const uint, const uint);
     bool is_terminal() const;
     bool is_fully_expanded() const;
 };

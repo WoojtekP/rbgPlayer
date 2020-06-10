@@ -5,7 +5,7 @@
 
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state), prob(0.0, 1.0) {}
 
-uint Tree::get_unvisited_child_index(const uint& node_index, const uint& current_player) {
+uint Tree::get_unvisited_child_index(const uint node_index, const uint current_player) {
     static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
     children_indices.clear();
@@ -97,7 +97,7 @@ void Tree::play(reasoner::game_state& state, simulation_result& results) {
     }
 }
 
-void Tree::mcts(reasoner::game_state& state, const uint& node_index, simulation_result& results) {
+void Tree::mcts(reasoner::game_state& state, const uint node_index, simulation_result& results) {
     depth++;
     if (nodes[node_index].is_terminal()) {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
@@ -130,9 +130,8 @@ void Tree::mcts(reasoner::game_state& state, const uint& node_index, simulation_
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
     reasoner::game_state root_state_copy = root_state;
-    static const uint root_index = 0;
     depth = 0;
-    mcts(root_state_copy, root_index, results);
+    mcts(root_state_copy, 0, results);
 }
 
 void Tree::apply_move(const reasoner::move& move) {

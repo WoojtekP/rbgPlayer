@@ -29,7 +29,7 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
     while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
 }
 
-uint MctsTree::get_best_uct_child_index(const uint& node_index) {
+uint MctsTree::get_best_uct_child_index(const uint node_index) {
     static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
     children_indices.resize(1);
@@ -53,7 +53,7 @@ uint MctsTree::get_best_uct_child_index(const uint& node_index) {
     return children_indices[dist(random_numbers_generator)];
 }
 
-game_status_indication MctsTree::get_status(const int& player_index) const {
+game_status_indication MctsTree::get_status(const int player_index) const {
     if (nodes.front().is_terminal()) {
         return end_game;
     }
@@ -101,7 +101,7 @@ void MctsTree::reparent_along_move(const reasoner::move& move) {
     children_tmp.clear();
 }
 
-uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, uint index) {
+uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {
     auto new_index = nodes_tmp.size();
     nodes_tmp.push_back(nodes[index]);
     auto first_child_index = children_tmp.size();

@@ -9,7 +9,7 @@ moves_container::moves_container() {
     }
 }
 
-void moves_container::insert_or_update(const reasoner::move& move, const uint& score,[[maybe_unused]] const uint& depth) {
+void moves_container::insert_or_update(const reasoner::move& move, const uint score,[[maybe_unused]] const uint depth) {
     for (const auto& action : move.mr) {
         auto action_index = (action.cell - 1) * reasoner::NUMBER_OF_MODIFIERS + reasoner::action_to_modifier_index(action.index);
         if constexpr (WEIGHT_SCALING == 1) {

@@ -12,7 +12,7 @@ std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
     return seed;
 }
 
-void moves_container::insert_or_update(const reasoner::move& move, const uint& score, [[maybe_unused]] const uint& depth) {
+void moves_container::insert_or_update(const reasoner::move& move, const uint score, [[maybe_unused]] const uint depth) {
     auto it = map.find(move);
     if constexpr (WEIGHT_SCALING) {
         if (it == map.end()) {

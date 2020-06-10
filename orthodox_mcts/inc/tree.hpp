@@ -13,9 +13,9 @@ typedef std::vector<uint> simulation_result;
 
 class Tree final : public MctsTree {
 private:
-    uint get_unvisited_child_index(const uint&);
+    uint get_unvisited_child_index(const uint);
     void play(reasoner::game_state&, simulation_result&);
-    void mcts(reasoner::game_state&, const uint&, simulation_result&);
+    void mcts(reasoner::game_state&, const uint, simulation_result&);
 public:
     Tree(void)=delete;
     Tree(const Tree&)=delete;
