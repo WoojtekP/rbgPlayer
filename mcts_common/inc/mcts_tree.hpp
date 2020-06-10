@@ -32,7 +32,7 @@ public:
     MctsTree& operator=(MctsTree&&)=default;
     ~MctsTree(void)=default;
     MctsTree(const reasoner::game_state&);
-    game_status_indication get_status(const uint&) const;
+    game_status_indication get_status(const int&) const;
     reasoner::move choose_best_move();
 };
 

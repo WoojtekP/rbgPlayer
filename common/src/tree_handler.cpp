@@ -6,8 +6,8 @@
 #include<iostream>
 
 namespace{
-uint get_player_index(const std::string& name){
-    for(uint i=0;i<reasoner::NUMBER_OF_PLAYERS-1;++i)
+int get_player_index(const std::string& name){
+    for(int i = 0; i < reasoner::NUMBER_OF_PLAYERS - 1; ++i)
         if(reasoner::variable_to_string(i) == name)
             return i;
     assert(false); // no such player?

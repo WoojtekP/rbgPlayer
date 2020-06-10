@@ -57,11 +57,11 @@ uint MctsTree::get_best_uct_child_index(const uint& node_index) {
     return best_child_index;
 }
 
-game_status_indication MctsTree::get_status(const uint& player_index) const {
+game_status_indication MctsTree::get_status(const int& player_index) const {
     if (nodes.front().is_terminal()) {
         return end_game;
     }
-    return (uint)root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
+    return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }
 
 reasoner::move MctsTree::choose_best_move() {
