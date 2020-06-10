@@ -89,15 +89,13 @@ void MctsTree::reparent_along_move(const reasoner::move& move) {
         create_node(root_state);
         return;
     }
-    static std::vector<Node> nodes_tmp;
-    static std::vector<Child> children_tmp;
+    std::vector<Node> nodes_tmp;
+    std::vector<Child> children_tmp;
     nodes_tmp.reserve(nodes.size());
     children_tmp.reserve(children.size());
     fix_tree(nodes_tmp, children_tmp, root_index);
-    nodes = nodes_tmp;
-    children = children_tmp;
-    nodes_tmp.clear();
-    children_tmp.clear();
+    nodes = std::move(nodes_tmp);
+    children = std::move(children_tmp);
 }
 
 uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {
