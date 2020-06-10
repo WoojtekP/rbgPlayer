@@ -34,12 +34,12 @@ uint MctsTree::get_best_uct_child_index(const uint& node_index) {
     const auto& [fst, lst] = nodes[node_index].children_range;
     children_indices.resize(1);
     children_indices[0] = fst;
-    double logN = std::log(nodes[node_index].sim_count);
+    double const c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(nodes[node_index].sim_count));
     double max_priority = children[fst].total_score / EXPECTED_MAX_SCORE / children[fst].sim_count +
-                         EXPLORATION_CONSTANT * std::sqrt(logN / children[fst].sim_count);
+                          c_sqrt_logn / std::sqrt(static_cast<double>(children[fst].sim_count));
     for (uint i = fst + 1; i < lst; ++i) {
         double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count +
-                          EXPLORATION_CONSTANT * std::sqrt(logN / children[i].sim_count);
+                          c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
         if (priority > max_priority) {
             max_priority = priority;
             children_indices.resize(1);
