@@ -72,12 +72,14 @@ class Cd:
         os.chdir(self.saved_path)
 
 class PlayerConfig:
-    def __init__(self, player_kind, constants, player_name, player_port):
+    def __init__(self, program_args, player_kind, constants, player_name, player_port):
         self.player_kind = player_kind
         self.config_constants = constants
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
         self.player_name = player_name
+        self.miliseconds_per_move = program_args.miliseconds_per_move
+        self.simulations_limit = program_args.simulations_limit
     def runnable_list(self):
         return ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
     def print_config_file(self, name):
@@ -88,9 +90,12 @@ class PlayerConfig:
             config_file.write("#include \"types.hpp\"\n")
             config_file.write("#include <string>\n")
             config_file.write("\n")
-            config_file.write("const std::string ADDRESS = \""+self.address_to_connect+"\";\n")
-            config_file.write("constexpr uint PORT = "+str(self.port_to_connect)+";\n")
-            config_file.write("const std::string NAME = \""+self.player_name+"\";\n")
+            config_file.write("const std::string ADDRESS = \"{}\";\n".format(self.address_to_connect))
+            config_file.write("constexpr uint PORT = {};\n".format(str(self.port_to_connect)))
+            config_file.write("const std::string NAME = \"{}\";\n".format(self.player_name))
+            config_file.write("constexpr uint MILISECONDS_PER_MOVE = {};\n".format(str(self.miliseconds_per_move)))
+            config_file.write("constexpr uint SIMULATIONS_PER_MOVE = {};\n".format(str(self.simulations_limit)))
+            config_file.write("\n")
             for t, variables in self.config_constants.items():
                 for name, val in variables.items():
                     config_file.write("constexpr {} {} = {};\n".format(t, name, val))
@@ -215,6 +220,8 @@ parser = argparse.ArgumentParser(description='Setup and start rbg player.', form
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')
 parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
+parser.add_argument('--miliseconds-per-move', dest='miliseconds_per_move', type=int, default=2000, help='time limit for player\'s turn in miliseconds (default: 2000)')
+parser.add_argument('--simulations-limit', dest='simulations_limit', type=int, default=1000000, help='simulations limit for player\'s turn (default: 1000000)')
 program_args = parser.parse_args()
 
 server_socket = BufferedSocket(connect_to_server(program_args.server_address, program_args.server_port))
@@ -231,7 +238,7 @@ print("Received player name:",player_name)
 player_kind, constants = parse_config_file(program_args.player_config)
 print("Player kind:", player_kind)
 
-player_config = PlayerConfig(player_kind, constants, player_name, player_port)
+player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
 compile_player(2, player_kind, player_port)
