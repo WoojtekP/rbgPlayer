@@ -80,8 +80,9 @@ class PlayerConfig:
         self.player_name = player_name
         self.miliseconds_per_move = program_args.miliseconds_per_move
         self.simulations_limit = program_args.simulations_limit
+        self.debug_mode = program_args.debug
     def runnable_list(self):
-        return ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
+        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
     def print_config_file(self, name):
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
@@ -159,7 +160,7 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, player_id):
+def compile_player(num_of_threads, player_kind, player_id, debug_mode):
     with Cd(gen_directory(player_id)):
         if player_kind in semisplit_players:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fsemi-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
@@ -167,8 +168,8 @@ def compile_player(num_of_threads, player_kind, player_id):
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
-    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id))
-    subprocess.run(["make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id)]) # again, assume everything is ok
+    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode))
+    subprocess.run(["make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode)]) # again, assume everything is ok
 
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -222,6 +223,7 @@ parser.add_argument('server_port', metavar='server-port', type=int, help='port n
 parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
 parser.add_argument('--miliseconds-per-move', dest='miliseconds_per_move', type=int, default=2000, help='time limit for player\'s turn in miliseconds (default: 2000)')
 parser.add_argument('--simulations-limit', dest='simulations_limit', type=int, default=1000000, help='simulations limit for player\'s turn (default: 1000000)')
+parser.add_argument('--debug', action='store_true', default=False, help='run using valgrind')
 program_args = parser.parse_args()
 
 server_socket = BufferedSocket(connect_to_server(program_args.server_address, program_args.server_port))
@@ -241,7 +243,7 @@ print("Player kind:", player_kind)
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, player_port)
+compile_player(2, player_kind, player_port, int(program_args.debug))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 

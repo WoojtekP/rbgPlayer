@@ -1,5 +1,6 @@
 SUFFIXES += .d
 NODEPS := clean distclean prepare
+DEBUG := 0
 
 PLAYER_ID := 99999
 TARGET := rbgPlayer
@@ -22,7 +23,11 @@ MAST := moves_container
 MAST_SEMISPLIT := moves_container_semisplit
 
 C := g++
+ifeq (0, $(DEBUG))
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s
+else
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g
+endif
 
 define OBJECT_RULES
 $(OBJ_DIR)/$(1)/%.o: $(3)/$(SRC_DIR)/%.cpp $(DEP_DIR)/$(1)/%.d | $(OBJ_DIR)/$(1)
