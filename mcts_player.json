@@ -8,7 +8,7 @@
         "name" : "MCTS",
         "semisplit" : false,
         "parameters" : {
-            "exploration_constant" : 1.41421356237
+            "exploration_constant" : 0.4
         }
     },
     "heuristic_configuration" : {
