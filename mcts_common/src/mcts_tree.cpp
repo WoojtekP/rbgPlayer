@@ -18,7 +18,6 @@ uint MctsTree::create_node(reasoner::game_state& state) {
     auto child_count = move_list.size();
     uint new_child_index = children.size();
     nodes.emplace_back(new_child_index, child_count);
-    children.reserve(new_child_index + child_count);
     for (const auto& move : move_list) {
         children.emplace_back(move);
     }
