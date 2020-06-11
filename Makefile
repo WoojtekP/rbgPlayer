@@ -21,6 +21,8 @@ MCTS_COMMON := mcts_common
 MAST_COMMON := mast_common
 MAST := moves_container
 MAST_SEMISPLIT := moves_container_semisplit
+ORTHODOX_SIMULATOR := orthodox_simulator
+SEMISPLIT_SIMULATOR := semisplit_simulator
 
 C := g++
 ifeq (0, $(DEBUG))
@@ -57,7 +59,7 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS,mcts_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS,mcts_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MCTS_COMMON) $(MAST_COMMON) $(MAST) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MAST_SEMISPLIT,mast_semisplit,$(MCTS_COMMON) $(MAST_COMMON) $(MAST_SEMISPLIT) $(COMMON) $(GEN_DIR)))
 
