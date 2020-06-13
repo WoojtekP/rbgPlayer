@@ -21,8 +21,8 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["random", "orthodoxMcts", "mast", "mast_semisplit", "simple_best_select"])
-semisplit_players = set()
+available_players = set(["random", "mcts_orthodox", "mcts_orthodox_semisplit", "mast", "mast_semisplit", "simple_best_select"])
+semisplit_players = set(["mcts_orthodox_semisplit"])
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":
@@ -109,7 +109,7 @@ def parse_config_file(file_name):
         player_kind = config["heuristic_configuration"]["name"].lower()
         if config["heuristic_configuration"]["name"] == "ORTHODOX":
             player_kind = config["player_configuration"]["name"].lower() + "_orthodox"
-        elif config["heuristic_configuration"]["semisplit"]:
+        if config["heuristic_configuration"]["semisplit"]:
             player_kind += "_semisplit"
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
         for k, v in chain(config["game_configuration"].items(), \

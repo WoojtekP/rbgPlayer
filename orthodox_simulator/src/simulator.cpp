@@ -4,6 +4,7 @@
 #include "reasoner.hpp"
 #include "constants.hpp"
 
+
 void play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
           std::mt19937& random_numbers_generator,
@@ -29,4 +30,3 @@ void play(reasoner::game_state& state,
         results[i - 1] = state.get_player_score(i);
     }
 }
-
