@@ -1,0 +1,20 @@
+{
+    "game_configuration" : {
+        "buffer_time" : 100
+    },
+    "player_configuration" : {
+        "name" : "MCTS",
+        "semisplit" : false,
+        "parameters" : {
+            "exploration_constant" : 0.4
+        }
+    },
+    "heuristic_configuration" : {
+        "name" : "ORTHODOX",
+        "semisplit" : true,
+        "parameters" : {
+            "semilength" : 1,
+            "max_semidepth" : 100
+        }
+    }
+}
