@@ -51,3 +51,7 @@ void tree_handler::perform_simulation() {
     t.perform_simulation();
     simulations_count++;
 }
+
+game_status_indication tree_handler::get_game_status() const {
+    return t.get_status(own_player_index);
+}

@@ -1,6 +1,7 @@
 {
     "game_configuration" : {
-        "buffer_time" : 100
+        "buffer_time" : 100,
+        "sleep_during_opp_turn" : true
     },
     "player_configuration" : {
         "name" : "MCTS",
