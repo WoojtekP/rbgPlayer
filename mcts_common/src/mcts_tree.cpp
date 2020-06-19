@@ -1,6 +1,9 @@
 #include "mcts_tree.hpp"
 #include "node.hpp"
 #include "constants.hpp"
+#if TREE_MOVE_JOIN == 1
+#include "moves_generator.hpp"
+#endif
 
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : 
@@ -14,7 +17,11 @@ MctsTree::MctsTree(const reasoner::game_state& initial_state) :
 
 uint MctsTree::create_node(reasoner::game_state& state) {
     static std::vector<reasoner::move> move_list;
+    #if TREE_MOVE_JOIN == 1
+    get_all_joint_moves(state, cache, move_list);
+    #else
     state.get_all_moves(cache, move_list);
+    #endif
     auto child_count = move_list.size();
     uint new_child_index = children.size();
     nodes.emplace_back(new_child_index, child_count);

@@ -6,7 +6,7 @@
 
 
 namespace {
-    std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
+    std::vector<reasoner::semimove> legal_semimoves[100];
 
     void dfs(reasoner::game_state& state,
              reasoner::resettable_bitarray_stack& cache,
@@ -14,7 +14,7 @@ namespace {
              int indices[],
              const int semidepth) {
         const int player_id = state.get_current_player();
-        state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+        state.get_all_semimoves(cache, legal_semimoves[semidepth], 100000);
         int i = 0;
         for (const auto& semimove: legal_semimoves[semidepth]) {
             const auto ri = state.apply_semimove_with_revert(semimove);
@@ -38,7 +38,7 @@ namespace {
 void get_all_joint_moves(reasoner::game_state& state,
                          reasoner::resettable_bitarray_stack& cache,
                          std::vector<reasoner::move>& move_list) {
-    static int indices[MAX_SEMIDEPTH];
+    static int indices[100];
     move_list.clear();
     dfs(state, cache, move_list, indices, 0);
 }

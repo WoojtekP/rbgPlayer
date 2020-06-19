@@ -7,9 +7,7 @@
         "name" : "MCTS",
         "joint" : false,
         "parameters" : {
-            "exploration_constant" : 0.7,
-            "semilength" : 1,
-            "max_semidepth" : 100
+            "exploration_constant" : 0.7
         }
     },
     "heuristic_configuration" : {
@@ -17,5 +15,5 @@
         "semisplit" : false,
         "parameters" : {}
     },
-    "simulation_strategy" : "semisplit"
+    "simulation_strategy" : "orthodox"
 }

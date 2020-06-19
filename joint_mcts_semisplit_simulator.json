@@ -5,7 +5,7 @@
     },
     "player_configuration" : {
         "name" : "MCTS",
-        "joint" : false,
+        "joint" : true,
         "parameters" : {
             "exploration_constant" : 0.7,
             "semilength" : 1,

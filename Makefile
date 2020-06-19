@@ -23,10 +23,13 @@ MAST := moves_container
 MAST_SEMISPLIT := moves_container_semisplit
 ORTHODOX_SIMULATOR := orthodox_simulator
 SEMISPLIT_SIMULATOR := semisplit_simulator
+JOINT_MOVES := joint_moves
+TREE_MOVE_JOIN := 0
+SIM_MOVE_JOIN := 0
 
 C := g++
 ifeq (0, $(DEBUG))
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DTREE_MOVE_JOIN=$(TREE_MOVE_JOIN) -DSIM_MOVE_JOIN=$(SIM_MOVE_JOIN)
 else
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g
 endif
@@ -59,10 +62,14 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS_ORTHODOX,mcts_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MCTS_ORTHODOX_SEMISPLIT,mcts_orthodox_semisplit,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MAST,mast,$(MCTS_COMMON) $(MAST_COMMON) $(MAST) $(COMMON) $(GEN_DIR)))
-$(eval $(call PLAYER_KIND_RULES,MAST_SEMISPLIT,mast_semisplit,$(MCTS_COMMON) $(MAST_COMMON) $(MAST_SEMISPLIT) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_SIM_ORTHODOX,mcts_sim_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_SIM_JOINT,mcts_sim_joint,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_SIM_SEMISPLIT,mcts_sim_semisplit,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_JOINT_SIM_ORTHODOX,mcts_joint_sim_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_JOINT_SIM_SEMISPLIT,mcts_joint_sim_semisplit,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(JOINT_MOVES) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_JOINT_SIM_JOINT,mcts_joint_sim_joint,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_MAST_SIM_ORTHODOX,mcts_mast_sim_orthodox,$(MCTS_COMMON) $(MAST_COMMON) $(MAST) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,MCTS_MAST_SEMISPLIT_SIM_ORTHODOX,mcts_mast_semisplit_sim_orthodox,$(MCTS_COMMON) $(MAST_COMMON) $(MAST_SEMISPLIT) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)

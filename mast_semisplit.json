@@ -5,19 +5,20 @@
     },
     "player_configuration" : {
         "name" : "MCTS",
-        "semisplit" : false,
+        "joint" : false,
         "parameters" : {
-            "exploration_constant" : 0.4
+            "exploration_constant" : 0.7
         }
     },
     "heuristic_configuration" : {
         "name" : "MAST",
-        "semisplit" : false,
+        "semisplit" : true,
         "parameters" : {
             "tree_only" : false,
             "weight_scaling" : false,
             "decay_factor" : 0.2,
             "epsilon" : 0.4
         }
-    }
+    },
+    "simulation_strategy" : "orthodox"
 }

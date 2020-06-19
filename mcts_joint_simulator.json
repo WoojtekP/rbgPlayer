@@ -5,14 +5,15 @@
     },
     "player_configuration" : {
         "name" : "MCTS",
-        "semisplit" : false,
+        "joint" : false,
         "parameters" : {
-            "exploration_constant" : 0.4
+            "exploration_constant" : 0.7
         }
     },
     "heuristic_configuration" : {
-        "name" : "ORTHODOX",
+        "name" : "",
         "semisplit" : false,
         "parameters" : {}
-    }
+    },
+    "simulation_strategy" : "joint"
 }

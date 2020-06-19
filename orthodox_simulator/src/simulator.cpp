@@ -3,7 +3,9 @@
 #include "simulator.hpp"
 #include "reasoner.hpp"
 #include "constants.hpp"
-
+#if SIM_MOVE_JOIN == 1
+#include "moves_generator.hpp"
+#endif
 
 void play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
@@ -11,7 +13,11 @@ void play(reasoner::game_state& state,
           simulation_result& results) {
     static std::vector<reasoner::move> move_list;
     while (true) {
+        #if SIM_MOVE_JOIN == 1
+        get_all_joint_moves(state, cache, move_list);
+        #else
         state.get_all_moves(cache, move_list);
+        #endif
         if(move_list.empty()) {
             break;
         }

@@ -21,8 +21,18 @@ def gen_src_directory(player_id):
 game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
-available_players = set(["random", "mcts_orthodox", "mcts_orthodox_semisplit", "mast", "mast_semisplit", "simple_best_select"])
-semisplit_players = set(["mcts_orthodox_semisplit"])
+available_players = set([
+    "random",
+    "mcts_mast_sim_orthodox",
+    "mcts_mast_semisplit_sim_orthodox",
+    "mcts_joint_sim_orthodox",
+    "mcts_joint_sim_semisplit",
+    "mcts_joint_sim_joint",
+    "mcts_sim_orthodox",
+    "mcts_sim_joint",
+    "mcts_sim_semisplit",
+    "simple_best_select"])
+semisplit_players = set()
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":
@@ -106,11 +116,14 @@ class PlayerConfig:
 def parse_config_file(file_name):
     with open(file_name) as config_file:
         config = json.load(config_file)
-        player_kind = config["heuristic_configuration"]["name"].lower()
-        if config["heuristic_configuration"]["name"] == "ORTHODOX":
-            player_kind = config["player_configuration"]["name"].lower() + "_orthodox"
-        if config["heuristic_configuration"]["semisplit"]:
-            player_kind += "_semisplit"
+        player_kind = config["player_configuration"]["name"].lower()
+        if config["player_configuration"]["joint"]:
+            player_kind += "_joint"
+        if config["heuristic_configuration"]["name"]:
+            player_kind += "_" + config["heuristic_configuration"]["name"].lower()
+            if config["heuristic_configuration"]["semisplit"]:
+                player_kind += "_semisplit"
+        player_kind += "_sim_" + config["simulation_strategy"]
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
         for k, v in chain(config["game_configuration"].items(), \
                           config["player_configuration"]["parameters"].items(), \
@@ -123,7 +136,7 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        return player_kind, constants
+        return player_kind, constants, int(config["player_configuration"]["joint"]), config["simulation_strategy"]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -160,16 +173,24 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, player_id, debug_mode):
+def compile_player(num_of_threads, player_kind, is_joint, sim_strategy, player_id, debug_mode):
+    assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
-        if player_kind in semisplit_players:
+        if player_kind in semisplit_players or is_joint or sim_strategy in ["semisplit", "joint"]:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fsemi-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
     print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode))
-    subprocess.run(["make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode)]) # again, assume everything is ok
+    subprocess.run([
+        "make",
+        "-j"+str(num_of_threads),
+        player_kind_to_make_target(player_kind),
+        "PLAYER_ID="+str(player_id),
+        "DEBUG="+str(debug_mode),
+        "TREE_MOVE_JOIN="+str(is_joint),
+        "SIM_MOVE_JOIN="+str(int(sim_strategy == "joint"))]) # again, assume everything is ok
 
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -237,13 +258,14 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_kind, constants = parse_config_file(program_args.player_config)
+player_kind, constants, is_joint, sim_strategy = parse_config_file(program_args.player_config)
 print("Player kind:", player_kind)
+print(is_joint, sim_strategy)
 
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, player_port, int(program_args.debug))
+compile_player(2, player_kind, is_joint, sim_strategy, player_port, int(program_args.debug))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 
