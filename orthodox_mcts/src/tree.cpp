@@ -8,7 +8,7 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
 uint Tree::get_unvisited_child_index(const uint node_index) {
     static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
-    const auto unvisited = (lst - fst) - nodes[node_index].sim_count;
+    const auto unvisited = (lst - fst) - nodes[node_index].sim_count + 1;
     children_indices.resize(unvisited);
     uint j = 0;
     for (auto i = fst; i < lst; ++i) {
@@ -40,7 +40,9 @@ void Tree::mcts(reasoner::game_state& state, const uint node_index, simulation_r
             child_index = get_unvisited_child_index(node_index);
             state.apply_move(children[child_index].move);
             complete_turn(state);
-            children[child_index].index = create_node(state);
+            auto new_node_index = create_node(state);
+            children[child_index].index = new_node_index;
+            nodes[new_node_index].sim_count = 1;
             play(state, cache, random_numbers_generator, results);
         }
         children[child_index].sim_count++;
