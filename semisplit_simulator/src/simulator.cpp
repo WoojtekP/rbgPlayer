@@ -27,7 +27,7 @@ namespace {
         return semimoves;
     }
 
-    bool apply_random_move_exhaustive(reasoner::game_state &state,
+    bool apply_random_move_exhaustive(reasoner::game_state& state,
                                       reasoner::resettable_bitarray_stack& cache,
                                       std::mt19937& random_numbers_generator,
                                       uint semidepth){
@@ -45,7 +45,18 @@ namespace {
     }
 }
 
-void play(reasoner::game_state& state,
+bool has_nodal_successor(reasoner::game_state& state,
+                         reasoner::resettable_bitarray_stack& cache,
+                         std::mt19937& mt) {
+    while (state.get_current_player() == KEEPER) {
+        if (not state.apply_any_move(cache)) {
+            return false;
+        }
+    }
+    return apply_random_move_exhaustive(state, cache, mt, 0);
+}
+
+bool play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
           std::mt19937& random_numbers_generator,
           simulation_result& results) {
@@ -63,4 +74,5 @@ void play(reasoner::game_state& state,
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }
+    return state.is_nodal();
 }

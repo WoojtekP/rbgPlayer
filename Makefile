@@ -62,6 +62,7 @@ endef
 
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_MCTS_SIM_SEMISPLIT,semisplit_mcts_sim_semisplit,mcts_semisplit mcts_semisplit_tree $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MCTS_SIM_ORTHODOX,mcts_sim_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MCTS_SIM_JOINT,mcts_sim_joint,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,MCTS_SIM_SEMISPLIT,mcts_sim_semisplit,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))

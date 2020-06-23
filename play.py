@@ -31,8 +31,11 @@ available_players = set([
     "mcts_sim_orthodox",
     "mcts_sim_joint",
     "mcts_sim_semisplit",
-    "simple_best_select"])
-semisplit_players = set()
+    "simple_best_select",
+    "semisplit_mcts_sim_semisplit"])
+semisplit_players = set([
+    "semisplit_mcts_sim_semisplit"
+])
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":

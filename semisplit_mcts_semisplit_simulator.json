@@ -1,0 +1,21 @@
+{
+    "game_configuration" : {
+        "buffer_time" : 100,
+        "sleep_during_opp_turn" : true
+    },
+    "player_configuration" : {
+        "name" : "SEMISPLIT_MCTS",
+        "joint" : false,
+        "parameters" : {
+            "exploration_constant" : 0.7,
+            "semilength" : 1,
+            "max_semidepth" : 100
+        }
+    },
+    "heuristic_configuration" : {
+        "name" : "",
+        "semisplit" : false,
+        "parameters" : {}
+    },
+    "simulation_strategy" : "semisplit"
+}
