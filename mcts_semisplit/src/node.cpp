@@ -12,10 +12,6 @@ bool Node::is_terminal() const {
     return is_nodal && !has_nodal_succ;
 }
 
-bool Node::is_fully_expanded() const {
-    return sim_count > (children_range.second - children_range.first);
-}
-
 Child::Child(const reasoner::semimove& semimove, const bool is_nodal)
     : semimove(semimove)
     , is_nodal(is_nodal) {}

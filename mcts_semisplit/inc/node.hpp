@@ -21,7 +21,6 @@ struct Node {
     ~Node(void)=default;
     Node(const uint, const uint, const bool, const bool);
     bool is_terminal() const;
-    bool is_fully_expanded() const;
 };
 
 struct Child {
@@ -31,7 +30,12 @@ struct Child {
     uint sim_count = 0;
     uint total_score = 0;
     bool is_nodal;
-    Child(void) = delete;
+    Child(void)=delete;
+    Child(const Child&)=default;
+    Child(Child&&)=default;
+    Child& operator=(const Child&)=default;
+    Child& operator=(Child&&)=default;
+    ~Child(void)=default;
     Child(const reasoner::semimove&, const bool);
 };
 

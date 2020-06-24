@@ -20,6 +20,7 @@ protected:
     std::mt19937 random_numbers_generator;
 
     uint create_node(reasoner::game_state&);
+    bool is_node_fully_expanded(const uint);
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, const uint);
     void complete_turn(reasoner::game_state&);
     uint get_best_uct_child_index(const uint);

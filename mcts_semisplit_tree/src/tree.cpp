@@ -13,20 +13,17 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
 
 uint Tree::get_unvisited_child_index(const uint node_index) {
     // no changes
-    static std::vector<uint> children_indices;
-    const auto [fst, lst] = nodes[node_index].children_range;
-    const auto unvisited = (lst - fst) - nodes[node_index].sim_count + 1;
-    assert(unvisited > 0);
-    children_indices.resize(unvisited);
-    uint j = 0;
-    for (auto i = fst; i < lst; ++i) {
-        if (children[i].index == 0) {
-            children_indices[j] = i;
-            j++;
-        }
+    auto [fst, lst] = nodes[node_index].children_range;
+    auto lower = fst + nodes[node_index].sim_count;
+    while (lower > fst && children[lower - 1].index == 0) {
+        --lower;
     }
-    std::uniform_int_distribution<uint> dist(0, unvisited - 1);
-    return children_indices[dist(random_numbers_generator)];
+    std::uniform_int_distribution<uint> dist(lower, lst - 1);
+    auto chosen_child = dist(random_numbers_generator);
+    if (chosen_child != lower) {
+        std::swap(children[chosen_child], children[lower]);
+    }
+    return lower;
 }
 
 void Tree::perform_simulation() {
@@ -36,7 +33,7 @@ void Tree::perform_simulation() {
     // uint node_index = children_stack.empty() ? 0 : children[children_stack.back().first].index;
     uint node_index = 0;
     state = root_state;
-    while (!nodes[node_index].is_terminal() && nodes[node_index].is_fully_expanded()) {
+    while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         const auto child_index = get_best_uct_child_index(node_index);
         const auto current_player = state.get_current_player();
         state.apply_semimove(children[child_index].semimove);
@@ -64,9 +61,9 @@ void Tree::perform_simulation() {
         const auto child_index = get_unvisited_child_index(node_index);
         const auto current_player = state.get_current_player();
         state.apply_semimove(children[child_index].semimove);
+        complete_turn(state);
         auto state_copy = state;
         if (play(state_copy, cache, random_numbers_generator, results)) {
-            complete_turn(state);
             auto new_node_index = create_node(state);
             nodes[new_node_index].sim_count = 1;
             children[child_index].index = new_node_index;
