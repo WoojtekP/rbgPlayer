@@ -31,6 +31,11 @@ uint MctsTree::create_node(reasoner::game_state& state) {
     return nodes.size() - 1;
 }
 
+bool MctsTree::is_node_fully_expanded(const uint node_index) {
+    // assuming number of children > 0
+    return children[nodes[node_index].children_range.second - 1].index != 0;
+}
+
 void MctsTree::complete_turn(reasoner::game_state& state) {
     while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
 }

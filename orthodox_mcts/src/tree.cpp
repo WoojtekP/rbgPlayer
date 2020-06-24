@@ -6,19 +6,17 @@
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {}
 
 uint Tree::get_unvisited_child_index(const uint node_index) {
-    static std::vector<uint> children_indices;
-    const auto& [fst, lst] = nodes[node_index].children_range;
-    const auto unvisited = (lst - fst) - nodes[node_index].sim_count + 1;
-    children_indices.resize(unvisited);
-    uint j = 0;
-    for (auto i = fst; i < lst; ++i) {
-        if (children[i].index == 0) {
-            children_indices[j] = i;
-            j++;
-        }
+    auto [fst, lst] = nodes[node_index].children_range;
+    auto lower = fst + nodes[node_index].sim_count;
+    while (lower > fst && children[lower - 1].index == 0) {
+        --lower;
     }
-    std::uniform_int_distribution<uint> dist(0, unvisited - 1);
-    return children_indices[dist(random_numbers_generator)];
+    std::uniform_int_distribution<uint> dist(lower, lst - 1);
+    auto chosen_child = dist(random_numbers_generator);
+    if (chosen_child != lower) {
+        std::swap(children[chosen_child], children[lower]);
+    }
+    return lower;
 }
 
 void Tree::mcts(reasoner::game_state& state, const uint node_index, simulation_result& results) {
@@ -30,7 +28,7 @@ void Tree::mcts(reasoner::game_state& state, const uint node_index, simulation_r
     else {
         uint current_player = state.get_current_player();
         uint child_index;
-        if (nodes[node_index].is_fully_expanded()) {
+        if (is_node_fully_expanded(node_index)) {
             child_index = get_best_uct_child_index(node_index);
             state.apply_move(children[child_index].move);
             complete_turn(state);
