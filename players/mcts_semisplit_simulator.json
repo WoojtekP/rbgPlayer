@@ -1,0 +1,20 @@
+{
+    "general" : {
+        "buffer_time" : 50,
+        "sleep_during_opp_turn" : true
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "orthodox",
+        "simulation_strategy" : "semisplit",
+        "parameters" : {
+            "exploration_constant" : 0.7,
+            "max_semidepth" : 50,
+            "semilength" : 1
+        }
+    },
+    "heuristic" : {
+        "name" : "",
+        "parameters" : {}
+    }
+}

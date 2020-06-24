@@ -22,15 +22,17 @@ game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
 available_players = set([
-    "random",
-    "mcts_mast_sim_orthodox",
-    "mcts_mast_semisplit_sim_orthodox",
-    "mcts_joint_sim_orthodox",
-    "mcts_joint_sim_semisplit",
-    "mcts_joint_sim_joint",
-    "mcts_sim_orthodox",
-    "mcts_sim_joint",
-    "mcts_sim_semisplit",
+    "orthodox_mcts_mast_sim_orthodox",
+    "orthodox_mcts_mast_split_sim_orthodox",
+    "joint_mcts_sim_orthodox",
+    "joint_mcts_sim_semisplit",
+    "joint_mcts_sim_joint",
+    "orthodox_mcts_sim_orthodox",
+    "orthodox_mcts_sim_joint",
+    "orthodox_mcts_sim_semisplit",
+    "semisplit_mcts_sim_orthodox",
+    "semisplit_mcts_sim_joint",
+    "semisplit_mcts_sim_semisplit",
     "simple_best_select"])
 semisplit_players = set()
 
@@ -116,18 +118,14 @@ class PlayerConfig:
 def parse_config_file(file_name):
     with open(file_name) as config_file:
         config = json.load(config_file)
-        player_kind = config["player_configuration"]["name"].lower()
-        if config["player_configuration"]["joint"]:
-            player_kind += "_joint"
-        if config["heuristic_configuration"]["name"]:
-            player_kind += "_" + config["heuristic_configuration"]["name"].lower()
-            if config["heuristic_configuration"]["semisplit"]:
-                player_kind += "_semisplit"
-        player_kind += "_sim_" + config["simulation_strategy"]
+        player_kind = config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["name"].lower()
+        if config["heuristic"]["name"]:
+            player_kind += "_" + config["heuristic"]["name"].lower()
+        player_kind += "_sim_" + config["algorithm"]["simulation_strategy"]
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
-        for k, v in chain(config["game_configuration"].items(), \
-                          config["player_configuration"]["parameters"].items(), \
-                          config["heuristic_configuration"]["parameters"].items()):
+        for k, v in chain(config["general"].items(),
+                          config["algorithm"]["parameters"].items(),
+                          config["heuristic"]["parameters"].items()):
             if isinstance(v, bool):
                 constants["bool"][k.upper()] = v.__str__().lower()
             elif isinstance(v, float):
@@ -136,7 +134,7 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        return player_kind, constants, int(config["player_configuration"]["joint"]), config["simulation_strategy"]
+        return player_kind, constants, int(config["algorithm"]["tree_strategy"] == "joint"), config["algorithm"]["simulation_strategy"]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -260,7 +258,8 @@ print("Received player name:",player_name)
 
 player_kind, constants, is_joint, sim_strategy = parse_config_file(program_args.player_config)
 print("Player kind:", player_kind)
-print(is_joint, sim_strategy)
+
+assert(player_kind in available_players)
 
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
