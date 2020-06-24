@@ -8,33 +8,39 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state),
 uint Tree::get_unvisited_child_index(const uint node_index, const uint current_player) {
     static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
+    auto lower = fst + nodes[node_index].sim_count;
+    while (lower > fst && children[lower - 1].index == 0) {
+        --lower;
+    }
     children_indices.clear();
     children_indices.reserve(lst - fst);
     if (prob(random_numbers_generator) < EPSILON) {
         double best_score = 0.0;
-        for (uint i = fst; i < lst; ++i) {
-            if (children[i].index == 0) {
-                double score = moves[current_player - 1].get_score_or_default_value(children[i].move);
-                if (score > best_score) {
-                    best_score = score;
-                    children_indices.resize(1);
-                    children_indices[0] = i;
-                }
-                else if (score == best_score) {
-                    children_indices.push_back(i);
-                }
+        for (uint i = lower; i < lst; ++i) {
+            assert(children[i].index == 0);
+            double score = moves[current_player - 1].get_score_or_default_value(children[i].move);
+            if (score > best_score) {
+                best_score = score;
+                children_indices.resize(1);
+                children_indices[0] = i;
             }
-        }
-    }
-    else {
-        for (uint i = fst; i < lst; ++i) {
-            if (children[i].index == 0) {
+            else if (score == best_score) {
                 children_indices.push_back(i);
             }
         }
     }
+    else {
+        for (uint i = lower; i < lst; ++i) {
+            assert(children[i].index == 0);
+            children_indices.push_back(i);
+        }
+    }
     std::uniform_int_distribution<uint> dist(0, children_indices.size() - 1);
-    return children_indices[dist(random_numbers_generator)];
+    auto chosen_child = children_indices[dist(random_numbers_generator)];
+    if (chosen_child != lower) {
+        std::swap(children[chosen_child], children[lower]);
+    }
+    return lower;
 }
 
 void Tree::play(reasoner::game_state& state, simulation_result& results) {
@@ -107,7 +113,7 @@ void Tree::mcts(reasoner::game_state& state, const uint node_index, simulation_r
     else {
         uint current_player = state.get_current_player();
         uint child_index;
-        if (nodes[node_index].is_fully_expanded()) {
+        if (is_node_fully_expanded(node_index)) {
             child_index = get_best_uct_child_index(node_index);
             state.apply_move(children[child_index].move);
             complete_turn(state);
