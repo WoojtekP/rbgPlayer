@@ -8,9 +8,5 @@ bool Node::is_terminal() const {
     return children_range.second == children_range.first;
 }
 
-bool Node::is_fully_expanded() const {
-    return sim_count > (children_range.second - children_range.first);
-}
-
 Child::Child(const reasoner::move& move)
     : move(move) {}
