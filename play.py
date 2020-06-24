@@ -24,15 +24,8 @@ def game_path(player_id):
 available_players = set([
     "orthodox_mcts_mast_sim_orthodox",
     "orthodox_mcts_mast_split_sim_orthodox",
-    "joint_mcts_sim_orthodox",
-    "joint_mcts_sim_semisplit",
-    "joint_mcts_sim_joint",
     "orthodox_mcts_sim_orthodox",
-    "orthodox_mcts_sim_joint",
     "orthodox_mcts_sim_semisplit",
-    "semisplit_mcts_sim_orthodox",
-    "semisplit_mcts_sim_joint",
-    "semisplit_mcts_sim_semisplit",
     "simple_best_select"])
 semisplit_players = set()
 
