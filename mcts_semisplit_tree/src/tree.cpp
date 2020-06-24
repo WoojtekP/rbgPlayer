@@ -30,9 +30,15 @@ void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
     static reasoner::game_state state = root_state;
     static std::vector<std::pair<uint,int>> children_stack;  // child index, player
-    // uint node_index = children_stack.empty() ? 0 : children[children_stack.back().first].index;
-    uint node_index = 0;
+    if (reset_path) {
+        children_stack.clear();
+    }
+    uint node_index = children_stack.empty() ? 0 : children[children_stack.back().first].index;
     state = root_state;
+    for (const auto el : children_stack) {
+        state.apply_semimove(children[el.first].semimove);
+        complete_turn(state);
+    }
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         const auto child_index = get_best_uct_child_index(node_index);
         const auto current_player = state.get_current_player();
@@ -49,7 +55,7 @@ void Tree::perform_simulation() {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
             results[i - 1] = state.get_player_score(i);
         }
-        for (const auto [index, player] : boost::adaptors::reverse(children_stack)) {
+        for (const auto [index, player] : children_stack) {
             nodes[children[index].index].sim_count++;
             children[index].sim_count++;
             children[index].total_score += results[player - 1];
@@ -69,7 +75,7 @@ void Tree::perform_simulation() {
             children[child_index].index = new_node_index;
             children[child_index].sim_count = 1;
             children[child_index].total_score += results[current_player - 1];
-            for (const auto [index, player] : boost::adaptors::reverse(children_stack)) {
+            for (const auto [index, player] : children_stack) {
                 nodes[children[index].index].sim_count++;
                 children[index].sim_count++;
                 children[index].total_score += results[player - 1];
@@ -83,11 +89,12 @@ void Tree::perform_simulation() {
                 std::swap(children[child_index], children[end - 1]);
             }
             --end;
-            children_stack.clear();  // TODO remove it and use children_stack in next simulation
         }
     }
+    reset_path = false;
 }
 
 void Tree::apply_move(const reasoner::move& move) {
     reparent_along_move(move);
+    reset_path = true;
 }

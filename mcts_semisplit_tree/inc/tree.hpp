@@ -13,6 +13,7 @@ typedef std::vector<uint> simulation_result;
 
 class Tree final : public MctsTree {
 private:
+    bool reset_path = false;
     uint get_unvisited_child_index(const uint);
 public:
     Tree(void)=delete;
