@@ -4,6 +4,8 @@
 #include<cassert>
 #include<sstream>
 #include<vector>
+#include<cmath>
+#include<iostream>
 
 remote_moves_receiver::remote_moves_receiver(int socket_descriptor)
   : socket_descriptor(socket_descriptor){}
@@ -72,4 +74,11 @@ std::string remote_moves_receiver::read_until(char byte){
 reasoner::move remote_moves_receiver::receive_move(void){
     auto sdu = read_until('\0');
     return string_to_move(sdu);
+}
+
+uint remote_moves_receiver::receive_miliseconds_limit(void){
+    auto sdu = read_until('\0');
+    double seconds_for_turn = std::stod(sdu);
+    std::cout << "[PLAYER] Have " << seconds_for_turn << " seconds for turn." << std::endl;
+    return lround(seconds_for_turn*MILISECONDS_IN_SECONDS);
 }

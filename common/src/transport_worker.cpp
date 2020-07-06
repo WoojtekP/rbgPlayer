@@ -58,17 +58,19 @@ void wait_for_move(uint milisecond_to_wait,
     tree_indications.emplace_back(tree_indication{move_request{}});
 }
 
-std::chrono::steady_clock::time_point handle_turn(uint miliseconds_left,
-                                                  remote_moves_receiver& rmr,
+std::chrono::steady_clock::time_point handle_turn(remote_moves_receiver& rmr,
                                                   own_moves_sender& oms,
                                                   game_status_indication status,
                                                   concurrent_queue<tree_indication>& tree_indications,
                                                   concurrent_queue<client_response>& responses_from_tree){
     switch(status){
         case own_turn:
-            wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
-            forward_move_from_player_to_server(oms, responses_from_tree);
-            break;
+            {
+                uint miliseconds_left = rmr.receive_miliseconds_limit();
+                wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
+                forward_move_from_player_to_server(oms, responses_from_tree);
+                break;
+            }
         case opponent_turn:
             forward_move_from_server_to_player(rmr, tree_indications);
             break;
@@ -80,28 +82,18 @@ std::chrono::steady_clock::time_point handle_turn(uint miliseconds_left,
     }
     return std::chrono::steady_clock::now();
 }
-
-uint count_miliseconds_left_for_current_turn(uint standard_wait_time,
-                                             const std::chrono::steady_clock::time_point& current_turn_start_time)
-{
-    std::chrono::steady_clock::time_point current_time(std::chrono::steady_clock::now());
-    uint time_wasted = std::chrono::duration_cast<std::chrono::milliseconds>(current_time-current_turn_start_time).count();
-    return trunctated_subtraction(standard_wait_time, time_wasted);
-}
 }
 
 void run_transport_worker(remote_moves_receiver& rmr,
                           own_moves_sender& oms,
                           concurrent_queue<tree_indication>& tree_indications,
                           concurrent_queue<client_response>& responses_from_tree){
-    std::chrono::steady_clock::time_point current_turn_start_time(std::chrono::steady_clock::now());
     while(true){
         game_status_indication current_status = get_game_status(responses_from_tree);
-        current_turn_start_time = handle_turn(count_miliseconds_left_for_current_turn(MILISECONDS_PER_MOVE, current_turn_start_time),
-                                              rmr,
-                                              oms,
-                                              current_status,
-                                              tree_indications,
-                                              responses_from_tree);
+        handle_turn(rmr,
+                    oms,
+                    current_status,
+                    tree_indications,
+                    responses_from_tree);
     }
 }
