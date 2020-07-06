@@ -23,6 +23,7 @@ class remote_moves_receiver{
         remote_moves_receiver& operator=(remote_moves_receiver&&)=default;
         remote_moves_receiver(int socket_descriptor);
         reasoner::move receive_move(void);
+        uint receive_miliseconds_limit(void);
 };
 
 #endif

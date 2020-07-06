@@ -11,6 +11,7 @@ from argparse import RawTextHelpFormatter
 import signal
 import json
 from itertools import chain
+import time
 
 def gen_directory(player_id):
     return "gen_"+str(player_id)
@@ -99,7 +100,6 @@ class PlayerConfig:
             config_file.write("const std::string ADDRESS = \"{}\";\n".format(self.address_to_connect))
             config_file.write("constexpr uint PORT = {};\n".format(str(self.port_to_connect)))
             config_file.write("const std::string NAME = \"{}\";\n".format(self.player_name))
-            config_file.write("constexpr uint MILISECONDS_PER_MOVE = {};\n".format(str(self.miliseconds_per_move)))
             config_file.write("constexpr uint SIMULATIONS_PER_MOVE = {};\n".format(str(self.simulations_limit)))
             config_file.write("\n")
             for t, variables in self.config_constants.items():
@@ -148,6 +148,9 @@ def extract_player_name(game, player_number):
     players_section = get_game_section(game, "players")
     player_item = get_comma_separated_item(players_section, player_number-1)
     return get_player_name_from_players_item(player_item)
+
+def receive_preparation_seconds(server_socket):
+    return float(server_socket.receive_message())
 
 def write_game_to_file(server_socket, player_id):
     subprocess.run(["make", "distclean"]) # to avoid problems with mobile directories dependencies
@@ -243,6 +246,11 @@ print("Successfully connected to server!")
 
 player_port, listener_queue, listener_thread = start_player_listener("localhost")
 
+preparation_seconds = receive_preparation_seconds(server_socket)
+print("Server claims to give",preparation_seconds,"for preparation")
+
+start_time = time.time()
+
 game = write_game_to_file(server_socket, player_port)
 print("Game rules written to:",game_path(player_port))
 
@@ -263,6 +271,10 @@ time.sleep(1.) # to give other players time to end compilation
 
 player_socket, player_process = start_and_connect_player("localhost", player_config, listener_queue, listener_thread)
 print("Player started on port",player_port)
+
+end_time = time.time()
+print("Player preparations took",end_time-start_time)
+server_socket.send_message(b'ready')
 
 server_to_client = Thread(target = forward_and_log, args = (server_socket, player_socket, "Server says-->","<--","server"))
 client_to_server = Thread(target = forward_and_log, args = (player_socket, server_socket, "Client says-->","<--","client"))
