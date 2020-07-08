@@ -13,16 +13,15 @@ void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
     reasoner::game_state initial_state;
     tree_handler th(initial_state, responses_to_server);
     while(true){
-        if (not SLEEP_DURING_OPP_TURN or th.get_game_status() == own_turn) {
-            if constexpr (SIMULATIONS_PER_MOVE == -1) {
-                while (tree_indications.empty()) {
-                    th.perform_simulation();
-                }
+        const auto status = th.get_game_status();
+        if (not SLEEP_DURING_OPP_TURN or status == own_turn) {
+            uint i = 0;
+            while (i < SIMULATIONS_PER_MOVE && tree_indications.empty()) {
+                th.perform_simulation();
+                ++i;
             }
-            else {
-                for (uint i = 0; i < SIMULATIONS_PER_MOVE; ++i) {
-                    th.perform_simulation();
-                }
+            if (i == SIMULATIONS_PER_MOVE && status == own_turn) {
+                th.handle_move_request();
             }
         }
         const auto indication = tree_indications.pop_front();

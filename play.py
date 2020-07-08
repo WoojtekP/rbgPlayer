@@ -84,7 +84,6 @@ class PlayerConfig:
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
         self.player_name = player_name
-        self.miliseconds_per_move = program_args.miliseconds_per_move
         self.simulations_limit = program_args.simulations_limit
         self.debug_mode = program_args.debug
     def runnable_list(self):
@@ -236,7 +235,6 @@ parser = argparse.ArgumentParser(description='Setup and start rbg player.', form
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')
 parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
-parser.add_argument('--miliseconds-per-move', dest='miliseconds_per_move', type=int, default=2000, help='time limit for player\'s turn in miliseconds (default: 2000)')
 parser.add_argument('--simulations-limit', dest='simulations_limit', type=int, default=1000000, help='simulations limit for player\'s turn (default: 1000000)')
 parser.add_argument('--debug', action='store_true', default=False, help='run using valgrind')
 program_args = parser.parse_args()
