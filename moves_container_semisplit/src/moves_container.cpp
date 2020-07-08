@@ -29,9 +29,12 @@ double moves_container::get_score_or_default_value(const reasoner::move& move) {
     for (const auto& action : move.mr) {
         auto action_index = (action.cell - 1) * reasoner::NUMBER_OF_MODIFIERS + reasoner::action_to_modifier_index(action.index);
         total_score += map[action_index].second;
+        if (map[action_index].first == 0) {
+            return EXPECTED_MAX_SCORE;
+        }
         weight_sum += map[action_index].first;
     }
-    return (weight_sum == 0) ? EXPECTED_MAX_SCORE : (total_score / weight_sum);
+    return total_score / weight_sum;
 }
 
 void moves_container::apply_decay_factor() {
