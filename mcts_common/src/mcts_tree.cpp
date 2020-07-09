@@ -73,9 +73,12 @@ uint MctsTree::get_unvisited_child_index(const uint node_index, [[maybe_unused]]
         }
         chosen_child = children_indices[rand_gen.uniform_choice(children_indices.size())];
     }
-    else
-    #endif
+    else {
+        chosen_child = lower + rand_gen.uniform_choice(lst - lower);
+    }
+    #else
     chosen_child = lower + rand_gen.uniform_choice(lst - lower);
+    #endif
     if (chosen_child != lower) {
         std::swap(children[chosen_child], children[lower]);
     }
