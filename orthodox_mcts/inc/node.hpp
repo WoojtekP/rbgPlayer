@@ -6,8 +6,6 @@
 #include "reasoner.hpp"
 #include "types.hpp"
 
-typedef std::vector<uint> simulation_result;
-
 struct Node {
     std::pair<uint, uint> children_range;
     uint sim_count = 0;
