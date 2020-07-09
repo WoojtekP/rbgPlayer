@@ -6,7 +6,6 @@
 
 namespace reasoner {
     class game_state;
-    class move;
     class resettable_bitarray_stack;
 }
 

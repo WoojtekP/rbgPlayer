@@ -19,7 +19,7 @@ namespace {
 
     std::vector<reasoner::semimove>& fill_semimoves_table(reasoner::game_state &state,
                                                           reasoner::resettable_bitarray_stack& cache,
-                                                          uint semidepth){
+                                                          uint semidepth) {
         std::vector<reasoner::semimove>& semimoves = legal_semimoves[semidepth];
         state.get_all_semimoves(cache, semimoves, SEMILENGTH);
         return semimoves;
@@ -27,14 +27,14 @@ namespace {
 
     bool apply_random_move_exhaustive(reasoner::game_state& state,
                                       reasoner::resettable_bitarray_stack& cache,
-                                      uint semidepth){
+                                      uint semidepth) {
         std::vector<reasoner::semimove>& semimoves = fill_semimoves_table(state, cache, semidepth);
         semidepth++;
-        while(not semimoves.empty()){
+        while (not semimoves.empty()) {
             auto ri = apply_random_semimove_from_given(state, semimoves);
-            if(state.is_nodal())
+            if (state.is_nodal())
                 return true;
-            if(apply_random_move_exhaustive(state, cache, semidepth))
+            if (apply_random_move_exhaustive(state, cache, semidepth))
                 return true;
             state.revert(ri);
         }
@@ -55,13 +55,13 @@ bool has_nodal_successor(reasoner::game_state& state,
 bool play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
-    while(true){
-        if(not apply_random_move_exhaustive(state, cache, 0)){
+    while(true) {
+        if (not apply_random_move_exhaustive(state, cache, 0)) {
             break;
         }
-        while(state.get_current_player() == KEEPER){
+        while(state.get_current_player() == KEEPER) {
             auto any_move = state.apply_any_move(cache);
-            if(not any_move){
+            if (not any_move) {
                 break;
             }
         }
