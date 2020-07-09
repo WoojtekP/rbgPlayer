@@ -14,7 +14,7 @@ typedef std::vector<uint> simulation_result;
 class Tree final : public MctsTree {
 private:
     bool reset_path = false;
-    uint get_unvisited_child_index(const uint);
+    uint create_node(reasoner::game_state&);
 public:
     Tree(void)=delete;
     Tree(const Tree&)=delete;
@@ -24,7 +24,8 @@ public:
     ~Tree(void)=default;
     Tree(const reasoner::game_state&);
     void perform_simulation();
-    void apply_move(const reasoner::move&);
+    void reparent_along_move(const reasoner::move&);
+    reasoner::move choose_best_move();
 };
 
 #endif

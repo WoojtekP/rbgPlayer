@@ -13,8 +13,5 @@
             "semilength" : 1
         }
     },
-    "heuristic" : {
-        "name" : "",
-        "parameters" : {}
-    }
+    "heuristics" : []
 }
