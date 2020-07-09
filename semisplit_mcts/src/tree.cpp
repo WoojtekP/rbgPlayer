@@ -4,7 +4,12 @@
 #include "constants.hpp"
 
 
-Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
+Tree::Tree(const reasoner::game_state& initial_state) 
+    : MctsTree(initial_state) 
+    #if MAST > 0
+    , move_chooser(moves)
+    #endif
+{
     complete_turn(root_state);
     create_node(root_state);
 }
@@ -67,17 +72,26 @@ void Tree::perform_simulation() {
         state.apply_semimove(children[child_index].semimove);
         complete_turn(state);
         auto state_copy = state;
-        if (play(state_copy, cache, results)) {
+        if (play(state_copy, move_chooser, cache, results)) {
             auto new_node_index = create_node(state);
             nodes[new_node_index].sim_count = 1;
             children[child_index].index = new_node_index;
             children[child_index].sim_count = 1;
             children[child_index].total_score += results[current_player - 1];
+            [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
             for (const auto [index, player] : children_stack) {
                 nodes[children[index].index].sim_count++;
                 children[index].sim_count++;
                 children[index].total_score += results[player - 1];
+                #if MAST > 0
+                moves[player - 1].insert_or_update(children[index].get_actions(), results[player - 1], depth);
+                #endif
             }
+            #if MAST > 0
+            for (const auto& [move, player] : move_chooser.get_path()) {
+                moves[player - 1].insert_or_update(move_chooser.extract_actions(move), results[player - 1], depth);
+            }
+            #endif
             nodes.front().sim_count++;
             children_stack.clear();
         }
@@ -88,6 +102,7 @@ void Tree::perform_simulation() {
             }
             --end;
         }
+        move_chooser.clear_path();
     }
     reset_path = false;
 }
@@ -130,6 +145,11 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     nodes = std::move(nodes_tmp);
     children = std::move(children_tmp);
     reset_path = true;
+    #if MAST > 0
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        moves[i - 1].apply_decay_factor();
+    }
+    #endif
 }
 
 reasoner::move Tree::choose_best_move() {

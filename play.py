@@ -26,11 +26,16 @@ available_players = set([
     "orthodoxMcts_orthodoxSim",
     "orthodoxMcts_orthodoxSim_mast",
     "orthodoxMcts_orthodoxSim_mastsplit",
+    "orthodoxMcts_semisplitSim",
+    "orthodoxMcts_semisplitSim_mastsplit",
     "semisplitMcts_semisplitSim",
+    "semisplitMcts_semisplitSim_mastsplit",
     "simple_best_select"])
 # TODO remove semisplit_players and use "tree_strategy" and "simulation_strategy"
 semisplit_players = set([
-    "semisplitMcts_semisplitSim"])
+    "semisplitMcts_semisplitSim",
+    "semisplitMcts_semisplitSim_mastsplit",
+    "orthodoxMcts_semisplitSim"])
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":

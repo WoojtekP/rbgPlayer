@@ -6,17 +6,17 @@
 #include "constants.hpp"
 
 void play(reasoner::game_state& state,
+          MoveChooser<move_type>& move_chooser,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
     static std::vector<reasoner::move> move_list;
-    static RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
     while (true) {
         state.get_all_moves(cache, move_list);
         if(move_list.empty()) {
             break;
         }
         else {
-            uint chosen_move = rand_gen.uniform_choice(move_list.size());
+            uint chosen_move = move_chooser.get_random_move(move_list, state.get_current_player());
             state.apply_move(move_list[chosen_move]);
         }
         while (state.get_current_player() == KEEPER) {

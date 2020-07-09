@@ -8,11 +8,15 @@
 #include "types.hpp"
 #include "mcts_tree.hpp"
 #include "node.hpp"
+#include "simulator.hpp"
+#include "move_chooser.hpp"
+
 
 typedef std::vector<uint> simulation_result;
 
 class Tree final : public MctsTree {
 private:
+    MoveChooser<move_type> move_chooser;
     bool reset_path = false;
     uint create_node(reasoner::game_state&);
 public:

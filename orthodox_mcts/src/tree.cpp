@@ -4,7 +4,12 @@
 #include "constants.hpp"
 
 
-Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
+Tree::Tree(const reasoner::game_state& initial_state) 
+    : MctsTree(initial_state)
+    #if MAST > 0
+    , move_chooser(moves)
+    #endif
+{
     complete_turn(root_state);
     create_node(root_state);
 }
@@ -49,22 +54,29 @@ void Tree::perform_simulation() {
         state.apply_move(children[child_index].move);
         complete_turn(state);
         auto new_node_index = create_node(state);
-        play(state, cache, results);
+        play(state, move_chooser, cache, results);
         nodes[new_node_index].sim_count = 1;
         children[child_index].index = new_node_index;
         children[child_index].sim_count = 1;
         children[child_index].total_score += results[current_player - 1];
     }
+    [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
     for (const auto [index, player] : children_stack) {
         nodes[children[index].index].sim_count++;
         children[index].sim_count++;
         children[index].total_score += results[player - 1];
         #if MAST > 0
-        moves[player - 1].insert_or_update(children[index].get_actions(), results[player - 1], children_stack.size());  // TODO fix full version
+        moves[player - 1].insert_or_update(children[index].get_actions(), results[player - 1], depth);
         #endif
     }
+    #if MAST > 0
+    for (const auto& [move, player] : move_chooser.get_path()) {
+        moves[player - 1].insert_or_update(move_chooser.extract_actions(move), results[player - 1], depth);
+    }
+    #endif
     nodes.front().sim_count++;
     children_stack.clear();
+    move_chooser.clear_path();
 }
 
 void Tree::reparent_along_move(const reasoner::move& move) {
