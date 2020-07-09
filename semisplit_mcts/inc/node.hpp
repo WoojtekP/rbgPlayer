@@ -22,7 +22,6 @@ struct Node {
 };
 
 struct Child {
-    // move -> semimove
     reasoner::semimove semimove;
     uint index = 0;
     uint sim_count = 0;
@@ -35,6 +34,7 @@ struct Child {
     Child& operator=(Child&&)=default;
     ~Child(void)=default;
     Child(const reasoner::semimove&, const bool);
+    const reasoner::move_representation& get_actions() const;
 };
 
 

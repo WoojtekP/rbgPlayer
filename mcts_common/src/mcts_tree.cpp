@@ -43,16 +43,39 @@ uint MctsTree::get_best_uct_child_index(const uint node_index) {
     return children_indices[rand_gen.uniform_choice(children_indices.size())];
 }
 
-uint MctsTree::get_unvisited_child_index(const uint node_index) {
-    // TODO MAST
+uint MctsTree::get_unvisited_child_index(const uint node_index, [[maybe_unused]] const uint current_player) {
     auto [fst, lst] = nodes[node_index].children_range;
     auto lower = fst + nodes[node_index].sim_count;
     while (lower > fst && children[lower - 1].index == 0) {
         --lower;
     }
-    // std::uniform_int_distribution<uint> dist(lower, lst - 1);
     RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
-    auto chosen_child = lower + rand_gen.uniform_choice(lst - lower);
+    uint chosen_child;
+    #if MAST > 0
+    static std::uniform_real_distribution<double> prob(0.0, 1.0);
+    static std::mt19937 random_numbers_generator;
+    static std::vector<uint> children_indices;
+    if (prob(random_numbers_generator) < EPSILON) {
+        children_indices.clear();
+        children_indices.reserve(lst - lower);
+        double best_score = 0.0;
+        for (uint i = lower; i < lst; ++i) {
+            assert(children[i].index == 0);
+            double score = moves[current_player - 1].get_score_or_default_value(children[i].get_actions());
+            if (score > best_score) {
+                best_score = score;
+                children_indices.resize(1);
+                children_indices[0] = i;
+            }
+            else if (score == best_score) {
+                children_indices.push_back(i);
+            }
+        }
+        chosen_child = children_indices[rand_gen.uniform_choice(children_indices.size())];
+    }
+    else
+    #endif
+    chosen_child = lower + rand_gen.uniform_choice(lst - lower);
     if (chosen_child != lower) {
         std::swap(children[chosen_child], children[lower]);
     }

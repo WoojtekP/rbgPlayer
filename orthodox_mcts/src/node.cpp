@@ -10,3 +10,7 @@ bool Node::is_terminal() const {
 
 Child::Child(const reasoner::move& move)
     : move(move) {}
+
+const reasoner::move_representation& Child::get_actions() const {
+    return move.mr;
+}

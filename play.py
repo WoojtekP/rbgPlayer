@@ -24,6 +24,8 @@ def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
 available_players = set([
     "orthodoxMcts_orthodoxSim",
+    "orthodoxMcts_orthodoxSim_mast",
+    "orthodoxMcts_orthodoxSim_mastsplit",
     "semisplitMcts_semisplitSim",
     "simple_best_select"])
 # TODO remove semisplit_players and use "tree_strategy" and "simulation_strategy"
@@ -118,8 +120,8 @@ def get_player_full_name(config):
 def parse_config_file(file_name):
     with open(file_name) as config_file:
         config = json.load(config_file)
-        player_kind = get_player_kind(config);
-        print(player_kind)
+        player_kind = get_player_full_name(config);
+        print("player name", player_kind)
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
         for k, v in chain(config["general"].items(),
                           config["algorithm"]["parameters"].items(),
@@ -172,7 +174,7 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, sim_strategy, player_id, debug_mode):
+def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heuristics, debug_mode):
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
         if player_kind in semisplit_players or sim_strategy == "semisplit":
@@ -187,7 +189,8 @@ def compile_player(num_of_threads, player_kind, sim_strategy, player_id, debug_m
         "-j"+str(num_of_threads),
         player_kind_to_make_target(player_kind),
         "PLAYER_ID="+str(player_id),
-        "DEBUG="+str(debug_mode)]) # again, assume everything is ok
+        "DEBUG="+str(debug_mode),
+        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics))]) # again, assume everything is ok
 
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -266,7 +269,7 @@ assert(player_kind in available_players)
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, sim_strategy, player_port, int(program_args.debug))
+compile_player(2, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 

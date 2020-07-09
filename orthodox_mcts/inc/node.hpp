@@ -31,6 +31,7 @@ struct Child {
     Child& operator=(Child&&)=default;
     ~Child(void)=default;
     Child(const reasoner::move& move);
+    const reasoner::move_representation& get_actions() const;
 };
 
 #endif

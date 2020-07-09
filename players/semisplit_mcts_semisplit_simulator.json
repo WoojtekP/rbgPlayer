@@ -10,7 +10,8 @@
         "parameters" : {
             "exploration_constant" : 0.7,
             "max_semidepth" : 50,
-            "semilength" : 1
+            "semilength" : 1,
+            "is_nodal" : false
         }
     },
     "heuristics" : []

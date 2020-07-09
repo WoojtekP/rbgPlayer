@@ -13,3 +13,7 @@ bool Node::is_terminal() const {
 Child::Child(const reasoner::semimove& semimove, const bool is_nodal)
     : semimove(semimove)
     , is_nodal(is_nodal) {}
+
+const reasoner::move_representation& Child::get_actions() const {
+    return semimove.get_actions();
+}

@@ -1,6 +1,7 @@
 SUFFIXES += .d
 NODEPS := clean distclean prepare
 DEBUG := 0
+MAST := 0
 
 PLAYER_ID := 99999
 TARGET := rbgPlayer
@@ -19,18 +20,16 @@ SBS := simple_best_select
 ORTHODOX_MCTS := orthodox_mcts
 MCTS_COMMON := mcts_common
 MAST_COMMON := mast_common
-MAST := moves_container
-MAST_SEMISPLIT := moves_container_semisplit
+MOVES_CONTAINER := moves_container
+MOVES_CONTAINER_SPLIT := moves_container_split
 ORTHODOX_SIMULATOR := orthodox_simulator
 SEMISPLIT_SIMULATOR := semisplit_simulator
 SEMISPLIT_MCTS := semisplit_mcts
 JOINT_MOVES := joint_moves
-TREE_MOVE_JOIN := 0
-SIM_MOVE_JOIN := 0
 
 C := g++
 ifeq (0, $(DEBUG))
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DTREE_MOVE_JOIN=$(TREE_MOVE_JOIN) -DSIM_MOVE_JOIN=$(SIM_MOVE_JOIN)
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST)
 else
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g
 endif
@@ -64,6 +63,8 @@ endef
 $(eval $(call PLAYER_KIND_RULES,RANDOM,random,$(RANDOM) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,ORTHODOXMCTS_ORTHODOXSIM,orthodoxMcts_orthodoxSim,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,ORTHODOXMCTS_ORTHODOXSIM_MAST,orthodoxMcts_orthodoxSim_mast,$(MOVES_CONTAINER) $(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,ORTHODOXMCTS_ORTHODOXSIM_MASTSPLIT,orthodoxMcts_orthodoxSim_mastsplit,$(MOVES_CONTAINER_SPLIT) $(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_MCTS_SIM_JOINT,orthodox_mcts_sim_joint,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(COMMON) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_MCTS_SIM_SEMISPLIT,orthodox_mcts_sim_semisplit,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,JOINT_MCTS_SIM_ORTHODOX,joint_mcts_sim_orthodox,$(MCTS_COMMON) $(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(JOINT_MOVES) $(COMMON) $(GEN_DIR)))

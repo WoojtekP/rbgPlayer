@@ -62,8 +62,8 @@ void Tree::perform_simulation() {
         children_stack.clear();
     }
     else {
-        const auto child_index = get_unvisited_child_index(node_index);
         const auto current_player = state.get_current_player();
+        const auto child_index = get_unvisited_child_index(node_index, current_player);
         state.apply_semimove(children[child_index].semimove);
         complete_turn(state);
         auto state_copy = state;

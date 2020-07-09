@@ -44,8 +44,8 @@ void Tree::perform_simulation() {
         }
     }
     else {
-        const auto child_index = get_unvisited_child_index(node_index);
         const auto current_player = state.get_current_player();
+        const auto child_index = get_unvisited_child_index(node_index, current_player);
         state.apply_move(children[child_index].move);
         complete_turn(state);
         auto new_node_index = create_node(state);
@@ -59,6 +59,9 @@ void Tree::perform_simulation() {
         nodes[children[index].index].sim_count++;
         children[index].sim_count++;
         children[index].total_score += results[player - 1];
+        #if MAST > 0
+        moves[player - 1].insert_or_update(children[index].get_actions(), results[player - 1], children_stack.size());  // TODO fix full version
+        #endif
     }
     nodes.front().sim_count++;
     children_stack.clear();
@@ -88,7 +91,11 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     fix_tree(nodes_tmp, children_tmp, root_index);
     nodes = std::move(nodes_tmp);
     children = std::move(children_tmp);
-    // TODO MAST
+    #if MAST > 0
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        moves[i - 1].apply_decay_factor();
+    }
+    #endif
 }
 
 reasoner::move Tree::choose_best_move() {
