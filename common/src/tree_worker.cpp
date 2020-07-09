@@ -8,6 +8,7 @@
 #include"config.hpp"
 #include"tree.hpp"
 
+
 void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
                      concurrent_queue<tree_indication>& tree_indications){
     reasoner::game_state initial_state;

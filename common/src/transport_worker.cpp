@@ -9,6 +9,7 @@
 #include<chrono>
 #include<thread>
 
+
 namespace{
 game_status_indication get_game_status(concurrent_queue<client_response>& responses_from_tree){
     auto response = responses_from_tree.pop_front();

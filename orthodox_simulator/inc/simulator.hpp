@@ -12,6 +12,6 @@ namespace reasoner {
 
 typedef std::vector<uint> simulation_result;
 
-void play(reasoner::game_state&, reasoner::resettable_bitarray_stack&, std::mt19937&, simulation_result&);
+void play(reasoner::game_state&, reasoner::resettable_bitarray_stack&, simulation_result&);
 
 #endif

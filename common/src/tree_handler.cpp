@@ -5,6 +5,7 @@
 #include"constants.hpp"
 #include<iostream>
 
+
 namespace{
 int get_player_index(const std::string& name){
     for(int i = 0; i < reasoner::NUMBER_OF_PLAYERS - 1; ++i)
@@ -36,7 +37,7 @@ void tree_handler::handle_move_request(void){
 
 void tree_handler::handle_move_indication(const reasoner::move& m){
     simulations_count = 0;
-    t.apply_move(m);
+    t.reparent_along_move(m);
     handle_status();
 }
 
