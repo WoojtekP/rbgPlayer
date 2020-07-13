@@ -3,6 +3,7 @@
 #include "constants.hpp"
 #include "moves_container.hpp"
 
+
 std::size_t move_hash::operator()(const reasoner::move_representation& move) const noexcept {
     std::size_t seed = 0;
     for (const auto& action : move) {

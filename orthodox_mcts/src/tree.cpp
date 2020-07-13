@@ -29,7 +29,6 @@ uint Tree::create_node(reasoner::game_state& state) {
 void Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
     static reasoner::game_state state = root_state;
-    static std::vector<std::pair<uint,int>> children_stack;  // child index, player
     state = root_state;
     uint node_index = 0;
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
@@ -73,10 +72,10 @@ void Tree::perform_simulation() {
     for (const auto& [move, player] : move_chooser.get_path()) {
         moves[player - 1].insert_or_update(move_chooser.extract_actions(move), results[player - 1], depth);
     }
+    move_chooser.clear_path();
     #endif
     nodes.front().sim_count++;
     children_stack.clear();
-    move_chooser.clear_path();
 }
 
 void Tree::reparent_along_move(const reasoner::move& move) {
@@ -96,18 +95,8 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         create_node(root_state);
         return;
     }
-    std::vector<Node> nodes_tmp;
-    std::vector<Child> children_tmp;
-    nodes_tmp.reserve(nodes.size());
-    children_tmp.reserve(children.size());
-    fix_tree(nodes_tmp, children_tmp, root_index);
-    nodes = std::move(nodes_tmp);
-    children = std::move(children_tmp);
-    #if MAST > 0
-    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-        moves[i - 1].apply_decay_factor();
-    }
-    #endif
+    root_at_index(root_index);
+    children_stack.clear();
 }
 
 reasoner::move Tree::choose_best_move() {

@@ -52,10 +52,8 @@ uint MctsTree::get_unvisited_child_index(const uint node_index, [[maybe_unused]]
     RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
     uint chosen_child;
     #if MAST > 0
-    static std::uniform_real_distribution<double> prob(0.0, 1.0);
-    static std::mt19937 random_numbers_generator;
     static std::vector<uint> children_indices;
-    if (prob(random_numbers_generator) < EPSILON) {
+    if (rand_gen.random_real_number() < EPSILON) {
         children_indices.clear();
         children_indices.reserve(lst - lower);
         double best_score = 0.0;
@@ -83,6 +81,23 @@ uint MctsTree::get_unvisited_child_index(const uint node_index, [[maybe_unused]]
         std::swap(children[chosen_child], children[lower]);
     }
     return lower;
+}
+
+void MctsTree::root_at_index(const uint root_index) {
+    static std::vector<Node> nodes_tmp;
+    static std::vector<Child> children_tmp;
+    nodes_tmp.clear();
+    children_tmp.clear();
+    nodes_tmp.reserve(nodes.size());
+    children_tmp.reserve(children.size());
+    fix_tree(nodes_tmp, children_tmp, root_index);
+    std::swap(nodes, nodes_tmp);
+    std::swap(children, children_tmp);
+    #if MAST > 0
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        moves[i - 1].apply_decay_factor();
+    }
+    #endif
 }
 
 uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {
