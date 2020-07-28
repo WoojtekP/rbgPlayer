@@ -12,11 +12,8 @@
 #include "move_chooser.hpp"
 
 
-typedef std::vector<uint> simulation_result;
-
 class Tree final : public MctsTree {
 private:
-    MoveChooser<move_type> move_chooser;
     uint create_node(reasoner::game_state&);
 public:
     Tree(void)=delete;
@@ -26,9 +23,10 @@ public:
     Tree& operator=(Tree&&)=default;
     ~Tree(void)=default;
     Tree(const reasoner::game_state&);
-    void perform_simulation();
+    uint perform_simulation();
     void reparent_along_move(const reasoner::move&);
     reasoner::move choose_best_move();
+    game_status_indication get_status(const int) const;
 };
 
 #endif

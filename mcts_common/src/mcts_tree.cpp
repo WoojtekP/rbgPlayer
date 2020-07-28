@@ -2,6 +2,7 @@
 #include "node.hpp"
 #include "constants.hpp"
 #include "random_generator.hpp"
+#include "move_chooser.hpp"
 
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
@@ -11,7 +12,14 @@ MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initi
 
 bool MctsTree::is_node_fully_expanded(const uint node_index) {
     // assuming number of children > 0
-    return children[nodes[node_index].children_range.second - 1].index != 0;
+    assert(nodes[node_index].children_range.second > nodes[node_index].children_range.first);
+    bool result = children[nodes[node_index].children_range.second - 1].index != 0;
+    if (result) {
+        for (auto i = nodes[node_index].children_range.first; i < nodes[node_index].children_range.second; ++i) {
+            assert(children[i].index != 0);
+        }
+    }
+    return result;
 }
 
 void MctsTree::complete_turn(reasoner::game_state& state) {
@@ -19,17 +27,25 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
 }
 
 uint MctsTree::get_best_uct_child_index(const uint node_index) {
-    // TODO RAVE
     static std::vector<uint> children_indices;
     const auto& [fst, lst] = nodes[node_index].children_range;
     children_indices.resize(1);
     children_indices[0] = fst;
-    double const c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(nodes[node_index].sim_count));
-    double max_priority = children[fst].total_score / EXPECTED_MAX_SCORE / children[fst].sim_count +
+    const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(nodes[node_index].sim_count));
+    double max_priority = static_cast<double>(children[fst].total_score) / EXPECTED_MAX_SCORE / children[fst].sim_count +
                           c_sqrt_logn / std::sqrt(static_cast<double>(children[fst].sim_count));
+    #if RAVE > 0
+    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * nodes[node_index].sim_count + EQUIVALENCE_PARAMETER));
+    max_priority *= 1.0 - beta;
+    max_priority += beta * static_cast<double>(children[fst].amaf_score) / static_cast<double>(children[fst].amaf_count);
+    #endif
     for (uint i = fst + 1; i < lst; ++i) {
         double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count +
                           c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
+        #if RAVE > 0
+        max_priority *= 1.0 - beta;
+        max_priority += beta * static_cast<double>(children[i].amaf_score) / static_cast<double>(children[i].amaf_count);
+        #endif
         if (priority > max_priority) {
             max_priority = priority;
             children_indices.resize(1);
@@ -43,46 +59,6 @@ uint MctsTree::get_best_uct_child_index(const uint node_index) {
     return children_indices[rand_gen.uniform_choice(children_indices.size())];
 }
 
-uint MctsTree::get_unvisited_child_index(const uint node_index, [[maybe_unused]] const uint current_player) {
-    auto [fst, lst] = nodes[node_index].children_range;
-    auto lower = fst + nodes[node_index].sim_count;
-    while (lower > fst && children[lower - 1].index == 0) {
-        --lower;
-    }
-    RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
-    uint chosen_child;
-    #if MAST > 0
-    static std::vector<uint> children_indices;
-    if (rand_gen.random_real_number() < EPSILON) {
-        children_indices.clear();
-        children_indices.reserve(lst - lower);
-        double best_score = 0.0;
-        for (uint i = lower; i < lst; ++i) {
-            assert(children[i].index == 0);
-            double score = moves[current_player - 1].get_score_or_default_value(children[i].get_actions());
-            if (score > best_score) {
-                best_score = score;
-                children_indices.resize(1);
-                children_indices[0] = i;
-            }
-            else if (score == best_score) {
-                children_indices.push_back(i);
-            }
-        }
-        chosen_child = children_indices[rand_gen.uniform_choice(children_indices.size())];
-    }
-    else {
-        chosen_child = lower + rand_gen.uniform_choice(lst - lower);
-    }
-    #else
-    chosen_child = lower + rand_gen.uniform_choice(lst - lower);
-    #endif
-    if (chosen_child != lower) {
-        std::swap(children[chosen_child], children[lower]);
-    }
-    return lower;
-}
-
 void MctsTree::root_at_index(const uint root_index) {
     static std::vector<Node> nodes_tmp;
     static std::vector<Child> children_tmp;
@@ -94,9 +70,7 @@ void MctsTree::root_at_index(const uint root_index) {
     std::swap(nodes, nodes_tmp);
     std::swap(children, children_tmp);
     #if MAST > 0
-    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-        moves[i - 1].apply_decay_factor();
-    }
+    move_chooser.complete_turn();
     #endif
 }
 
@@ -117,11 +91,4 @@ uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& childr
         children_tmp[first_child_index + i].index = fix_tree(nodes_tmp, children_tmp, children[fst + i].index);
     }
     return new_index;
-}
-
-game_status_indication MctsTree::get_status(const int player_index) const {
-    if (nodes.front().is_terminal()) {
-        return end_game;
-    }
-    return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;
 }

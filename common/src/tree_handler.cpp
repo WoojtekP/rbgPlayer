@@ -48,9 +48,9 @@ void tree_handler::handle_reset_request(const reasoner::game_state& initial_stat
     handle_status();
 }
 
-void tree_handler::perform_simulation() {
-    t.perform_simulation();
+uint tree_handler::perform_simulation() {
     simulations_count++;
+    return t.perform_simulation();
 }
 
 game_status_indication tree_handler::get_game_status() const {
