@@ -177,6 +177,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
                 ++i;
             }
             if (i == lst || root_index == 0) {
+                root_index = 0;
                 break;
             }
         }
@@ -196,10 +197,10 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
-    reasoner::move move;
+    reasoner::move move = {};
     uint node_index = 0;
     while (true) {
-        const auto& [fst, lst] = nodes[node_index].children_range;
+        const auto [fst, lst] = nodes[node_index].children_range;
         auto max_sim = children[fst].sim_count;
         auto best_node = fst;
         for (auto i = fst + 1; i < lst; ++i) {
