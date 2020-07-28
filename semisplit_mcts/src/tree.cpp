@@ -183,8 +183,33 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         }
     }
     else {
-        // not implemented
-        assert(false);
+        const auto& mr = move.mr;
+        const uint size = mr.size();
+        uint i = 0;
+        while (i < size) {
+            auto [fst, lst] = nodes[root_index].children_range;
+            while (fst < lst) {
+                bool matched = true;
+                uint j = 0;
+                for (const auto& action : children[fst].get_actions()) {
+                    if (!(action == mr[i + j])) {
+                        matched = false;
+                        break;
+                    }
+                    ++j;
+                }
+                if (matched) {
+                    root_index = children[fst].index;
+                    i += j;
+                    break;
+                }
+                ++fst;
+            }
+            if (fst == lst || root_index == 0) {
+                root_index = 0;
+                break;
+            }
+        }
     }
     if (root_index == 0) {
         nodes.clear();
