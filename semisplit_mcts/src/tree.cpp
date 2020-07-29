@@ -183,12 +183,19 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         }
     }
     else {
+        static std::vector<std::pair<uint, uint>> stack;
+        stack.clear();
         const auto& mr = move.mr;
         const uint size = mr.size();
         uint i = 0;
+        auto [fst, lst] = nodes[root_index].children_range;
         while (i < size) {
-            auto [fst, lst] = nodes[root_index].children_range;
             while (fst < lst) {
+                if (children[fst].get_actions().empty()) {
+                    stack.emplace_back(root_index, fst);
+                    root_index = children[fst].index;
+                    break;
+                }
                 bool matched = true;
                 uint j = 0;
                 for (const auto& action : children[fst].get_actions()) {
@@ -201,14 +208,24 @@ void Tree::reparent_along_move(const reasoner::move& move) {
                 if (matched) {
                     root_index = children[fst].index;
                     i += j;
+                    stack.clear();
                     break;
                 }
                 ++fst;
             }
             if (fst == lst || root_index == 0) {
-                root_index = 0;
+                if (!stack.empty()) {
+                    std::tie(root_index, fst) = stack.back();
+                    stack.pop_back();
+                    ++fst;
+                    lst = nodes[root_index].children_range.second;
+                }
+                else {
+                    root_index = 0;
+                }
                 break;
             }
+            std::tie(fst, lst) = nodes[root_index].children_range;
         }
     }
     if (root_index == 0) {
