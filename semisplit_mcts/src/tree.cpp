@@ -202,11 +202,12 @@ void Tree::reparent_along_move(const reasoner::move& move) {
                 stack.pop_back();
                 ++fst;
                 lst = nodes[root_index].children_range.second;
+                continue;
             }
             else {
                 root_index = 0;
+                break;
             }
-            break;
         }
         std::tie(fst, lst) = nodes[root_index].children_range;
     }
