@@ -1,3 +1,6 @@
+#include <iostream>
+#include <iomanip>
+
 #include "tree.hpp"
 #include "node.hpp"
 #include "simulator.hpp"
@@ -125,15 +128,23 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
-    const auto& [fst, lst] = nodes.front().children_range;
-    auto max_sim = children[fst].sim_count;
+    const auto [fst, lst] = nodes.front().children_range;
+    uint max_sim = 0;
     auto best_node = fst;
-    for (auto i = fst + 1; i < lst; ++i) {
+    for (auto i = fst; i < lst; ++i) {
+        std::cout << "move " << std::setw(2) << i - fst;
+        std::cout << "   sim " << std::setw(4) << children[i].sim_count;
+        std::cout << "   score " << std::setw(6) << children[i].total_score << "   [";
+        for (const auto action : children[i].get_actions()) {
+            std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
+        }
+        std::cout << "]" << std::endl;
         if (children[i].sim_count > max_sim) {
             max_sim = children[i].sim_count;
             best_node = i;
         }
     }
+    std::cout << "chosen move: " << best_node << std::endl;
     return children[best_node].move;
 }
 
