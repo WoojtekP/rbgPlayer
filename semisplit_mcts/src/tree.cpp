@@ -1,4 +1,4 @@
-#ifdef STATS
+#if STATS
 #include <iostream>
 #include <iomanip>
 #endif
@@ -171,12 +171,12 @@ uint Tree::perform_simulation() {
 }
 
 void Tree::reparent_along_move(const reasoner::move& move) {
-    #ifdef STATS
+    #if STATS
     auto current_player = root_state.get_current_player();
     #endif
     root_state.apply_move(move);
     complete_turn(root_state);
-    #ifdef STATS
+    #if STATS
     if (current_player != root_state.get_current_player())
         ++turn_number;
     #endif
@@ -240,7 +240,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 reasoner::move Tree::choose_best_move() {
     reasoner::move move = {};
     uint node_index = 0;
-    #ifdef STATS
+    #if STATS
     uint level = 1;
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     #endif
@@ -256,7 +256,7 @@ reasoner::move Tree::choose_best_move() {
         }
         const auto& semimove = children[best_node].semimove.get_actions();
         move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
-        #ifdef STATS
+        #if STATS
         std::cout << "moves at level " << level << std::endl;
         for (auto i = fst; i < lst; ++i) {
             char prefix = (i == best_node) ? '*' : ' ';
