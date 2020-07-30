@@ -236,6 +236,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
+    static std::vector<uint> children_indices;
     reasoner::move move;
     uint node_index = 0;
     #if STATS
@@ -245,19 +246,32 @@ reasoner::move Tree::choose_best_move() {
     while (true) {
         const auto [fst, lst] = nodes[node_index].children_range;
         auto max_sim = children[fst].sim_count;
-        auto best_node = fst;
+        children_indices.resize(1);
+        children_indices[0] = fst;
         for (auto i = fst + 1; i < lst; ++i) {
             if (children[i].sim_count > max_sim) {
                 max_sim = children[i].sim_count;
-                best_node = i;
+                children_indices.resize(1);
+                children_indices[0] = i;
+            }
+            else if (children[i].sim_count == max_sim) {
+                children_indices.push_back(i);
             }
         }
-        const auto& semimove = children[best_node].semimove.get_actions();
+        auto best_child = children_indices.front();
+        auto best_score = children[best_child].total_score;
+        for (const auto child_index : children_indices) {
+            if (children[child_index].total_score > best_score) {
+                best_score = children[child_index].total_score;
+                best_child = child_index;
+            }
+        }
+        const auto& semimove = children[best_child].semimove.get_actions();
         move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
         #if STATS
         std::cout << "moves at level " << level << std::endl;
         for (auto i = fst; i < lst; ++i) {
-            char prefix = (i == best_node) ? '*' : ' ';
+            char prefix = (i == best_child) ? '*' : ' ';
             std::cout << prefix << " move " << std::setw(2) << i - fst;
             std::cout << "   sim " << std::setw(4) << children[i].sim_count;
             std::cout << "   score " << std::setw(6) << children[i].total_score << "   [";
@@ -269,10 +283,10 @@ reasoner::move Tree::choose_best_move() {
         std::cout << std::endl;
         ++level;
         #endif
-        if (nodes[children[best_node].index].is_nodal) {
+        if (nodes[children[best_child].index].is_nodal) {
             break;
         }
-        node_index = children[best_node].index;
+        node_index = children[best_child].index;
         assert(node_index != 0);
     }
     return move;

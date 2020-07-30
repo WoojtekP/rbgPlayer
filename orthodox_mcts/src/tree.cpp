@@ -137,19 +137,33 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
+    static std::vector<uint> children_indices;
     const auto [fst, lst] = nodes.front().children_range;
-    uint max_sim = children[fst].sim_count;
-    auto best_node = fst;
+    auto max_sim = children[fst].sim_count;
+    children_indices.resize(1);
+    children_indices[0] = fst;
     for (auto i = fst + 1; i < lst; ++i) {
         if (children[i].sim_count > max_sim) {
             max_sim = children[i].sim_count;
-            best_node = i;
+            children_indices.resize(1);
+            children_indices[0] = i;
+        }
+        else if (children[i].sim_count == max_sim) {
+            children_indices.push_back(i);
+        }
+    }
+    auto best_child = children_indices.front();
+    auto best_score = children[best_child].total_score;
+    for (const auto child_index : children_indices) {
+        if (children[child_index].total_score > best_score) {
+            best_score = children[child_index].total_score;
+            best_child = child_index;
         }
     }
     #if STATS
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     for (auto i = fst; i < lst; ++i) {
-        char prefix = (i == best_node) ? '*' : ' ';
+        char prefix = (i == best_child) ? '*' : ' ';
         std::cout << prefix << " move " << std::setw(2) << i - fst;
         std::cout << "   sim " << std::setw(4) << children[i].sim_count;
         std::cout << "   score " << std::setw(6) << children[i].total_score << "   [";
@@ -159,7 +173,7 @@ reasoner::move Tree::choose_best_move() {
         std::cout << "]" << std::endl;
     }
     #endif
-    return children[best_node].move;
+    return children[best_child].move;
 }
 
 game_status_indication Tree::get_status(const int player_index) const {
