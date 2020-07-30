@@ -193,7 +193,7 @@ def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heurist
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
         if player_kind in semisplit_players or sim_strategy == "semisplit":
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fsemi-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
