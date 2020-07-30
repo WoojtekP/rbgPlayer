@@ -8,30 +8,31 @@
 #include"config.hpp"
 #include"tree.hpp"
 
+#include <iostream>
+
 void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
                      concurrent_queue<tree_indication>& tree_indications) {
     reasoner::game_state initial_state;
     tree_handler th(initial_state, responses_to_server);
     while(true) {
-        if (th.get_game_status() == own_turn) {
+        auto status = th.get_game_status();
+        if (status == own_turn) {
             if constexpr (SIMULATIONS_LIMIT) {
                 uint sim_count = 0;
-                while (sim_count < SIMULATIONS_PER_MOVE && tree_indications.empty()) {
+                while (sim_count < SIMULATIONS_PER_MOVE) {
                     th.perform_simulation();
                     ++sim_count;
                 }
-                if (tree_indications.empty()) {
-                    th.handle_move_request();
-                }
+                th.handle_move_request();
+                continue;
             }
             else if constexpr (STATES_LIMIT) {
                 uint state_count = 0;
-                while (state_count < STATES_PER_MOVE && tree_indications.empty()) {
+                while (state_count < STATES_PER_MOVE) {
                     state_count += th.perform_simulation();
                 }
-                if (tree_indications.empty()) {
-                    th.handle_move_request();
-                }
+                th.handle_move_request();
+                continue;
             }
             else {
                 while (tree_indications.empty()) {
