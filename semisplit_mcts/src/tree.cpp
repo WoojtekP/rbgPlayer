@@ -19,6 +19,7 @@ uint Tree::create_node(reasoner::game_state& state) {
         nodes.emplace_back(new_child_index, 0, is_nodal, has_nodal_succ);
     }
     else {
+        assert(state.get_current_player() != KEEPER);
         state.get_all_semimoves(cache, semimoves, SEMILENGTH);
         auto child_count = semimoves.size();
         nodes.emplace_back(new_child_index, child_count, is_nodal, has_nodal_succ);
@@ -111,6 +112,7 @@ uint Tree::perform_simulation() {
                     for (auto i = fst; i < lst; ++i) {
                         if (children[i].semimove == semimove) {
                             state.apply_semimove(semimove);
+                            complete_turn(state);
                             new_node_index = create_node(state);
                             children[i].index = new_node_index;
                             if (i != fst) {
@@ -121,7 +123,6 @@ uint Tree::perform_simulation() {
                         }
                     }
                 }
-                complete_turn(state);
             }
             else {
                 children[child_index].index = create_node(state);
