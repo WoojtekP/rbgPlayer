@@ -3,16 +3,17 @@
 #include "constants.hpp"
 #include "moves_container.hpp"
 
-std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
+
+std::size_t move_hash::operator()(const reasoner::move_representation& move) const noexcept {
     std::size_t seed = 0;
-    for (const auto& action : move.mr) {
+    for (const auto& action : move) {
         boost::hash_combine(seed, action.index);
         boost::hash_combine(seed, action.cell);
     }
     return seed;
 }
 
-void moves_container::insert_or_update(const reasoner::move& move, const uint score, [[maybe_unused]] const uint depth) {
+void moves_container::insert_or_update(const reasoner::move_representation& move, const uint score, [[maybe_unused]] const uint depth) {
     auto it = map.find(move);
     if constexpr (WEIGHT_SCALING) {
         if (it == map.end()) {
@@ -34,7 +35,7 @@ void moves_container::insert_or_update(const reasoner::move& move, const uint sc
     }
 }
 
-double moves_container::get_score_or_default_value(const reasoner::move& move) {
+double moves_container::get_score_or_default_value(const reasoner::move_representation& move) {
     auto it = map.find(move);
     if (it == map.end()) {
         return EXPECTED_MAX_SCORE;

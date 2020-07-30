@@ -23,12 +23,20 @@ game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
 available_players = set([
-    "orthodox_mcts_mast_sim_orthodox",
-    "orthodox_mcts_mast_split_sim_orthodox",
-    "orthodox_mcts_sim_orthodox",
-    "orthodox_mcts_sim_semisplit",
+    "orthodoxMcts_orthodoxSim",
+    "orthodoxMcts_orthodoxSim_mast",
+    "orthodoxMcts_orthodoxSim_mastsplit",
+    "orthodoxMcts_orthodoxSim_rave",
+    "orthodoxMcts_semisplitSim",
+    "orthodoxMcts_semisplitSim_mastsplit",
+    "semisplitMcts_semisplitSim",
+    "semisplitMcts_semisplitSim_mastsplit",
     "simple_best_select"])
-semisplit_players = set()
+# TODO remove semisplit_players and use "tree_strategy" and "simulation_strategy"
+semisplit_players = set([
+    "semisplitMcts_semisplitSim",
+    "semisplitMcts_semisplitSim_mastsplit",
+    "orthodoxMcts_semisplitSim"])
 
 def player_kind_to_make_target(player_kind):
     if player_kind == "semisplitNodalMcts":
@@ -84,8 +92,14 @@ class PlayerConfig:
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
         self.player_name = player_name
-        self.simulations_limit = program_args.simulations_limit
+        self.simulations_per_move = program_args.simulations_per_move
+        self.simulations_limit = program_args.simulations_per_move > 0
+        self.states_per_move = program_args.states_per_move
+        self.states_limit = program_args.states_per_move > 0
         self.debug_mode = program_args.debug
+        if self.simulations_limit and self.states_limit:
+            print("at most one type of limit is allowed", sys.stderr)
+            exit(1)
     def runnable_list(self):
         return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
     def print_config_file(self, name):
@@ -99,7 +113,10 @@ class PlayerConfig:
             config_file.write("const std::string ADDRESS = \"{}\";\n".format(self.address_to_connect))
             config_file.write("constexpr uint PORT = {};\n".format(str(self.port_to_connect)))
             config_file.write("const std::string NAME = \"{}\";\n".format(self.player_name))
-            config_file.write("constexpr uint SIMULATIONS_PER_MOVE = {};\n".format(str(self.simulations_limit)))
+            config_file.write("constexpr bool SIMULATIONS_LIMIT = {};\n".format(str(self.simulations_limit).lower()))
+            config_file.write("constexpr bool STATES_LIMIT = {};\n".format(str(self.states_limit).lower()))
+            config_file.write("constexpr uint SIMULATIONS_PER_MOVE = {};\n".format(str(self.simulations_per_move)))
+            config_file.write("constexpr uint STATES_PER_MOVE = {};\n".format(str(self.states_per_move)))
             config_file.write("\n")
             for t, variables in self.config_constants.items():
                 for name, val in variables.items():
@@ -107,17 +124,23 @@ class PlayerConfig:
             config_file.write("\n")
             config_file.write("#endif\n")
 
+def get_player_kind(config):
+    return config["algorithm"]["tree_strategy"].lower() + config["algorithm"]["name"].capitalize() + "_" + config["algorithm"]["simulation_strategy"].lower() + "Sim"
+
+def get_player_full_name(config):
+    heuristics = [heuristic["name"].lower() for heuristic in config["heuristics"]]
+    heuristics.sort()
+    return get_player_kind(config) + ("" if not heuristics else "_" + "_".join(heuristics))
+
 def parse_config_file(file_name):
     with open(file_name) as config_file:
         config = json.load(config_file)
-        player_kind = config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["name"].lower()
-        if config["heuristic"]["name"]:
-            player_kind += "_" + config["heuristic"]["name"].lower()
-        player_kind += "_sim_" + config["algorithm"]["simulation_strategy"]
+        player_kind = get_player_full_name(config);
+        print("player name", player_kind)
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
         for k, v in chain(config["general"].items(),
                           config["algorithm"]["parameters"].items(),
-                          config["heuristic"]["parameters"].items()):
+                          *(heuristic["parameters"].items() for heuristic in config["heuristics"])):
             if isinstance(v, bool):
                 constants["bool"][k.upper()] = v.__str__().lower()
             elif isinstance(v, float):
@@ -126,7 +149,7 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        return player_kind, constants, int(config["algorithm"]["tree_strategy"] == "joint"), config["algorithm"]["simulation_strategy"]
+        return player_kind, constants, config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -164,11 +187,11 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, is_joint, sim_strategy, player_id, debug_mode):
+def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heuristics, debug_mode):
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
-        if player_kind in semisplit_players or is_joint or sim_strategy in ["semisplit", "joint"]:
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fsemi-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+        if player_kind in semisplit_players or sim_strategy == "semisplit":
+            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
@@ -180,8 +203,8 @@ def compile_player(num_of_threads, player_kind, is_joint, sim_strategy, player_i
         player_kind_to_make_target(player_kind),
         "PLAYER_ID="+str(player_id),
         "DEBUG="+str(debug_mode),
-        "TREE_MOVE_JOIN="+str(is_joint),
-        "SIM_MOVE_JOIN="+str(int(sim_strategy == "joint"))]) # again, assume everything is ok
+        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics)),
+        "RAVE="+str(int("RAVE" in heuristics))]) # again, assume everything is ok
 
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -233,7 +256,8 @@ parser = argparse.ArgumentParser(description='Setup and start rbg player.', form
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')
 parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
-parser.add_argument('--simulations-limit', dest='simulations_limit', type=int, default=1000000, help='simulations limit for player\'s turn (default: 1000000)')
+parser.add_argument('--simulations-limit', dest='simulations_per_move', type=int, default=-1, help='simulations limit for player\'s turn')
+parser.add_argument('--states-limit', dest='states_per_move', type=int, default=-1, help='states limit for player\'s turn')
 parser.add_argument('--debug', action='store_true', default=False, help='run using valgrind')
 program_args = parser.parse_args()
 
@@ -253,15 +277,14 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_kind, constants, is_joint, sim_strategy = parse_config_file(program_args.player_config)
-print("Player kind:", player_kind)
+player_kind, constants, sim_strategy, heuristics = parse_config_file(program_args.player_config)
 
 assert(player_kind in available_players)
 
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, is_joint, sim_strategy, player_port, int(program_args.debug))
+compile_player(2, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 

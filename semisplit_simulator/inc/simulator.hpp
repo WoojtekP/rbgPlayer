@@ -4,14 +4,13 @@
 #include <vector>
 #include <random>
 
-namespace reasoner {
-    class game_state;
-    class move;
-    class resettable_bitarray_stack;
-}
+#include "reasoner.hpp"
+#include "move_chooser.hpp"
+#include "types.hpp"
 
-typedef std::vector<uint> simulation_result;
+typedef reasoner::semimove move_type;
 
-void play(reasoner::game_state&, reasoner::resettable_bitarray_stack&, std::mt19937&, simulation_result&);
+bool has_nodal_successor(reasoner::game_state& , reasoner::resettable_bitarray_stack&);
+uint play(reasoner::game_state&, MoveChooser<move_type>&, reasoner::resettable_bitarray_stack&, simulation_result&);
 
 #endif

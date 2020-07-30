@@ -11,8 +11,5 @@
             "exploration_constant" : 0.7
         }
     },
-    "heuristic" : {
-        "name" : "",
-        "parameters" : {}
-    }
+    "heuristics" : []
 }

@@ -9,6 +9,7 @@
 #include<chrono>
 #include<thread>
 
+
 namespace{
 game_status_indication get_game_status(concurrent_queue<client_response>& responses_from_tree){
     auto response = responses_from_tree.pop_front();
@@ -67,7 +68,14 @@ std::chrono::steady_clock::time_point handle_turn(remote_moves_receiver& rmr,
         case own_turn:
             {
                 uint miliseconds_left = rmr.receive_miliseconds_limit();
-                wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
+                if constexpr (SIMULATIONS_LIMIT || STATES_LIMIT) {
+                    while (!is_move_already_available(responses_from_tree)) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(MILISECONDS_TIME_GRANULATION));
+                    }
+                }
+                else {
+                    wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
+                }
                 forward_move_from_player_to_server(oms, responses_from_tree);
                 break;
             }
