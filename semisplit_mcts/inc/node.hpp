@@ -21,14 +21,13 @@ struct Node : NodeBase {
 
 struct Child : ChildBase {
     reasoner::semimove semimove;
-    bool is_nodal;
     Child(void)=delete;
     Child(const Child&)=default;
     Child(Child&&)=default;
     Child& operator=(const Child&)=default;
     Child& operator=(Child&&)=default;
     ~Child(void)=default;
-    Child(const reasoner::semimove&, const bool);
+    Child(const reasoner::semimove&);
     const reasoner::move_representation& get_actions() const;
 };
 

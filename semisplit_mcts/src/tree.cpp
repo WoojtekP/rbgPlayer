@@ -29,9 +29,7 @@ uint Tree::create_node(reasoner::game_state& state) {
         auto child_count = semimoves.size();
         nodes.emplace_back(new_child_index, child_count, is_nodal, has_nodal_succ);
         for (const auto& semimove : semimoves) {
-            auto ri = state.apply_semimove_with_revert(semimove);
-            children.emplace_back(semimove, state.is_nodal());
-            state.revert(ri);
+            children.emplace_back(semimove);
         }
     }
     return nodes.size() - 1;
@@ -238,7 +236,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
-    reasoner::move move = {};
+    reasoner::move move;
     uint node_index = 0;
     #if STATS
     uint level = 1;
@@ -271,7 +269,7 @@ reasoner::move Tree::choose_best_move() {
         std::cout << std::endl;
         ++level;
         #endif
-        if (children[best_node].is_nodal) {
+        if (nodes[children[best_node].index].is_nodal) {
             break;
         }
         node_index = children[best_node].index;
