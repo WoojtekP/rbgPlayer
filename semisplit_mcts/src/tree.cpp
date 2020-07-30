@@ -83,6 +83,7 @@ uint Tree::perform_simulation() {
         }
         [[maybe_unused]] uint depth = children_stack.size();
         for (const auto [index, player] : children_stack) {
+            assert(children[index].index != 0);
             nodes[children[index].index].sim_count++;
             children[index].sim_count++;
             children[index].total_score += results[player - 1];
@@ -131,6 +132,7 @@ uint Tree::perform_simulation() {
             state_count += play(state, move_chooser, cache, results);
             [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
             for (const auto [index, player] : children_stack) {
+                assert(children[index].index != 0);
                 nodes[children[index].index].sim_count++;
                 children[index].sim_count++;
                 children[index].total_score += results[player - 1];
