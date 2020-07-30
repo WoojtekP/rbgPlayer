@@ -1,6 +1,7 @@
 SUFFIXES += .d
 NODEPS := clean distclean prepare
 DEBUG := 0
+STATS := 0
 MAST := 0
 RAVE := 0
 
@@ -31,9 +32,9 @@ JOINT_MOVES := joint_moves
 
 C := g++
 ifeq (0, $(DEBUG))
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST) -DRAVE=$(RAVE)
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 else
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g -DMAST=$(MAST) -DRAVE=$(RAVE)
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 endif
 
 define OBJECT_RULES

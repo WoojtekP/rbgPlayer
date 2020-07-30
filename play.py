@@ -187,11 +187,11 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heuristics, debug_mode):
+def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heuristics, debug_mode, stats):
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
         if player_kind in semisplit_players or sim_strategy == "semisplit":
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fsemi-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
@@ -203,6 +203,7 @@ def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heurist
         player_kind_to_make_target(player_kind),
         "PLAYER_ID="+str(player_id),
         "DEBUG="+str(debug_mode),
+        "STATS="+str(stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics)),
         "RAVE="+str(int("RAVE" in heuristics))]) # again, assume everything is ok
 
@@ -259,6 +260,7 @@ parser.add_argument('player_config', metavar='player-config', type=str, help='pa
 parser.add_argument('--simulations-limit', dest='simulations_per_move', type=int, default=-1, help='simulations limit for player\'s turn')
 parser.add_argument('--states-limit', dest='states_per_move', type=int, default=-1, help='states limit for player\'s turn')
 parser.add_argument('--debug', action='store_true', default=False, help='run using valgrind')
+parser.add_argument('--stats', action='store_true', default=False, help='print statistics for legal moves')
 program_args = parser.parse_args()
 
 server_socket = BufferedSocket(connect_to_server(program_args.server_address, program_args.server_port))
@@ -284,7 +286,7 @@ assert(player_kind in available_players)
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug))
+compile_player(2, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.stats))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 

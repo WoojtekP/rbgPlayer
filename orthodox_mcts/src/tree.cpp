@@ -1,5 +1,7 @@
+#ifdef STATS
 #include <iostream>
 #include <iomanip>
+#endif
 
 #include "tree.hpp"
 #include "node.hpp"
@@ -107,8 +109,15 @@ uint Tree::perform_simulation() {
 }
 
 void Tree::reparent_along_move(const reasoner::move& move) {
+    #ifdef STATS
+    auto current_player = root_state.get_current_player();
+    #endif
     root_state.apply_move(move);
     complete_turn(root_state);
+    #ifdef STATS
+    if (current_player != root_state.get_current_player())
+        ++turn_number;
+    #endif
     uint root_index = 0;
     auto [fst, lst] = nodes.front().children_range;
     for ( ; fst < lst; ++fst) {
@@ -129,22 +138,27 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 
 reasoner::move Tree::choose_best_move() {
     const auto [fst, lst] = nodes.front().children_range;
-    uint max_sim = 0;
+    uint max_sim = children[fst].sim_count;
     auto best_node = fst;
+    for (auto i = fst + 1; i < lst; ++i) {
+        if (children[i].sim_count > max_sim) {
+            max_sim = children[i].sim_count;
+            best_node = i;
+        }
+    }
+    #ifdef STATS
+    std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     for (auto i = fst; i < lst; ++i) {
-        std::cout << "move " << std::setw(2) << i - fst;
+        char prefix = (i == best_node) ? '*' : ' ';
+        std::cout << prefix << " move " << std::setw(2) << i - fst;
         std::cout << "   sim " << std::setw(4) << children[i].sim_count;
         std::cout << "   score " << std::setw(6) << children[i].total_score << "   [";
         for (const auto action : children[i].get_actions()) {
             std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
         }
         std::cout << "]" << std::endl;
-        if (children[i].sim_count > max_sim) {
-            max_sim = children[i].sim_count;
-            best_node = i;
-        }
     }
-    std::cout << "chosen move: " << best_node << std::endl;
+    #endif
     return children[best_node].move;
 }
 

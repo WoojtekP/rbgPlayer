@@ -19,6 +19,9 @@ protected:
     std::vector<Child> children;
     std::vector<std::pair<uint,int>> children_stack;
     MoveChooser<move_type> move_chooser;
+    #if STATS
+    uint turn_number = 0;
+    #endif
 
     bool is_node_fully_expanded(const uint);
     void complete_turn(reasoner::game_state&);
