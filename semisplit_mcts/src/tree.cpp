@@ -150,7 +150,7 @@ uint Tree::perform_simulation() {
             for (const auto& semimove : path) {
                 move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
             }
-            move_chooser.update_all_moves(simulation_result, depth);
+            move_chooser.update_all_moves(results, depth);
             #endif
             children_stack.clear();
         }
