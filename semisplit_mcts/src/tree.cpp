@@ -242,6 +242,7 @@ reasoner::move Tree::choose_best_move() {
     #if STATS
     uint level = 1;
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
+    std::cout << std::fixed << std::setprecision(2);
     #endif
     while (true) {
         const auto [fst, lst] = nodes[node_index].children_range;
@@ -272,9 +273,8 @@ reasoner::move Tree::choose_best_move() {
         std::cout << "moves at level " << level << std::endl;
         for (auto i = fst; i < lst; ++i) {
             char prefix = (i == best_child) ? '*' : ' ';
-            std::cout << prefix << " move " << std::setw(2) << i - fst;
-            std::cout << "   sim " << std::setw(4) << children[i].sim_count;
-            std::cout << "   score " << std::setw(6) << children[i].total_score << "   [";
+            std::cout << prefix << " sim " << std::setw(4) << children[i].sim_count;
+            std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   [";
             for (const auto action : children[i].get_actions()) {
                 std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
             }
