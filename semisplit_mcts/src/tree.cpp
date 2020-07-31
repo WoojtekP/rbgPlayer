@@ -17,9 +17,8 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
 uint Tree::create_node(reasoner::game_state& state) {
     static std::vector<reasoner::semimove> semimoves;
     uint new_child_index = children.size();
-    auto state_copy = state;
     bool is_nodal = state.is_nodal();
-    bool has_nodal_succ = has_nodal_successor(state_copy, cache);
+    bool has_nodal_succ = has_nodal_successor(state);
     if (is_nodal && !has_nodal_succ) {
         nodes.emplace_back(new_child_index, 0, is_nodal, has_nodal_succ);
     }
@@ -33,6 +32,26 @@ uint Tree::create_node(reasoner::game_state& state) {
         }
     }
     return nodes.size() - 1;
+}
+
+bool Tree::has_nodal_successor(reasoner::game_state& state, uint semidepth) {
+    static std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
+    complete_turn(state);
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    while (!legal_semimoves[semidepth].empty()) {
+        auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth].back());
+        if (state.is_nodal()) {
+            state.revert(ri);
+            return true;
+        }
+        if (has_nodal_successor(state, semidepth+1)) {
+            state.revert(ri);
+            return true;
+        }
+        legal_semimoves[semidepth].pop_back();
+        state.revert(ri);
+    }
+    return false;
 }
 
 bool Tree::save_path_to_nodal_state(reasoner::game_state& state, std::vector<reasoner::semimove>& path, uint semidepth) {

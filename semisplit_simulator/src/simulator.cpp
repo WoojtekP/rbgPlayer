@@ -34,35 +34,6 @@ namespace {
         }
         return false;
     }
-
-    bool apply_random_move_exhaustive(reasoner::game_state& state,
-                                      reasoner::resettable_bitarray_stack& cache,
-                                      uint semidepth) {
-        static RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
-        state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
-        while (!legal_semimoves[semidepth].empty()) {
-            uint chosen_semimove = rand_gen.uniform_choice(legal_semimoves[semidepth].size());
-            reasoner::revert_information ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
-            legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
-            legal_semimoves[semidepth].pop_back();
-            if (state.is_nodal())
-                return true;
-            if (apply_random_move_exhaustive(state, cache, semidepth+1))
-                return true;
-            state.revert(ri);
-        }
-        return false;
-    }
-}
-
-bool has_nodal_successor(reasoner::game_state& state,
-                         reasoner::resettable_bitarray_stack& cache) {
-    while (state.get_current_player() == KEEPER) {
-        if (not state.apply_any_move(cache)) {
-            return false;
-        }
-    }
-    return apply_random_move_exhaustive(state, cache, 0);
 }
 
 uint play(reasoner::game_state& state,

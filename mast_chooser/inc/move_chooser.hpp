@@ -30,8 +30,13 @@ public:
         return path;
     }
 
-    const reasoner::move_representation extract_actions(const T& move) {
+    template <typename M>
+    const reasoner::move_representation& extract_actions(const M& move) {
         return move.get_actions();
+    }
+
+    const reasoner::move_representation& extract_actions(const reasoner::move& move) {
+        return move.mr;
     }
 
     template <typename M>
@@ -129,8 +134,5 @@ public:
         }
     }
 };
-
-template<>
-const reasoner::move_representation MoveChooser<reasoner::move>::extract_actions(const reasoner::move&);
 
 #endif
