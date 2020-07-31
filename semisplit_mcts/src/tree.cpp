@@ -124,7 +124,7 @@ uint Tree::perform_simulation() {
         complete_turn(state);
         path.clear();
         if (save_path_to_nodal_state(state, path, 0)) {
-            children_stack.emplace_back(child_index, state.get_current_player());
+            children_stack.emplace_back(child_index, current_player);
             ++state_count;
             if constexpr (IS_NODAL) {
                 auto new_node_index = create_node(state);
@@ -140,7 +140,7 @@ uint Tree::perform_simulation() {
                             if (i != fst) {
                                 std::swap(children[i], children[fst]);
                             }
-                            children_stack.emplace_back(fst, state.get_current_player());
+                            children_stack.emplace_back(fst, current_player);
                             break;
                         }
                     }
@@ -157,6 +157,7 @@ uint Tree::perform_simulation() {
             [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
             for (const auto [child_index, player] : children_stack) {
                 assert(children[child_index].index != 0);
+                assert(player != KEEPER);
                 nodes[children[child_index].index].sim_count++;
                 children[child_index].sim_count++;
                 children[child_index].total_score += results[player - 1];

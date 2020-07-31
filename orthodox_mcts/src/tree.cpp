@@ -63,17 +63,19 @@ uint Tree::perform_simulation() {
     [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO calculate only nodal-depth
     [[maybe_unused]] uint depth = 0;
     node_index = 0;
-    for (const auto [index, player] : children_stack) {
-        nodes[children[index].index].sim_count++;
-        children[index].sim_count++;
-        children[index].total_score += results[player - 1];
+    for (const auto [child_index, player] : children_stack) {
+        assert(children[child_index].index != 0);
+        assert(player != KEEPER);
+        nodes[children[child_index].index].sim_count++;
+        children[child_index].sim_count++;
+        children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[index].get_actions(), results, player, path_len);
+        move_chooser.update_move(children[child_index].get_actions(), results, player, path_len);
         #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (i == index) {
+            if (i == child_index) {
                 continue;
             }
             bool found = false;
