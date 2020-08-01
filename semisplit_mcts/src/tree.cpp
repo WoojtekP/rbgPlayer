@@ -119,62 +119,10 @@ uint Tree::perform_simulation() {
     }
     else {
         const auto current_player = state.get_current_player();
-        const auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
-        state.apply_semimove(children[child_index].semimove);
-        complete_turn(state);
+        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
+        auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
-        if (save_path_to_nodal_state(state, path, 0)) {
-            children_stack.emplace_back(child_index, current_player);
-            ++state_count;
-            if constexpr (IS_NODAL) {
-                auto new_node_index = create_node(state);
-                children[child_index].index = new_node_index;
-                for (const auto semimove : path) {
-                    auto [fst, lst] = nodes[new_node_index].children_range;
-                    for (auto i = fst; i < lst; ++i) {
-                        if (children[i].semimove == semimove) {
-                            state.apply_semimove(semimove);
-                            complete_turn(state);
-                            new_node_index = create_node(state);
-                            children[i].index = new_node_index;
-                            if (i != fst) {
-                                std::swap(children[i], children[fst]);
-                            }
-                            children_stack.emplace_back(fst, current_player);
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-                children[child_index].index = create_node(state);
-                for (const auto semimove : path) {
-                    state.apply_semimove(semimove);
-                }
-                complete_turn(state);
-            }
-            state_count += play(state, move_chooser, cache, results);
-            [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
-            for (const auto [child_index, player] : children_stack) {
-                assert(children[child_index].index != 0);
-                assert(player != KEEPER);
-                nodes[children[child_index].index].sim_count++;
-                children[child_index].sim_count++;
-                children[child_index].total_score += results[player - 1];
-                #if MAST > 0
-                move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
-                #endif
-            }
-            nodes.front().sim_count++;
-            #if MAST > 0
-            for (const auto& semimove : path) {
-                move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
-            }
-            move_chooser.update_all_moves(results, depth);
-            #endif
-            children_stack.clear();
-        }
-        else {
+        while (!save_path_to_nodal_state(state, path)) {
             auto& end = nodes[node_index].children_range.second;
             --end;
             if (child_index != end) {
@@ -182,9 +130,63 @@ uint Tree::perform_simulation() {
             }
             const auto [fst, lst] = nodes[node_index].children_range;
             assert(fst < lst);
+            state.revert(ri);
+            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
+            ri = state.apply_semimove_with_revert(children[child_index].semimove);
+            path.clear();
         }
-        move_chooser.clear_path();
+        children_stack.emplace_back(child_index, current_player);
+        ++state_count;
+        if constexpr (IS_NODAL) {
+            auto new_node_index = create_node(state);
+            children[child_index].index = new_node_index;
+            for (const auto semimove : path) {
+                auto [fst, lst] = nodes[new_node_index].children_range;
+                for (auto i = fst; i < lst; ++i) {
+                    if (children[i].semimove == semimove) {
+                        state.apply_semimove(semimove);
+                        complete_turn(state);
+                        new_node_index = create_node(state);
+                        children[i].index = new_node_index;
+                        if (i != fst) {
+                            std::swap(children[i], children[fst]);
+                        }
+                        children_stack.emplace_back(fst, current_player);
+                        break;
+                    }
+                }
+            }
+            path.clear();
+        }
+        else {
+            children[child_index].index = create_node(state);
+            for (const auto semimove : path) {
+                state.apply_semimove(semimove);
+            }
+            complete_turn(state);
+        }
+        state_count += play(state, move_chooser, cache, results);
+        [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
+        for (const auto [child_index, player] : children_stack) {
+            assert(children[child_index].index != 0);
+            assert(player != KEEPER);
+            nodes[children[child_index].index].sim_count++;
+            children[child_index].sim_count++;
+            children[child_index].total_score += results[player - 1];
+            #if MAST > 0
+            move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
+            #endif
+        }
+        nodes.front().sim_count++;
+        #if MAST > 0
+        for (const auto& semimove : path) {
+            move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
+        }
+        move_chooser.update_all_moves(results, depth);
+        #endif
+        children_stack.clear();
     }
+    move_chooser.clear_path();
     return state_count;
 }
 
