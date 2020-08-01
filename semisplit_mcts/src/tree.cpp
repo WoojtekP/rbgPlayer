@@ -118,7 +118,7 @@ uint Tree::perform_simulation() {
         children_stack.clear();
     }
     else {
-        const auto current_player = state.get_current_player();
+        auto current_player = state.get_current_player();
         auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
@@ -131,10 +131,19 @@ uint Tree::perform_simulation() {
             const auto [fst, lst] = nodes[node_index].children_range;
             assert(fst < lst);
             state.revert(ri);
+            if (is_node_fully_expanded(node_index)) {
+                child_index = get_best_uct_child_index(node_index);
+                state.apply_semimove(children[child_index].semimove);
+                complete_turn(state);
+                children_stack.emplace_back(child_index, current_player);
+                node_index = children[child_index].index;
+                current_player = state.get_current_player();
+            }
             child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
             ri = state.apply_semimove_with_revert(children[child_index].semimove);
             path.clear();
         }
+        complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
         ++state_count;
         if constexpr (IS_NODAL) {
