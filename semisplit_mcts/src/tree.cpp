@@ -118,6 +118,7 @@ uint Tree::perform_simulation() {
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
+            state.revert(ri);
             auto& [fst, lst] = nodes[node_index].children_range;
             --lst;
             if (child_index != lst) {
@@ -127,10 +128,12 @@ uint Tree::perform_simulation() {
                 assert(nodes[node_index].is_nodal);
                 assert(nodes[node_index].status != node_status::nonterminal);
                 nodes[node_index].status = node_status::terminal;
+                for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+                    results[i - 1] = state.get_player_score(i);
+                }
                 goto terminal;
             }
             assert(fst < lst);
-            state.revert(ri);
             while (is_node_fully_expanded(node_index)) {
                 child_index = get_best_uct_child_index(node_index);
                 state.apply_semimove(children[child_index].semimove);
@@ -140,6 +143,9 @@ uint Tree::perform_simulation() {
                 assert(node_index > 0);
                 current_player = state.get_current_player();
                 if (nodes[node_index].is_terminal()) {
+                    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+                        results[i - 1] = state.get_player_score(i);
+                    }
                     goto terminal;
                 }
             }
