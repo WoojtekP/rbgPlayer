@@ -14,7 +14,7 @@
 
 class Tree final : public MctsTree {
 private:
-    uint create_node(reasoner::game_state&);
+    uint create_node(reasoner::game_state&, const node_status = node_status::unknown);
     bool has_nodal_successor(reasoner::game_state&, uint = 0);
     bool save_path_to_nodal_state(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
 public:
@@ -28,7 +28,7 @@ public:
     uint perform_simulation();
     void reparent_along_move(const reasoner::move&);
     reasoner::move choose_best_move();
-    game_status_indication get_status(const int) const;
+    game_status_indication get_status(const int);
 };
 
 #endif

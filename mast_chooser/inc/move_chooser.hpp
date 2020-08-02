@@ -65,6 +65,7 @@ public:
 
     uint get_unvisited_child_index(std::vector<Child>& children, const Node& node, const int current_player) {
         auto [fst, lst] = node.children_range;
+        assert(fst < lst);
         auto lower = std::min(fst + node.sim_count, lst - 1);
         while (lower > fst && children[lower - 1].index == 0) {
             --lower;

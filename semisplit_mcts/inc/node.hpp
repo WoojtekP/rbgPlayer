@@ -5,17 +5,22 @@
 #include "reasoner.hpp"
 #include "types.hpp"
 
+enum node_status : char {
+    terminal,
+    nonterminal,
+    unknown,
+};
 
 struct Node : NodeBase {
     const bool is_nodal;
-    const bool has_nodal_succ;
+    node_status status;
     Node(void)=delete;
     Node(const Node&)=default;
     Node(Node&&)=default;
     Node& operator=(const Node&)=default;
     Node& operator=(Node&&)=default;
     ~Node(void)=default;
-    Node(const uint, const uint, const bool, const bool);
+    Node(const uint, const uint, const bool, const node_status);
     bool is_terminal() const;
 };
 

@@ -14,21 +14,26 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
     create_node(root_state);
 }
 
-uint Tree::create_node(reasoner::game_state& state) {
+uint Tree::create_node(reasoner::game_state& state, const node_status status) {
     static std::vector<reasoner::semimove> semimoves;
     uint new_child_index = children.size();
-    bool is_nodal = state.is_nodal();
-    bool has_nodal_succ = has_nodal_successor(state);
-    if (is_nodal && !has_nodal_succ) {
-        nodes.emplace_back(new_child_index, 0, is_nodal, has_nodal_succ);
+    if (status == node_status::terminal) {
+        assert(state.is_nodal());
+        nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
     }
     else {
-        assert(state.get_current_player() != KEEPER);
         state.get_all_semimoves(cache, semimoves, SEMILENGTH);
         auto child_count = semimoves.size();
-        nodes.emplace_back(new_child_index, child_count, is_nodal, has_nodal_succ);
-        for (const auto& semimove : semimoves) {
-            children.emplace_back(semimove);
+        if (child_count == 0) {
+            assert(state.is_nodal());
+            nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
+        }
+        else {
+            assert(state.get_current_player() != KEEPER);
+            nodes.emplace_back(new_child_index, child_count, state.is_nodal(), status);
+            for (const auto& semimove : semimoves) {
+                children.emplace_back(semimove);
+            }
         }
     }
     return nodes.size() - 1;
@@ -80,13 +85,12 @@ uint Tree::perform_simulation() {
     static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
     static reasoner::game_state state = root_state;
     static std::vector<reasoner::semimove> path;
-    uint state_count = 0;
-    uint node_index = children_stack.empty() ? 0 : children[children_stack.back().first].index;
-    state = root_state;
-    for (const auto el : children_stack) {
-        state.apply_semimove(children[el.first].semimove);
-        complete_turn(state);
+    for (const auto& node : nodes) {
+        assert(node.status != node_status::unknown);
     }
+    uint state_count = 0;
+    uint node_index = 0;
+    state = root_state;
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         const auto child_index = get_best_uct_child_index(node_index);
         const auto current_player = state.get_current_player();
@@ -104,18 +108,6 @@ uint Tree::perform_simulation() {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
             results[i - 1] = state.get_player_score(i);
         }
-        [[maybe_unused]] uint depth = children_stack.size();
-        for (const auto [child_index, player] : children_stack) {
-            assert(children[child_index].index != 0);
-            nodes[children[child_index].index].sim_count++;
-            children[child_index].sim_count++;
-            children[child_index].total_score += results[player - 1];
-            #if MAST > 0
-            move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
-            #endif
-        }
-        nodes.front().sim_count++;
-        children_stack.clear();
     }
     else {
         auto current_player = state.get_current_player();
@@ -123,12 +115,17 @@ uint Tree::perform_simulation() {
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
-            auto& end = nodes[node_index].children_range.second;
-            --end;
-            if (child_index != end) {
-                std::swap(children[child_index], children[end]);
+            auto& [fst, lst] = nodes[node_index].children_range;
+            --lst;
+            if (child_index != lst) {
+                std::swap(children[child_index], children[lst]);
             }
-            const auto [fst, lst] = nodes[node_index].children_range;
+            if (fst == lst) {
+                assert(nodes[node_index].is_nodal);
+                assert(nodes[node_index].status != node_status::nonterminal);
+                nodes[node_index].status = node_status::terminal;
+                goto terminal;
+            }
             assert(fst < lst);
             state.revert(ri);
             if (is_node_fully_expanded(node_index)) {
@@ -138,6 +135,9 @@ uint Tree::perform_simulation() {
                 children_stack.emplace_back(child_index, current_player);
                 node_index = children[child_index].index;
                 current_player = state.get_current_player();
+                if (nodes[node_index].is_terminal()) {
+                    goto terminal;
+                }
             }
             child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
             ri = state.apply_semimove_with_revert(children[child_index].semimove);
@@ -146,56 +146,70 @@ uint Tree::perform_simulation() {
         complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
         ++state_count;
+        auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
+        auto new_node_index = create_node(state, status);
+        children[child_index].index = new_node_index;
         if constexpr (IS_NODAL) {
-            auto new_node_index = create_node(state);
-            children[child_index].index = new_node_index;
-            for (const auto semimove : path) {
+            const uint size = path.size();
+            for (uint i = 0; i < size; ++i) {
+                const auto& semimove = path[i];
                 auto [fst, lst] = nodes[new_node_index].children_range;
-                for (auto i = fst; i < lst; ++i) {
-                    if (children[i].semimove == semimove) {
+                for (auto j = fst; j < lst; ++j) {
+                    if (children[j].semimove == semimove) {
                         state.apply_semimove(semimove);
-                        complete_turn(state);
-                        new_node_index = create_node(state);
-                        children[i].index = new_node_index;
-                        if (i != fst) {
-                            std::swap(children[i], children[fst]);
+                        if (i + 1 == size) {
+                            complete_turn(state);
+                            new_node_index = create_node(state, node_status::unknown);
+                        }
+                        else {
+                            new_node_index = create_node(state, node_status::nonterminal);
+                        }
+                        children[j].index = new_node_index;
+                        if (j != fst) {
+                            std::swap(children[j], children[fst]);
                         }
                         children_stack.emplace_back(fst, current_player);
                         break;
                     }
                 }
             }
-            path.clear();
         }
         else {
-            children[child_index].index = create_node(state);
             for (const auto semimove : path) {
                 state.apply_semimove(semimove);
             }
             complete_turn(state);
         }
-        state_count += play(state, move_chooser, cache, results);
-        [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();
-        for (const auto [child_index, player] : children_stack) {
-            assert(children[child_index].index != 0);
-            assert(player != KEEPER);
-            nodes[children[child_index].index].sim_count++;
-            children[child_index].sim_count++;
-            children[child_index].total_score += results[player - 1];
-            #if MAST > 0
-            move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
-            #endif
+        assert(state.is_nodal());
+        auto states_in_simulation = play(state, move_chooser, cache, results);
+        nodes[new_node_index].status = (states_in_simulation > 0) ? node_status::nonterminal : node_status::terminal;
+        if (nodes[new_node_index].status == node_status::terminal) {
+            assert(nodes[new_node_index].is_nodal);
         }
-        nodes.front().sim_count++;
-        #if MAST > 0
-        for (const auto& semimove : path) {
-            move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
-        }
-        move_chooser.update_all_moves(results, depth);
-        #endif
-        children_stack.clear();
+        state_count += states_in_simulation;
     }
+    terminal:
+    [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();  // TODO fix
+    for (const auto [child_index, player] : children_stack) {
+        assert(children[child_index].index != 0);
+        assert(player != KEEPER);
+        nodes[children[child_index].index].sim_count++;
+        children[child_index].sim_count++;
+        children[child_index].total_score += results[player - 1];
+        #if MAST > 0
+        move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
+        #endif
+    }
+    nodes.front().sim_count++;
+    #if MAST > 0
+    for (const auto& semimove : path) {
+        move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
+    }
+    move_chooser.update_all_moves(results, depth);
+    #endif
+    children_stack.clear();
     move_chooser.clear_path();
+    path.clear();
     return state_count;
 }
 
@@ -290,6 +304,7 @@ reasoner::move Tree::choose_best_move() {
                 children_indices.push_back(i);
             }
         }
+        assert(max_sim > 0);
         auto best_child = children_indices.front();
         auto best_score = children[best_child].total_score;
         for (const auto child_index : children_indices) {
@@ -323,8 +338,18 @@ reasoner::move Tree::choose_best_move() {
     return move;
 }
 
-game_status_indication Tree::get_status(const int player_index) const {
-    if (nodes.front().is_terminal()) {
+game_status_indication Tree::get_status(const int player_index) {
+    assert(root_state.is_nodal());
+    if (nodes.front().status == node_status::unknown) {
+        if (has_nodal_successor(root_state)) {
+            nodes.front().status = node_status::nonterminal;
+        }
+        else {
+            nodes.front().status = node_status::terminal;
+            return end_game;
+        }
+    }
+    else if (nodes.front().is_terminal()) {
         return end_game;
     }
     return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;

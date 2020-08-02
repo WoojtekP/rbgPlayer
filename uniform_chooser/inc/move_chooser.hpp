@@ -10,6 +10,7 @@
 #include "node.hpp"
 #include "random_generator.hpp"
 
+#include <iostream>
 
 template <typename T>
 class MoveChooser {
@@ -39,15 +40,32 @@ public:
 
     uint get_unvisited_child_index(std::vector<Child>& children, const Node& node, const int) {
         auto [fst, lst] = node.children_range;
+        assert(fst < lst);
         auto lower = std::min(fst + node.sim_count, lst - 1);
         while (lower > fst && children[lower - 1].index == 0) {
             --lower;
         }
         for (auto i = fst; i < lower; ++i) {
-            assert(children[i].index > 0);
+            if (children[i].index == 0) {
+                std::cerr << "indices: ";
+                for (auto j = fst; j < lst; ++j) {
+                    std::cerr << children[j].index << " ";
+                }
+                std::cerr << std::endl << "chosen " << lower - fst;
+                std::cerr << std::endl << "sim count " << node.sim_count << std::endl;
+                assert(false);
+            }
         }
         for (auto i = lower; i < lst; ++i) {
-            assert(children[i].index == 0);
+            if (children[i].index > 0) {
+                std::cerr << "indices: ";
+                for (auto j = fst; j < lst; ++j) {
+                    std::cerr << children[j].index << " ";
+                }
+                std::cerr << std::endl << "chosen " << lower - fst;
+                std::cerr << std::endl << "sim count " << node.sim_count << std::endl;
+                assert(false);
+            }
         }
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         uint chosen_child = lower + rand_gen.uniform_choice(lst - lower);

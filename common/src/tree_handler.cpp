@@ -53,6 +53,6 @@ uint tree_handler::perform_simulation() {
     return t.perform_simulation();
 }
 
-game_status_indication tree_handler::get_game_status() const {
+game_status_indication tree_handler::get_game_status() {
     return t.get_status(own_player_index);
 }

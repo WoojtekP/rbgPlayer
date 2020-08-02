@@ -26,7 +26,7 @@ public:
     uint perform_simulation();
     void reparent_along_move(const reasoner::move&);
     reasoner::move choose_best_move();
-    game_status_indication get_status(const int) const;
+    game_status_indication get_status(const int);
 };
 
 #endif

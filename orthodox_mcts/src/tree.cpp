@@ -179,7 +179,7 @@ reasoner::move Tree::choose_best_move() {
     return children[best_child].move;
 }
 
-game_status_indication Tree::get_status(const int player_index) const {
+game_status_indication Tree::get_status(const int player_index) {
     if (nodes.front().is_terminal()) {
         return end_game;
     }

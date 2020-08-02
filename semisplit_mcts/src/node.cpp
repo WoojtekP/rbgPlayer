@@ -1,13 +1,17 @@
 #include "node.hpp"
 #include "reasoner.hpp"
 
-Node::Node(const uint first_child_index, const uint child_count, const bool is_nodal, const bool nodal_succ)
+Node::Node(const uint first_child_index, const uint child_count, const bool is_nodal, const node_status status)
     : NodeBase(first_child_index, child_count)
     , is_nodal(is_nodal)
-    , has_nodal_succ(nodal_succ) {}
+    , status(status) {}
 
 bool Node::is_terminal() const {
-    return is_nodal && !has_nodal_succ;
+    bool result = status == node_status::terminal;
+    if (result) {
+        assert(children_range.first == children_range.second);
+    }
+    return result;
 }
 
 Child::Child(const reasoner::semimove& semimove)
