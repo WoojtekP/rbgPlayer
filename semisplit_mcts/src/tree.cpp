@@ -11,7 +11,8 @@
 
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
     complete_turn(root_state);
-    create_node(root_state);
+    const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
+    create_node(root_state, status);
 }
 
 uint Tree::create_node(reasoner::game_state& state, const node_status status) {
@@ -41,7 +42,9 @@ uint Tree::create_node(reasoner::game_state& state, const node_status status) {
 
 bool Tree::has_nodal_successor(reasoner::game_state& state, uint semidepth) {
     static std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
-    complete_turn(state);
+    if (state.get_current_player() == KEEPER) {
+        return false;
+    }
     state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
     while (!legal_semimoves[semidepth].empty()) {
         auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth].back());
@@ -128,12 +131,13 @@ uint Tree::perform_simulation() {
             }
             assert(fst < lst);
             state.revert(ri);
-            if (is_node_fully_expanded(node_index)) {
+            while (is_node_fully_expanded(node_index)) {
                 child_index = get_best_uct_child_index(node_index);
                 state.apply_semimove(children[child_index].semimove);
                 complete_turn(state);
                 children_stack.emplace_back(child_index, current_player);
                 node_index = children[child_index].index;
+                assert(node_index > 0);
                 current_player = state.get_current_player();
                 if (nodes[node_index].is_terminal()) {
                     goto terminal;
@@ -182,11 +186,14 @@ uint Tree::perform_simulation() {
         }
         assert(state.is_nodal());
         auto states_in_simulation = play(state, move_chooser, cache, results);
-        nodes[new_node_index].status = (states_in_simulation > 0) ? node_status::nonterminal : node_status::terminal;
-        if (nodes[new_node_index].status == node_status::terminal) {
-            assert(nodes[new_node_index].is_nodal);
+        if (states_in_simulation > 0) {
+            nodes[new_node_index].status = node_status::nonterminal;
+            state_count += states_in_simulation;
         }
-        state_count += states_in_simulation;
+        else {
+            nodes[new_node_index].status = node_status::terminal;
+            nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+        }
     }
     terminal:
     [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();  // TODO fix
@@ -273,7 +280,8 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     if (root_index == 0) {
         nodes.clear();
         children.clear();
-        create_node(root_state);
+        const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
+        create_node(root_state, status);
         return;
     }
     root_at_index(root_index);
@@ -340,16 +348,8 @@ reasoner::move Tree::choose_best_move() {
 
 game_status_indication Tree::get_status(const int player_index) {
     assert(root_state.is_nodal());
-    if (nodes.front().status == node_status::unknown) {
-        if (has_nodal_successor(root_state)) {
-            nodes.front().status = node_status::nonterminal;
-        }
-        else {
-            nodes.front().status = node_status::terminal;
-            return end_game;
-        }
-    }
-    else if (nodes.front().is_terminal()) {
+    assert(nodes.front().status != node_status::unknown);
+    if (nodes.front().is_terminal()) {
         return end_game;
     }
     return root_state.get_current_player() == (player_index + 1) ? own_turn : opponent_turn;

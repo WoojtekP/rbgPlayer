@@ -46,27 +46,12 @@ public:
             --lower;
         }
         for (auto i = fst; i < lower; ++i) {
-            if (children[i].index == 0) {
-                std::cerr << "indices: ";
-                for (auto j = fst; j < lst; ++j) {
-                    std::cerr << children[j].index << " ";
-                }
-                std::cerr << std::endl << "chosen " << lower - fst;
-                std::cerr << std::endl << "sim count " << node.sim_count << std::endl;
-                assert(false);
-            }
+            assert(children[i].index > 0);
         }
         for (auto i = lower; i < lst; ++i) {
-            if (children[i].index > 0) {
-                std::cerr << "indices: ";
-                for (auto j = fst; j < lst; ++j) {
-                    std::cerr << children[j].index << " ";
-                }
-                std::cerr << std::endl << "chosen " << lower - fst;
-                std::cerr << std::endl << "sim count " << node.sim_count << std::endl;
-                assert(false);
-            }
+            assert(children[i].index == 0);
         }
+        assert(children[lst - 1].index == 0);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         uint chosen_child = lower + rand_gen.uniform_choice(lst - lower);
         if (chosen_child != lower) {
