@@ -90,6 +90,10 @@ uint Tree::perform_simulation() {
     static std::vector<reasoner::semimove> path;
     for (const auto& node : nodes) {
         assert(node.status != node_status::unknown);
+        if (node.status == node_status::terminal) {
+            assert(node.is_nodal);
+            assert(node.children_range.first == node.children_range.second);
+        }
     }
     uint state_count = 0;
     uint node_index = 0;
@@ -118,6 +122,7 @@ uint Tree::perform_simulation() {
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
+            assert(path.empty());
             state.revert(ri);
             auto& [fst, lst] = nodes[node_index].children_range;
             --lst;
@@ -197,8 +202,22 @@ uint Tree::perform_simulation() {
             state_count += states_in_simulation;
         }
         else {
-            nodes[new_node_index].status = node_status::terminal;
-            nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+            if constexpr (IS_NODAL) {
+                nodes[new_node_index].status = node_status::terminal;
+                nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+            }
+            else {
+                if (nodes[new_node_index].is_nodal) {
+                    assert(path.empty());
+                    assert(nodes[new_node_index].status == node_status::unknown);
+                    nodes[new_node_index].status = node_status::terminal;
+                    nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+                }
+                else {
+                    assert(!path.empty());
+                    nodes[new_node_index].status = node_status::nonterminal;
+                }
+            }
         }
     }
     terminal:
@@ -215,8 +234,10 @@ uint Tree::perform_simulation() {
     }
     nodes.front().sim_count++;
     #if MAST > 0
-    for (const auto& semimove : path) {
-        move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
+    if constexpr (!IS_NODAL) {
+        for (const auto& semimove : path) {
+            move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
+        }
     }
     move_chooser.update_all_moves(results, depth);
     #endif
