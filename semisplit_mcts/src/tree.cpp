@@ -22,6 +22,10 @@ uint Tree::create_node(reasoner::game_state& state, const node_status status) {
         assert(state.is_nodal());
         nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
     }
+    else if (state.get_current_player() == KEEPER) {
+        assert(!state.apply_any_move(cache));
+        nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
+    }
     else {
         state.get_all_semimoves(cache, semimoves, SEMILENGTH);
         auto child_count = semimoves.size();
