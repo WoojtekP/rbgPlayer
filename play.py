@@ -290,7 +290,7 @@ assert(player_kind in available_players)
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(2, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.stats))
+compile_player(1, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.stats))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 
