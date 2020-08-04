@@ -5,15 +5,18 @@
     },
     "algorithm" : {
         "name" : "MCTS",
-        "tree_strategy" : "orthodox",
-        "simulation_strategy" : "orthodox",
+        "tree_strategy" : "semisplit",
+        "simulation_strategy" : "semisplit",
         "parameters" : {
-            "exploration_constant" : 0.7
+            "exploration_constant" : 0.7,
+            "max_semidepth" : 50,
+            "semilength" : 0,
+            "is_nodal" : true
         }
     },
     "heuristics" : [
         {
-            "name" : "MAST",
+            "name" : "MASTSPLIT",
             "parameters" : {
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,

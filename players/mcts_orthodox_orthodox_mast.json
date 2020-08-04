@@ -13,7 +13,7 @@
     },
     "heuristics" : [
         {
-            "name" : "MASTSPLIT",
+            "name" : "MAST",
             "parameters" : {
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,
