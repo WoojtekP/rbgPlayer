@@ -101,10 +101,11 @@ uint Tree::perform_simulation() {
     }
     uint state_count = 0;
     uint node_index = 0;
+    int current_player;
     state = root_state;
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         const auto child_index = get_best_uct_child_index(node_index);
-        const auto current_player = state.get_current_player();
+        current_player = state.get_current_player();
         assert(child_index >= nodes[node_index].children_range.first);
         assert(child_index < nodes[node_index].children_range.second);
         state.apply_semimove(children[child_index].semimove);
@@ -121,7 +122,7 @@ uint Tree::perform_simulation() {
         }
     }
     else {
-        auto current_player = state.get_current_player();
+        current_player = state.get_current_player();
         auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
@@ -160,7 +161,6 @@ uint Tree::perform_simulation() {
             }
             child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
             ri = state.apply_semimove_with_revert(children[child_index].semimove);
-            path.clear();
         }
         complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
