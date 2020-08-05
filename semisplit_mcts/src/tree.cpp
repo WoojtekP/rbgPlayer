@@ -359,7 +359,8 @@ reasoner::move Tree::choose_best_move() {
         for (auto i = fst; i < lst; ++i) {
             char prefix = (i == best_child) ? '*' : ' ';
             std::cout << prefix << " sim " << std::setw(4) << children[i].sim_count;
-            std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   [";
+            std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   ";
+            std::cout << "(" << std::setw(2) << children[i].semimove.cell << " " << std::setw(3) << children[i].semimove.state << ") [";
             for (const auto action : children[i].get_actions()) {
                 std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
             }
