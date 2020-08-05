@@ -28,11 +28,11 @@ MOVES_CONTAINER_SPLIT := moves_container_split
 ORTHODOX_SIMULATOR := orthodox_simulator
 SEMISPLIT_SIMULATOR := semisplit_simulator
 SEMISPLIT_MCTS := semisplit_mcts
-JOINT_MOVES := joint_moves
+ROLLUP_MCTS := rollup_mcts
 
 C := g++
 ifeq (0, $(DEBUG))
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS) -DROLLUP
 else
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 endif
@@ -75,6 +75,8 @@ $(eval $(call PLAYER_KIND_RULES,SEMISPLITMCTS_SEMISPLITSIM,semisplitMcts_semispl
 $(eval $(call PLAYER_KIND_RULES,SEMISPLITMCTS_SEMISPLITSIM_MASTSPLIT,semisplitMcts_semisplitSim_mastsplit,$(MAST_CHOOSER) $(MOVES_CONTAINER_SPLIT) $(MCTS_COMMON) $(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SEMISPLITMCTS_ORTHODOXSIM,semisplitMcts_orthodoxSim,$(UNIFORM_CHOOSER) $(MCTS_COMMON) $(SEMISPLIT_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 $(eval $(call PLAYER_KIND_RULES,SEMISPLITMCTS_ORTHODOXSIM_MASTSPLIT,semisplitMcts_orthodoxSim_mastsplit,$(MAST_CHOOSER) $(MOVES_CONTAINER_SPLIT) $(MCTS_COMMON) $(SEMISPLIT_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,ROLLUPMCTS_SEMISPLITSIM,rollupMcts_semisplitSim,$(UNIFORM_CHOOSER) $(MCTS_COMMON) $(ROLLUP_MCTS) $(SEMISPLIT_SIMULATOR) $(COMMON) $(GEN_DIR)))
+$(eval $(call PLAYER_KIND_RULES,ROLLUPMCTS_ORTHODOXSIM,rollupMcts_orthodoxSim,$(UNIFORM_CHOOSER) $(MCTS_COMMON) $(ROLLUP_MCTS) $(ORTHODOX_SIMULATOR) $(COMMON) $(GEN_DIR)))
 
 $(DEP_DIR):
 	mkdir -p $(DEP_DIR)
