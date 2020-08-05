@@ -1,4 +1,5 @@
-#if STATS
+#if STATS || defined(ROLLUP)
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #endif
@@ -102,6 +103,25 @@ void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uin
 void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
     uint new_child_index = children.size();
     uint i = nodes[node_index].children_range.first;
+    #ifdef ROLLUP
+    {
+        std::cerr << "before rollup:\n";
+        const auto [fst, lst] = nodes[node_index].children_range;
+        for (auto i = fst; i < lst; ++i) {
+            std::cerr << std::setw(3) << children[i].index << " ";
+            std::cerr << std::setw(3) << children[i].sim_count << " ";
+            std::cerr << std::setw(5) << children[i].total_score << " [";
+            for (const auto& action : children[i].get_actions()) {
+                std::cerr << std::setw(2) << action.cell << " " << std::setw(3) << action.index << " ";
+            }
+            std::cerr << "]  (" << std::setw(2) << children[i].semimove.cell << " " << std::setw(3) << children[i].semimove.state << ")";
+            if (std::any_of(children_indices.begin(), children_indices.end(), [&i](const auto& index) { return index == i; })) {
+                std::cerr << " *";
+            }
+            std::cerr << std::endl;
+        }
+    }
+    #endif
     for (const auto child_index : children_indices) {
         assert(child_index >= nodes[node_index].children_range.first);
         assert(child_index < nodes[node_index].children_range.second);
@@ -114,7 +134,23 @@ void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
         const auto [fst, lst] = nodes[children[child_index].index].children_range;
         const auto& semimove_prefix = children[child_index].semimove;
         const auto mr_prefix = semimove_prefix.get_actions();
+        #ifdef ROLLUP
+        std::cerr << "prefix: [";
+        for (const auto& action : mr_prefix) {
+            std::cerr << action.cell << " " << action.index << " ";
+        }
+        std::cerr << "]" << std::endl << "children:" << std::endl;
+        #endif
         for (auto j = fst; j < lst; ++j) {
+            #ifdef ROLLUP
+            std::cerr << std::setw(3) << children[j].index << " ";
+            std::cerr << std::setw(3) << children[j].sim_count << " ";
+            std::cerr << std::setw(5) << children[j].total_score << " [";
+            for (const auto& action : children[j].get_actions()) {
+                std::cerr << std::setw(2) << action.cell << " " << std::setw(3) << action.index << ",";
+            }
+            std::cerr << "]  (" << std::setw(2) << children[j].semimove.cell << " " << std::setw(3) << children[j].semimove.state << ")" << std::endl;
+            #endif
             const auto& semimove_suffix = children[j].semimove;
             auto mr_suffix = semimove_suffix.get_actions();
             const auto cell = semimove_suffix.cell;
@@ -123,12 +159,31 @@ void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
             children.push_back(std::move(children[j]));
             children.back().semimove = reasoner::semimove(mr_suffix, cell, state);
         }
+        #ifdef ROLLUP
+        std::cerr << std::endl;
+        #endif
     }
     for (; i < nodes[node_index].children_range.second; ++i) {
         children.push_back(std::move(children[i]));
     }
     nodes[node_index].children_range.first = new_child_index;
     nodes[node_index].children_range.second = children.size();
+    #ifdef ROLLUP
+    {
+        std::cerr << "after rollup:\n";
+        const auto [fst, lst] = nodes[node_index].children_range;
+        for (auto i = fst; i < lst; ++i) {
+            std::cerr << std::setw(3) << children[i].index << " ";
+            std::cerr << std::setw(3) << children[i].sim_count << " ";
+            std::cerr << std::setw(5) << children[i].total_score << " [";
+            for (const auto& action : children[i].get_actions()) {
+                std::cerr << std::setw(2) << action.cell << " " << std::setw(3) << action.index << " ";
+            }
+            std::cerr << "]  (" << std::setw(2) << children[i].semimove.cell << " " << std::setw(3) << children[i].semimove.state << ")" << std::endl;
+        }
+        std::cerr << std::endl;
+    }
+    #endif
 }
 
 uint Tree::perform_simulation() {
