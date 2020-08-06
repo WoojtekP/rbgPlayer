@@ -1,7 +1,6 @@
 {
     "general" : {
-        "buffer_time" : 50,
-        "sleep_during_opp_turn" : true
+        "buffer_time" : 50
     },
     "algorithm" : {
         "name" : "MCTS",

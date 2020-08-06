@@ -46,11 +46,6 @@ semisplit_players = set([
     "rollupMcts_semisplitSim",
     "rollupMcts_orthodoxSim",])
 
-def player_kind_to_make_target(player_kind):
-    if player_kind == "semisplitNodalMcts":
-        return "semisplitMcts"
-    else:
-        return player_kind
 
 class BufferedSocket:
     def __init__(self, s):
@@ -109,7 +104,7 @@ class PlayerConfig:
             print("at most one type of limit is allowed", sys.stderr)
             exit(1)
     def runnable_list(self):
-        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+player_kind_to_make_target(self.player_kind)]
+        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+self.player_kind]
     def print_config_file(self, name):
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
@@ -204,11 +199,11 @@ def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heurist
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
-    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind_to_make_target(player_kind), "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode))
+    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind, "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode))
     subprocess.run([
         "make",
         "-j"+str(num_of_threads),
-        player_kind_to_make_target(player_kind),
+        player_kind,
         "PLAYER_ID="+str(player_id),
         "DEBUG="+str(debug_mode),
         "STATS="+str(stats),
