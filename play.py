@@ -36,15 +36,6 @@ available_players = set([
     "rollupMcts_semisplitSim",
     "rollupMcts_orthodoxSim",
     "simple_best_select"])
-# TODO remove semisplit_players and use "tree_strategy" and "simulation_strategy"
-semisplit_players = set([
-    "semisplitMcts_semisplitSim",
-    "semisplitMcts_semisplitSim_mastsplit",
-    "orthodoxMcts_semisplitSim",
-    "semisplitMcts_orthodoxSim",
-    "semisplitMcts_orthodoxSim_mastsplit",
-    "rollupMcts_semisplitSim",
-    "rollupMcts_orthodoxSim",])
 
 
 class BufferedSocket:
@@ -152,7 +143,7 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        return player_kind, constants, config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
+        return player_kind, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -190,17 +181,16 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heuristics, debug_mode, stats):
+def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, player_id, heuristics, debug_mode, stats):
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
-        if player_kind in semisplit_players or sim_strategy == "semisplit":
+        if tree_strategy in ["semisplit", "rollup"] or sim_strategy == "semisplit":
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fmod-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
-    print("   subprocess.run: make", "-j"+str(num_of_threads), player_kind, "PLAYER_ID="+str(player_id), "DEBUG="+str(debug_mode))
-    subprocess.run([
+    run_list = [
         "make",
         "-j"+str(num_of_threads),
         player_kind,
@@ -208,7 +198,9 @@ def compile_player(num_of_threads, player_kind, sim_strategy, player_id, heurist
         "DEBUG="+str(debug_mode),
         "STATS="+str(stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics)),
-        "RAVE="+str(int("RAVE" in heuristics))]) # again, assume everything is ok
+        "RAVE="+str(int("RAVE" in heuristics))]
+    print("   subprocess.run:", *run_list)
+    subprocess.run(run_list)
 
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -282,14 +274,14 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_kind, constants, sim_strategy, heuristics = parse_config_file(program_args.player_config)
+player_kind, constants, tree_strategy, sim_strategy, heuristics = parse_config_file(program_args.player_config)
 
 assert(player_kind in available_players)
 
 player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(1, player_kind, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.stats))
+compile_player(1, player_kind, tree_strategy, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.stats))
 print("Player compiled!")
 time.sleep(1.) # to give other players time to end compilation
 
