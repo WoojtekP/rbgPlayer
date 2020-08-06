@@ -213,7 +213,7 @@ uint Tree::perform_simulation() {
             else {
                 if (nodes[new_node_index].is_nodal) {
                     assert(path.empty());
-                    assert(nodes[new_node_index].status == node_status::unknown);
+                    assert(nodes[new_node_index].status != node_status::nonterminal);
                     nodes[new_node_index].status = node_status::terminal;
                     nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
                 }
