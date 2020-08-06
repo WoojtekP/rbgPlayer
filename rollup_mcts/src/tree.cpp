@@ -95,7 +95,33 @@ void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uin
     for (auto i = fst; i < lst; ++i) {
         auto index = children[i].index;
         if (index > 0 && !nodes[index].is_nodal && is_node_fully_expanded(index)) {
-            children_indices.push_back(i);
+            const auto [fst_child, lst_child] = nodes[index].children_range;
+            const auto child_count = lst_child - fst_child;
+            const auto sim_count = nodes[index].sim_count;
+            if (sim_count > child_count * ROLLUP_MULTIPLIER) {
+                if constexpr (MINIMAL_SCORE_DIFF == 0.0) {
+                    children_indices.push_back(i);
+                }
+                else if (child_count == 1) {
+                    children_indices.push_back(i);
+                }
+                else {
+                    double min_score = static_cast<double>(children[fst_child].total_score) / children[fst_child].sim_count;;
+                    double max_score = min_score;
+                    for (auto i = fst_child + 1; i < lst_child; ++i) {
+                        double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
+                        if (score > max_score) {
+                            max_score = score;
+                        }
+                        else if (score < min_score) {
+                            min_score = score;
+                        }
+                    }
+                    if (max_score - min_score >= MINIMAL_SCORE_DIFF) {
+                        children_indices.push_back(i);
+                    }
+                }
+            }
         }
     }
 }
@@ -147,7 +173,7 @@ void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
             std::cerr << std::setw(3) << children[j].sim_count << " ";
             std::cerr << std::setw(5) << children[j].total_score << " [";
             for (const auto& action : children[j].get_actions()) {
-                std::cerr << std::setw(2) << action.cell << " " << std::setw(3) << action.index << ",";
+                std::cerr << std::setw(2) << action.cell << " " << std::setw(3) << action.index << " ";
             }
             std::cerr << "]  (" << std::setw(2) << children[j].semimove.cell << " " << std::setw(3) << children[j].semimove.state << ")" << std::endl;
             #endif
