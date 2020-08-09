@@ -12,7 +12,7 @@
             "semilength" : 0,
             "is_nodal" : false,
             "min_simulations_factor" : 1.0,
-            "minimal_score_diff" : 50.0
+            "min_score_diff" : 0.0
         }
     },
     "heuristics" : []

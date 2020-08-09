@@ -9,6 +9,16 @@
 #include "constants.hpp"
 
 
+#if STATS
+namespace {
+    void print_node_stats(const Child& child) {
+        std::cout << "sim " << std::setw(4) << child.sim_count;
+        std::cout << "   avg " << std::setw(6) << static_cast<double>(child.total_score) / child.sim_count << "   ";
+        std::cout << "(" << std::setw(3) << child.semimove.cell << " " << std::setw(3) << child.semimove.state << ") [";
+    }
+}
+#endif
+
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
     complete_turn(root_state);
     const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
@@ -319,15 +329,79 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     children_stack.clear();
 }
 
+void Tree::choose_best_move(const uint node_index, std::vector<uint>& best_move_path) {
+    static std::vector<uint> move_path;
+    static uint max_sim = 0;
+    static double max_score = 0;
+    const auto [fst, lst] = nodes[node_index].children_range;
+    for (auto i = fst; i < lst; ++i) {
+        auto index = children[i].index;
+        if (index > 0) {
+            move_path.push_back(i);
+            if (nodes[index].is_nodal) {
+                #if STATS
+                print_node_stats(children[i]);
+                for (const auto child_index : move_path) {
+                    for (const auto action : children[child_index].semimove.get_actions()) {
+                        std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
+                    }
+                }
+                std::cout << "]" << std::endl;
+                #endif
+                if (children[i].sim_count > max_sim) {
+                    max_sim = children[i].sim_count;
+                    max_score = static_cast<double>(children[i].total_score) / children[i].sim_count;
+                    best_move_path = move_path;
+                }
+                else if (children[i].sim_count == max_sim) {
+                    auto score = static_cast<double>(children[i].total_score) / children[i].sim_count;
+                    if (score > max_score) {
+                        max_score = score;
+                        best_move_path = move_path;
+                    }
+                }
+            }
+            else {
+                choose_best_move(index, best_move_path);
+            }
+            move_path.pop_back();
+        }
+    }
+    if (node_index == 0) {
+        max_sim = 0;
+        max_score = 0;
+        move_path.clear();
+    }
+}
+
 reasoner::move Tree::choose_best_move() {
     static std::vector<uint> children_indices;
     reasoner::move move;
-    uint node_index = 0;
+    children_indices.clear();
     #if STATS
     uint level = 1;
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     std::cout << std::fixed << std::setprecision(2);
     #endif
+    if constexpr (!GREEDY_CHOICE) {
+        choose_best_move(0, children_indices);
+        for (const auto child_index : children_indices) {
+            const auto& semimove = children[child_index].semimove.get_actions();
+            move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
+        }
+        #if STATS
+        std::cout << std::endl << "chosen move:" << std::endl;
+        print_node_stats(children[children_indices.back()]);
+        for (const auto child_index : children_indices) {
+            for (const auto action : children[child_index].semimove.get_actions()) {
+                std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
+            }
+        }
+        std::cout << "]" << std::endl << std::endl;
+        #endif
+        return move;
+    }
+    uint node_index = 0;
     while (true) {
         const auto [fst, lst] = nodes[node_index].children_range;
         auto max_sim = children[fst].sim_count;
@@ -358,9 +432,8 @@ reasoner::move Tree::choose_best_move() {
         std::cout << "moves at level " << level << std::endl;
         for (auto i = fst; i < lst; ++i) {
             char prefix = (i == best_child) ? '*' : ' ';
-            std::cout << prefix << " sim " << std::setw(4) << children[i].sim_count;
-            std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   ";
-            std::cout << "(" << std::setw(2) << children[i].semimove.cell << " " << std::setw(3) << children[i].semimove.state << ") [";
+            std::cout << prefix << " ";
+            print_node_stats(children[i]);
             for (const auto action : children[i].get_actions()) {
                 std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
             }

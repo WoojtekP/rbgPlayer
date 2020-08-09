@@ -10,7 +10,8 @@
             "exploration_constant" : 0.7,
             "max_semidepth" : 50,
             "semilength" : 0,
-            "is_nodal" : true
+            "is_nodal" : true,
+            "greedy_choice" : false
         }
     },
     "heuristics" : []
