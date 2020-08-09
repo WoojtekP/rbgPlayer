@@ -98,8 +98,8 @@ void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uin
             const auto [fst_child, lst_child] = nodes[index].children_range;
             const auto child_count = lst_child - fst_child;
             const auto sim_count = nodes[index].sim_count;
-            if (sim_count > child_count * MIN_SIMULATIONS_FACTOR) {
-                if constexpr (MINIMAL_SCORE_DIFF == 0.0) {
+            if (sim_count >= child_count * MIN_SIMULATIONS_FACTOR) {
+                if constexpr (MIN_SCORE_DIFF == 0.0) {
                     children_indices.push_back(i);
                 }
                 else if (child_count == 1) {
@@ -117,7 +117,7 @@ void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uin
                             min_score = score;
                         }
                     }
-                    if (max_score - min_score >= MINIMAL_SCORE_DIFF) {
+                    if (max_score - min_score >= MIN_SCORE_DIFF) {
                         children_indices.push_back(i);
                     }
                 }
