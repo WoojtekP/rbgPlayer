@@ -1,3 +1,9 @@
+#include<chrono>
+#include<condition_variable>
+#include<optional>
+#include<mutex>
+#include<thread>
+
 #include"transport_worker.hpp"
 #include"concurrent_queue.hpp"
 #include"client_response.hpp"
@@ -5,9 +11,6 @@
 #include"constants.hpp"
 #include"remote_moves_receiver.hpp"
 #include"own_moves_sender.hpp"
-#include<optional>
-#include<chrono>
-#include<thread>
 
 
 namespace{
@@ -59,24 +62,31 @@ void wait_for_move(uint milisecond_to_wait,
     tree_indications.emplace_back(tree_indication{move_request{}});
 }
 
-std::chrono::steady_clock::time_point handle_turn(remote_moves_receiver& rmr,
-                                                  own_moves_sender& oms,
-                                                  game_status_indication status,
-                                                  concurrent_queue<tree_indication>& tree_indications,
-                                                  concurrent_queue<client_response>& responses_from_tree){
-    switch(status){
+void handle_own_turn(uint miliseconds_left,
+                     own_moves_sender& oms,
+                     concurrent_queue<tree_indication>& tree_indications,
+                     concurrent_queue<client_response>& responses_from_tree) {
+    if constexpr (SIMULATIONS_LIMIT || STATES_LIMIT) {
+        while (!is_move_already_available(responses_from_tree)) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(MILISECONDS_TIME_GRANULATION));
+        }
+    }
+    else {
+        wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
+    }
+    forward_move_from_player_to_server(oms, responses_from_tree);
+}
+
+void handle_turn(remote_moves_receiver& rmr,
+                 own_moves_sender& oms,
+                 game_status_indication status,
+                 concurrent_queue<tree_indication>& tree_indications,
+                 concurrent_queue<client_response>& responses_from_tree) {
+    switch(status) {
         case own_turn:
             {
                 uint miliseconds_left = rmr.receive_miliseconds_limit();
-                if constexpr (SIMULATIONS_LIMIT || STATES_LIMIT) {
-                    while (!is_move_already_available(responses_from_tree)) {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(MILISECONDS_TIME_GRANULATION));
-                    }
-                }
-                else {
-                    wait_for_move(trunctated_subtraction(miliseconds_left, BUFFER_TIME), tree_indications, responses_from_tree);
-                }
-                forward_move_from_player_to_server(oms, responses_from_tree);
+                handle_own_turn(miliseconds_left, oms, tree_indications, responses_from_tree);
                 break;
             }
         case opponent_turn:
@@ -85,23 +95,31 @@ std::chrono::steady_clock::time_point handle_turn(remote_moves_receiver& rmr,
         case end_game:
             tree_indications.emplace_back(tree_indication{reset_tree{}});
             break;
-        default:
-            assert(false);
     }
-    return std::chrono::steady_clock::now();
 }
 }
 
 void run_transport_worker(remote_moves_receiver& rmr,
                           own_moves_sender& oms,
                           concurrent_queue<tree_indication>& tree_indications,
-                          concurrent_queue<client_response>& responses_from_tree){
+                          concurrent_queue<client_response>& responses_from_tree,
+                          std::condition_variable& cv) {
+    game_status_indication current_status = get_game_status(responses_from_tree);
+    if (current_status == own_turn) {
+        uint miliseconds_left = rmr.receive_miliseconds_limit();
+        cv.notify_one();
+        handle_own_turn(miliseconds_left, oms, tree_indications, responses_from_tree);
+        current_status = get_game_status(responses_from_tree);
+    }
+    else {
+        cv.notify_one();
+    }
     while(true){
-        game_status_indication current_status = get_game_status(responses_from_tree);
         handle_turn(rmr,
                     oms,
                     current_status,
                     tree_indications,
                     responses_from_tree);
+        current_status = get_game_status(responses_from_tree);
     }
 }

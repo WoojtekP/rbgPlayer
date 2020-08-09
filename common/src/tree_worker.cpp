@@ -1,3 +1,7 @@
+#include<condition_variable>
+#include<mutex>
+#include<thread>
+
 #include"client_response.hpp"
 #include"concurrent_queue.hpp"
 #include"overloaded.hpp"
@@ -8,12 +12,15 @@
 #include"config.hpp"
 #include"tree.hpp"
 
-#include <iostream>
 
 void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
-                     concurrent_queue<tree_indication>& tree_indications) {
+                     concurrent_queue<tree_indication>& tree_indications,
+                     std::condition_variable& cv,
+                     std::mutex& cv_mutex) {
     reasoner::game_state initial_state;
     tree_handler th(initial_state, responses_to_server);
+    std::unique_lock<std::mutex> lock(cv_mutex);
+    cv.wait(lock);
     while(true) {
         auto status = th.get_game_status();
         if (status == own_turn) {

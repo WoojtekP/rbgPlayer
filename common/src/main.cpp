@@ -1,5 +1,7 @@
 #include<cassert>
+#include<condition_variable>
 #include<thread>
+#include<mutex>
 
 #include<arpa/inet.h>
 #include<sys/socket.h>
@@ -13,6 +15,7 @@
 #include"tree_indication.hpp"
 #include"tree_worker.hpp"
 #include"types.hpp"
+
 
 int connect_to_play(){
     int socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
@@ -36,8 +39,21 @@ int main(){
         return -1;
     remote_moves_receiver rmr(socket_descriptor);
     own_moves_sender oms(socket_descriptor);
-    std::thread transportw(run_transport_worker, std::ref(rmr), std::ref(oms), std::ref(tree_indications), std::ref(client_responses));
-    std::thread treew(run_tree_worker, std::ref(client_responses), std::ref(tree_indications));
+    std::condition_variable cv;
+    std::mutex cv_mutex;
+    std::thread transportw(
+        run_transport_worker,
+        std::ref(rmr),
+        std::ref(oms),
+        std::ref(tree_indications),
+        std::ref(client_responses),
+        std::ref(cv));
+    std::thread treew(
+        run_tree_worker,
+        std::ref(client_responses),
+        std::ref(tree_indications),
+        std::ref(cv),
+        std::ref(cv_mutex));
     transportw.join();
     close(socket_descriptor);
     treew.join();
