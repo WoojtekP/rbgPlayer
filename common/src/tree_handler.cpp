@@ -31,12 +31,15 @@ void tree_handler::handle_status(void){
 void tree_handler::handle_move_request(void){
     const auto& chosen_move = t.choose_best_move();
     responses_to_server.emplace_back(client_response{chosen_move});
-    std::cout << "[PLAYER] Performing move on the basis of " << simulations_count << " simulations." << std::endl;
+    std::cout << "[PLAYER] Performing move on the basis of "
+              << simulations_count << " simulations ("
+              << states_count << " states)" << std::endl;
     handle_move_indication(chosen_move);
 }
 
 void tree_handler::handle_move_indication(const reasoner::move& m){
     simulations_count = 0;
+    states_count = 0;
     t.reparent_along_move(m);
     handle_status();
 }
@@ -45,12 +48,15 @@ void tree_handler::handle_reset_request(const reasoner::game_state& initial_stat
     std::cout << "[PLAYER] Reset Request!" << std::endl;
     t = initial_state;
     simulations_count = 0;
+    states_count = 0;
     handle_status();
 }
 
 uint tree_handler::perform_simulation() {
     simulations_count++;
-    return t.perform_simulation();
+    uint states = t.perform_simulation();
+    states_count += states;
+    return states;
 }
 
 game_status_indication tree_handler::get_game_status() {

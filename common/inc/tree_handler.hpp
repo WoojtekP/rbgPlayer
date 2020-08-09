@@ -21,6 +21,7 @@ class tree_handler{
         Tree t;
         const int own_player_index;
         uint simulations_count = 0;
+        uint states_count = 0;
         concurrent_queue<client_response>& responses_to_server;
         void handle_status(void);
     public:
