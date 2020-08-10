@@ -1,7 +1,5 @@
 #include<cassert>
-#include<condition_variable>
 #include<thread>
-#include<mutex>
 
 #include<arpa/inet.h>
 #include<sys/socket.h>
@@ -39,21 +37,16 @@ int main(){
         return -1;
     remote_moves_receiver rmr(socket_descriptor);
     own_moves_sender oms(socket_descriptor);
-    std::condition_variable cv;
-    std::mutex cv_mutex;
     std::thread transportw(
         run_transport_worker,
         std::ref(rmr),
         std::ref(oms),
         std::ref(tree_indications),
-        std::ref(client_responses),
-        std::ref(cv));
+        std::ref(client_responses));
     std::thread treew(
         run_tree_worker,
         std::ref(client_responses),
-        std::ref(tree_indications),
-        std::ref(cv),
-        std::ref(cv_mutex));
+        std::ref(tree_indications));
     transportw.join();
     close(socket_descriptor);
     treew.join();
