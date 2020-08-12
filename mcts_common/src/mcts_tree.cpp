@@ -28,24 +28,20 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
 
 uint MctsTree::get_best_uct_child_index(const uint node_index) {
     static std::vector<uint> children_indices;
-    const auto& [fst, lst] = nodes[node_index].children_range;
-    children_indices.resize(1);
-    children_indices[0] = fst;
+    children_indices.clear();
     const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(nodes[node_index].sim_count));
-    double max_priority = static_cast<double>(children[fst].total_score) / EXPECTED_MAX_SCORE / children[fst].sim_count +
-                          c_sqrt_logn / std::sqrt(static_cast<double>(children[fst].sim_count));
+    double max_priority = 0.0;
     #if RAVE > 0
     const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * nodes[node_index].sim_count + EQUIVALENCE_PARAMETER));
-    max_priority *= 1.0 - beta;
-    max_priority += beta * static_cast<double>(children[fst].amaf_score) / static_cast<double>(children[fst].amaf_count);
     #endif
-    for (uint i = fst + 1; i < lst; ++i) {
-        double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count +
-                          c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
+    const auto [fst, lst] = nodes[node_index].children_range;
+    for (uint i = fst; i < lst; ++i) {
+        double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count;
         #if RAVE > 0
-        max_priority *= 1.0 - beta;
-        max_priority += beta * static_cast<double>(children[i].amaf_score) / static_cast<double>(children[i].amaf_count);
+        priority *= 1.0 - beta;
+        priority += (children[i].amaf_count > 0) ? (beta * children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count) : 1;
         #endif
+        priority += c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
         if (priority > max_priority) {
             max_priority = priority;
             children_indices.resize(1);

@@ -73,26 +73,26 @@ uint Tree::perform_simulation() {
         move_chooser.update_move(children[child_index].get_actions(), results, player, path_len);
         #endif
         #if RAVE > 0
-        const auto [fst, lst] = nodes[node_index].children_range;
+        const auto [fst, lst] = nodes[children[child_index].index].children_range;
         for (auto i = fst; i < lst; ++i) {
             if (i == child_index) {
                 continue;
             }
             bool found = false;
             for (uint j = depth; j < children_stack.size(); ++j) {
-                const auto [child_index, player] = children_stack[j];
-                if (children[child_index].move == children[i].move) {
+                const auto [new_child_index, new_player] = children_stack[j];
+                if (new_player == player && children[new_child_index].move == children[i].move) {
                     ++children[i].amaf_count;
-                    children[i].amaf_score += results[player - 1];
+                    children[i].amaf_score += results[new_player - 1];
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                for (const auto [move, player] : move_chooser.get_path()) {
-                    if (children[i].move == move) {
+                for (const auto [move, new_player] : move_chooser.get_path()) {
+                    if (new_player == player && children[i].move == move) {
                         ++children[i].amaf_count;
-                        children[i].amaf_score += results[player - 1];
+                        children[i].amaf_score += results[new_player - 1];
                         break;
                     }
                 }
