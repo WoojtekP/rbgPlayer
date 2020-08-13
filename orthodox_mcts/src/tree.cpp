@@ -31,14 +31,16 @@ uint Tree::perform_simulation() {
     static reasoner::game_state state = root_state;
     uint state_count = 0;;
     uint node_index = 0;
+    uint node_sim_count = root_sim_count;
     state = root_state;
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
-        const auto child_index = get_best_uct_child_index(node_index);
+        const auto child_index = get_best_uct_child_index(node_index, node_sim_count);
         const auto current_player = state.get_current_player();
         state.apply_move(children[child_index].move);
         complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
         node_index = children[child_index].index;
+        node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
         ++state_count;
     }
@@ -49,13 +51,12 @@ uint Tree::perform_simulation() {
     }
     else {
         const auto current_player = state.get_current_player();
-        const auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
+        const auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         state.apply_move(children[child_index].move);
         complete_turn(state);
         auto new_node_index = create_node(state);
         ++state_count;
         state_count += play(state, move_chooser, cache, results);
-        nodes[new_node_index].sim_count = 1;
         children[child_index].index = new_node_index;
         children[child_index].sim_count = 1;
         children[child_index].total_score += results[current_player - 1];
@@ -66,7 +67,6 @@ uint Tree::perform_simulation() {
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
-        nodes[children[child_index].index].sim_count++;
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
@@ -101,7 +101,7 @@ uint Tree::perform_simulation() {
         ++depth;
         #endif
     }
-    nodes.front().sim_count++;
+    ++root_sim_count;
     #if MAST > 0
     move_chooser.update_all_moves(results, path_len);
     #endif
@@ -121,14 +121,16 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         ++turn_number;
     #endif
     uint root_index = 0;
-    auto [fst, lst] = nodes.front().children_range;
-    for ( ; fst < lst; ++fst) {
-        if (children[fst].move == move) {
-            root_index = children[fst].index;
+    const auto [fst, lst] = nodes.front().children_range;
+    for (auto i = fst ; i < lst; ++i) {
+        if (children[i].move == move) {
+            root_index = children[i].index;
+            root_sim_count = children[i].sim_count;
             break;
         }
     }
     if (root_index == 0) {
+        root_sim_count = 0;
         nodes.clear();
         children.clear();
         create_node(root_state);

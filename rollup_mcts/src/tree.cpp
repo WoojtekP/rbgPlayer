@@ -89,7 +89,7 @@ bool Tree::save_path_to_nodal_state(reasoner::game_state& state, std::vector<rea
     return false;
 }
 
-void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uint>& children_indices) {
+void Tree::choose_children_for_rolling_up(const uint node_index, const uint node_sim_count, std::vector<uint>& children_indices) {
     children_indices.clear();
     const auto [fst, lst] = nodes[node_index].children_range;
     for (auto i = fst; i < lst; ++i) {
@@ -97,8 +97,7 @@ void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uin
         if (index > 0 && !nodes[index].is_nodal && is_node_fully_expanded(index)) {
             const auto [fst_child, lst_child] = nodes[index].children_range;
             const auto child_count = lst_child - fst_child;
-            const auto sim_count = nodes[index].sim_count;
-            if (sim_count >= child_count * MIN_SIMULATIONS_FACTOR) {
+            if (node_sim_count >= child_count * MIN_SIMULATIONS_FACTOR) {
                 if constexpr (MIN_SCORE_DIFF == 0.0) {
                     children_indices.push_back(i);
                 }
@@ -226,10 +225,11 @@ uint Tree::perform_simulation() {
     }
     uint state_count = 0;
     uint node_index = 0;
+    uint node_sim_count = root_sim_count;
     int current_player;
     state = root_state;
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
-        const auto child_index = get_best_uct_child_index(node_index);
+        const auto child_index = get_best_uct_child_index(node_index, node_sim_count);
         current_player = state.get_current_player();
         assert(child_index >= nodes[node_index].children_range.first);
         assert(child_index < nodes[node_index].children_range.second);
@@ -237,6 +237,7 @@ uint Tree::perform_simulation() {
         complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
         node_index = children[child_index].index;
+        node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
         if (state.is_nodal())
             ++state_count;
@@ -248,7 +249,7 @@ uint Tree::perform_simulation() {
     }
     else {
         current_player = state.get_current_player();
-        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
+        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
@@ -270,11 +271,12 @@ uint Tree::perform_simulation() {
             }
             assert(fst < lst);
             while (is_node_fully_expanded(node_index)) {
-                child_index = get_best_uct_child_index(node_index);
+                child_index = get_best_uct_child_index(node_index, node_sim_count);
                 state.apply_semimove(children[child_index].semimove);
                 complete_turn(state);
                 children_stack.emplace_back(child_index, current_player);
                 node_index = children[child_index].index;
+                node_sim_count = children[child_index].sim_count;
                 assert(node_index > 0);
                 current_player = state.get_current_player();
                 if (nodes[node_index].is_terminal()) {
@@ -284,7 +286,7 @@ uint Tree::perform_simulation() {
                     goto terminal;
                 }
             }
-            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], current_player);
+            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
             ri = state.apply_semimove_with_revert(children[child_index].semimove);
         }
         complete_turn(state);
@@ -354,14 +356,13 @@ uint Tree::perform_simulation() {
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
-        nodes[children[child_index].index].sim_count++;
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
         move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
         #endif
     }
-    nodes.front().sim_count++;
+    ++root_sim_count;
     #if MAST > 0
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
@@ -373,12 +374,13 @@ uint Tree::perform_simulation() {
     int size = children_stack.size();
     for (int i = size - 2; i >= 0; --i) {
         node_index = children[children_stack[i].first].index;
-        choose_children_for_rolling_up(node_index, children_indices);
+        node_sim_count = children[children_stack[i].first].sim_count;
+        choose_children_for_rolling_up(node_index, node_sim_count, children_indices);
         if (!children_indices.empty()) {
             roll_up(node_index, children_indices);
         }
     }
-    choose_children_for_rolling_up(0, children_indices);
+    choose_children_for_rolling_up(0, root_sim_count, children_indices);
     if (!children_indices.empty()) {
         roll_up(0, children_indices);
     }
@@ -411,6 +413,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
             if (children[fst].get_actions().empty()) {
                 stack.emplace_back(root_index, fst);
                 root_index = children[fst].index;
+                root_sim_count = children[fst].sim_count;
                 break;
             }
             bool matched = true;
@@ -424,6 +427,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
             }
             if (matched) {
                 root_index = children[fst].index;
+                root_sim_count = children[fst].sim_count;
                 i += j;
                 stack.clear();
                 break;
@@ -446,6 +450,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         std::tie(fst, lst) = nodes[root_index].children_range;
     }
     if (root_index == 0) {
+        root_sim_count = 0;
         nodes.clear();
         children.clear();
         const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;

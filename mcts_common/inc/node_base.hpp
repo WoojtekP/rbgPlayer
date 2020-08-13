@@ -7,7 +7,6 @@
 
 struct NodeBase {
     std::pair<uint, uint> children_range;
-    uint sim_count = 0;
     NodeBase(const uint, const uint);
 };
 

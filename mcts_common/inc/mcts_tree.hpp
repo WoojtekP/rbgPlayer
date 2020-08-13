@@ -19,13 +19,14 @@ protected:
     std::vector<Child> children;
     std::vector<std::pair<uint,int>> children_stack;
     MoveChooser<move_type> move_chooser;
+    uint root_sim_count = 0;
     #if STATS
     uint turn_number = 0;
     #endif
 
     bool is_node_fully_expanded(const uint);
     void complete_turn(reasoner::game_state&);
-    uint get_best_uct_child_index(const uint);
+    uint get_best_uct_child_index(const uint, const uint);
     void root_at_index(const uint);
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, const uint);
 public:

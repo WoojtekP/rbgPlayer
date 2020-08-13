@@ -26,13 +26,13 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
     while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
 }
 
-uint MctsTree::get_best_uct_child_index(const uint node_index) {
+uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_sim_count) {
     static std::vector<uint> children_indices;
     children_indices.clear();
-    const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(nodes[node_index].sim_count));
+    const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(node_sim_count));
     double max_priority = 0.0;
     #if RAVE > 0
-    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * nodes[node_index].sim_count + EQUIVALENCE_PARAMETER));
+    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * node_sim_count + EQUIVALENCE_PARAMETER));
     #endif
     const auto [fst, lst] = nodes[node_index].children_range;
     for (uint i = fst; i < lst; ++i) {
