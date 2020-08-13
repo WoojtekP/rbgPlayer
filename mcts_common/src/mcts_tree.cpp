@@ -7,11 +7,14 @@
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
     nodes.reserve(4 * MEBIBYTE / sizeof(Node));
-    children.reserve(4 * MEBIBYTE / sizeof(uint));
+    children.reserve(4 * MEBIBYTE / sizeof(Child));
 }
 
 bool MctsTree::is_node_fully_expanded(const uint node_index) {
     // assuming number of children > 0
+    if (!nodes[node_index].is_expanded()) {
+        return false;
+    }
     assert(nodes[node_index].children_range.second > nodes[node_index].children_range.first);
     bool result = children[nodes[node_index].children_range.second - 1].index != 0;
     if (result) {
@@ -73,8 +76,11 @@ void MctsTree::root_at_index(const uint root_index) {
 uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {
     auto new_index = nodes_tmp.size();
     nodes_tmp.push_back(nodes[index]);
+    if (!nodes[index].is_expanded()) {
+        return new_index;
+    }
     auto first_child_index = children_tmp.size();
-    const auto& [fst, lst] = nodes[index].children_range;
+    const auto [fst, lst] = nodes[index].children_range;
     auto child_count = lst - fst;
     nodes_tmp[new_index].children_range = std::make_pair(first_child_index, first_child_index + child_count);
     for (uint i = 0; i < child_count; ++i) {

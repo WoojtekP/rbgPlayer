@@ -7,6 +7,7 @@
 
 
 struct Node : NodeBase {
+    Node(void)=default;
     Node(const uint, const uint);
     bool is_terminal() const;
 };

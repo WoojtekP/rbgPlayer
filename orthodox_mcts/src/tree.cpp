@@ -14,16 +14,20 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
     create_node(root_state);
 }
 
-uint Tree::create_node(reasoner::game_state& state) {
+uint Tree::create_node(reasoner::game_state&) {
+    nodes.emplace_back();
+    return nodes.size() - 1;
+}
+
+void Tree::create_children(const uint node_index, reasoner::game_state& state) {
     static std::vector<reasoner::move> move_list;
     state.get_all_moves(cache, move_list);
-    auto child_count = move_list.size();
     uint new_child_index = children.size();
-    nodes.emplace_back(new_child_index, child_count);
+    nodes[node_index].children_range.first = new_child_index;
     for (const auto& move : move_list) {
         children.emplace_back(move);
     }
-    return nodes.size() - 1;
+    nodes[node_index].children_range.second = children.size();
 }
 
 uint Tree::perform_simulation() {
@@ -43,6 +47,9 @@ uint Tree::perform_simulation() {
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
         ++state_count;
+    }
+    if (!nodes[node_index].is_expanded()) {
+        create_children(node_index, state);
     }
     if (nodes[node_index].is_terminal()) {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
@@ -142,6 +149,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 
 reasoner::move Tree::choose_best_move() {
     static std::vector<uint> children_indices;
+    assert(nodes.front().is_expanded());
     const auto [fst, lst] = nodes.front().children_range;
     auto max_sim = children[fst].sim_count;
     children_indices.resize(1);
@@ -182,6 +190,9 @@ reasoner::move Tree::choose_best_move() {
 }
 
 game_status_indication Tree::get_status(const int player_index) {
+    if (!nodes.front().is_expanded()) {
+        create_children(0, root_state);
+    }
     if (nodes.front().is_terminal()) {
         return end_game;
     }

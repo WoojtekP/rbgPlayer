@@ -15,6 +15,7 @@
 class Tree final : public MctsTree {
 private:
     uint create_node(reasoner::game_state&);
+    void create_children(const uint, reasoner::game_state&);
 public:
     Tree(void)=delete;
     Tree(const Tree&)=delete;

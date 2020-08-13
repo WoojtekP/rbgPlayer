@@ -6,8 +6,10 @@
 
 
 struct NodeBase {
-    std::pair<uint, uint> children_range;
+    std::pair<uint, uint> children_range = {1, 0};
+    NodeBase(void)=default;
     NodeBase(const uint, const uint);
+    bool is_expanded() const;
 };
 
 struct ChildBase {
