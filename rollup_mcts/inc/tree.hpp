@@ -15,6 +15,7 @@
 class Tree final : public MctsTree {
 private:
     uint create_node(reasoner::game_state&, const node_status = node_status::unknown);
+    void create_children(const uint, reasoner::game_state&);
     bool has_nodal_successor(reasoner::game_state&, uint = 0);
     bool save_path_to_nodal_state(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
     void choose_children_for_rolling_up(const uint, const uint, std::vector<uint>&);

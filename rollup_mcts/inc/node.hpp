@@ -21,6 +21,7 @@ struct Node : NodeBase {
     Node& operator=(Node&&)=default;
     ~Node(void)=default;
     Node(const uint, const uint, const bool, const node_status);
+    Node(const bool, const node_status);
     bool is_terminal() const;
 };
 

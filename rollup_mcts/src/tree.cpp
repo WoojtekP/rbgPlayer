@@ -14,35 +14,36 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
     complete_turn(root_state);
     const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
     create_node(root_state, status);
+    create_children(0, root_state);
 }
 
 uint Tree::create_node(reasoner::game_state& state, const node_status status) {
-    static std::vector<reasoner::semimove> semimoves;
-    uint new_child_index = children.size();
-    if (status == node_status::terminal) {
+    if (status == node_status::terminal || state.get_current_player() == KEEPER) {
         assert(state.is_nodal());
-        nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
-    }
-    else if (state.get_current_player() == KEEPER) {
-        assert(!state.apply_any_move(cache));
-        nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
+        nodes.emplace_back(0, 0, true, node_status::terminal);
     }
     else {
-        state.get_all_semimoves(cache, semimoves, SEMILENGTH);
-        auto child_count = semimoves.size();
-        if (child_count == 0) {
-            assert(state.is_nodal());
-            nodes.emplace_back(new_child_index, 0, true, node_status::terminal);
-        }
-        else {
-            assert(state.get_current_player() != KEEPER);
-            nodes.emplace_back(new_child_index, child_count, state.is_nodal(), status);
-            for (const auto& semimove : semimoves) {
-                children.emplace_back(semimove);
-            }
-        }
+        nodes.emplace_back(state.is_nodal(), status);
     }
     return nodes.size() - 1;
+}
+
+void Tree::create_children(const uint node_index, reasoner::game_state& state) {
+    static std::vector<reasoner::semimove> semimoves;
+    state.get_all_semimoves(cache, semimoves, SEMILENGTH);
+    if (semimoves.empty() || nodes[node_index].status == node_status::terminal) {
+        assert(state.is_nodal());
+        nodes[node_index].status = node_status::terminal;
+        nodes[node_index].children_range = {0, 0};
+    }
+    else {
+        assert(state.get_current_player() != KEEPER);
+        nodes[node_index].children_range.first = children.size();
+        for (const auto& semimove : semimoves) {
+            children.emplace_back(semimove);
+        }
+        nodes[node_index].children_range.second = children.size();
+    }
 }
 
 bool Tree::has_nodal_successor(reasoner::game_state& state, uint semidepth) {
@@ -239,8 +240,12 @@ uint Tree::perform_simulation() {
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
-        if (state.is_nodal())
+        if (state.is_nodal()) {
             ++state_count;
+        }
+    }
+    if (!nodes[node_index].is_expanded()) {
+        create_children(node_index, state);
     }
     if (nodes[node_index].is_terminal()) {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
@@ -264,6 +269,7 @@ uint Tree::perform_simulation() {
                 assert(nodes[node_index].is_nodal);
                 assert(nodes[node_index].status != node_status::nonterminal);
                 nodes[node_index].status = node_status::terminal;
+                nodes[node_index].children_range = {0, 0};
                 for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
                     results[i - 1] = state.get_player_score(i);
                 }
@@ -279,6 +285,9 @@ uint Tree::perform_simulation() {
                 node_sim_count = children[child_index].sim_count;
                 assert(node_index > 0);
                 current_player = state.get_current_player();
+                if (!nodes[node_index].is_expanded()) {
+                    create_children(node_index, state);
+                }
                 if (nodes[node_index].is_terminal()) {
                     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
                         results[i - 1] = state.get_player_score(i);
@@ -299,6 +308,9 @@ uint Tree::perform_simulation() {
             const uint size = path.size();
             for (uint i = 0; i < size; ++i) {
                 const auto& semimove = path[i];
+                if (!nodes[new_node_index].is_expanded()) {
+                    create_children(new_node_index, state);
+                }
                 auto [fst, lst] = nodes[new_node_index].children_range;
                 for (auto j = fst; j < lst; ++j) {
                     if (children[j].semimove == semimove) {
@@ -335,14 +347,14 @@ uint Tree::perform_simulation() {
         else {
             if constexpr (IS_NODAL) {
                 nodes[new_node_index].status = node_status::terminal;
-                nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+                nodes[new_node_index].children_range = {0, 0};
             }
             else {
                 if (nodes[new_node_index].is_nodal) {
                     assert(path.empty());
                     assert(nodes[new_node_index].status != node_status::nonterminal);
                     nodes[new_node_index].status = node_status::terminal;
-                    nodes[new_node_index].children_range.second = nodes[new_node_index].children_range.first;
+                    nodes[new_node_index].children_range = {0, 0};
                 }
                 else {
                     assert(!path.empty());
@@ -401,17 +413,20 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         ++turn_number;
     #endif
     uint root_index = 0;
-
-    static std::vector<std::pair<uint, uint>> stack;
+    static std::vector<std::tuple<uint, uint, uint>> stack;
     stack.clear();
     const auto& mr = move.mr;
     const uint size = mr.size();
     uint i = 0;
-    auto [fst, lst] = nodes[root_index].children_range;
+    auto [fst, lst] = nodes.front().children_range;
     while (i < size) {
+        if (!nodes[root_index].is_expanded()) {
+            root_index = 0;
+            break;
+        }
         while (fst < lst) {
             if (children[fst].get_actions().empty()) {
-                stack.emplace_back(root_index, fst);
+                stack.emplace_back(root_index, fst, root_sim_count);
                 root_index = children[fst].index;
                 root_sim_count = children[fst].sim_count;
                 break;
@@ -436,7 +451,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         }
         if (fst == lst || root_index == 0) {
             if (!stack.empty()) {
-                std::tie(root_index, fst) = stack.back();
+                std::tie(root_index, fst, root_sim_count) = stack.back();
                 stack.pop_back();
                 ++fst;
                 lst = nodes[root_index].children_range.second;
@@ -455,9 +470,22 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         children.clear();
         const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
         create_node(root_state, status);
-        return;
     }
-    root_at_index(root_index);
+    else {
+        root_at_index(root_index);
+        if (nodes.front().status == node_status::unknown) {
+            if (has_nodal_successor(root_state)) {
+                nodes.front().status = node_status::nonterminal;
+            } 
+            else {
+                nodes.front().status = node_status::terminal;
+                nodes.front().children_range = {0, 0};
+            }
+        }
+    }
+    if (!nodes.front().is_expanded()) {
+        create_children(0, root_state);
+    }
     children_stack.clear();
 }
 
