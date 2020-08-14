@@ -12,18 +12,23 @@
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
     complete_turn(root_state);
     create_node(root_state);
+    create_children(0, root_state);
 }
 
-uint Tree::create_node(reasoner::game_state&) {
-    nodes.emplace_back();
+uint Tree::create_node(reasoner::game_state& state) {
+    if (state.get_current_player() == KEEPER) {
+        nodes.emplace_back(0, 0);
+    }
+    else {
+        nodes.emplace_back();
+    }
     return nodes.size() - 1;
 }
 
 void Tree::create_children(const uint node_index, reasoner::game_state& state) {
     static std::vector<reasoner::move> move_list;
     state.get_all_moves(cache, move_list);
-    uint new_child_index = children.size();
-    nodes[node_index].children_range.first = new_child_index;
+    nodes[node_index].children_range.first = children.size();
     for (const auto& move : move_list) {
         children.emplace_back(move);
     }
@@ -141,9 +146,13 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         nodes.clear();
         children.clear();
         create_node(root_state);
-        return;
     }
-    root_at_index(root_index);
+    else {
+        root_at_index(root_index);
+    }
+    if (!nodes.front().is_expanded()) {
+        create_children(0, root_state);
+    }
     children_stack.clear();
 }
 
@@ -190,9 +199,6 @@ reasoner::move Tree::choose_best_move() {
 }
 
 game_status_indication Tree::get_status(const int player_index) {
-    if (!nodes.front().is_expanded()) {
-        create_children(0, root_state);
-    }
     if (nodes.front().is_terminal()) {
         return end_game;
     }
