@@ -62,7 +62,7 @@ void handle_own_turn(remote_moves_receiver& rmr,
         }
     }
     else {
-        tree_indications.emplace_back(tree_indication{reset_tree{}});
+        tree_indications.emplace_back(tree_indication{simulation_request{}});
         wait_for_move(miliseconds_left, tree_indications);
     }
     forward_move_from_player_to_server(oms, responses_from_tree);
