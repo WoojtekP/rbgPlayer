@@ -36,7 +36,7 @@ void Tree::create_children(const uint node_index, reasoner::game_state& state) {
 }
 
 uint Tree::perform_simulation() {
-    static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
+    static simulation_result results;
     static reasoner::game_state state = root_state;
     uint state_count = 0;;
     uint node_index = 0;
@@ -57,9 +57,7 @@ uint Tree::perform_simulation() {
         create_children(node_index, state);
     }
     if (nodes[node_index].is_terminal()) {
-        for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-            results[i - 1] = state.get_player_score(i);
-        }
+        get_scores_from_state(state, results);
     }
     else {
         const auto current_player = state.get_current_player();

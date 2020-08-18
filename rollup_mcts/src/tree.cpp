@@ -80,7 +80,7 @@ void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
 }
 
 uint Tree::perform_simulation() {
-    static simulation_result results(reasoner::NUMBER_OF_PLAYERS - 1);
+    static simulation_result results;
     static reasoner::game_state state = root_state;
     static std::vector<reasoner::semimove> path;
     static std::vector<uint> children_indices;
@@ -115,9 +115,7 @@ uint Tree::perform_simulation() {
         create_children(node_index, state);
     }
     if (nodes[node_index].is_terminal()) {
-        for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-            results[i - 1] = state.get_player_score(i);
-        }
+        get_scores_from_state(state, results);
     }
     else {
         current_player = state.get_current_player();
@@ -137,9 +135,7 @@ uint Tree::perform_simulation() {
                 assert(nodes[node_index].status != node_status::nonterminal);
                 nodes[node_index].status = node_status::terminal;
                 nodes[node_index].children_range = {0, 0};
-                for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-                    results[i - 1] = state.get_player_score(i);
-                }
+                get_scores_from_state(state, results);
                 goto terminal;
             }
             assert(fst < lst);
@@ -156,9 +152,7 @@ uint Tree::perform_simulation() {
                     create_children(node_index, state);
                 }
                 if (nodes[node_index].is_terminal()) {
-                    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-                        results[i - 1] = state.get_player_score(i);
-                    }
+                    get_scores_from_state(state, results);
                     goto terminal;
                 }
             }

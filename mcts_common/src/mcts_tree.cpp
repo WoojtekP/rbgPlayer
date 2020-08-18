@@ -29,6 +29,12 @@ void MctsTree::complete_turn(reasoner::game_state& state) {
     while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
 }
 
+void MctsTree::get_scores_from_state(reasoner::game_state& state, simulation_result& results) {
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        results[i - 1] = state.get_player_score(i);
+    }
+}
+
 uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_sim_count) {
     static std::vector<uint> children_indices;
     children_indices.clear();
