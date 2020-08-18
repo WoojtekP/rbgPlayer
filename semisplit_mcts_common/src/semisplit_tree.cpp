@@ -113,13 +113,6 @@ uint SemisplitTree::perform_simulation() {
     static simulation_result results;
     static reasoner::game_state state = root_state;
     static std::vector<reasoner::semimove> path;
-    for (const auto& node : nodes) {
-        assert(node.status != node_status::unknown);
-        if (node.status == node_status::terminal) {
-            assert(node.is_nodal);
-            assert(node.children_range.first == node.children_range.second);
-        }
-    }
     children_stack.clear();
     move_chooser.clear_path();
     path.clear();
@@ -261,6 +254,7 @@ uint SemisplitTree::perform_simulation() {
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
+        assert(nodes[children[child_index].index].status != node_status::unknown);
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
