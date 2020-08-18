@@ -31,24 +31,15 @@ public:
     }
 
     template <typename M>
-    const reasoner::move_representation& extract_actions(const M& move) {
-        return move.get_actions();
-    }
-
-    const reasoner::move_representation& extract_actions(const reasoner::move& move) {
-        return move.mr;
-    }
-
-    template <typename M>
     uint get_random_move(const std::vector<M>& legal_moves, const int current_player) {
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         if (rand_gen.random_real_number() < EPSILON) {
-            double best_score = moves[current_player - 1].get_score_or_default_value(extract_actions(legal_moves.front()));
+            double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front());
             indices.resize(1);
             indices[0] = 0;
             const uint size = legal_moves.size();
             for (uint i = 1; i < size; ++i) {
-                double score = moves[current_player - 1].get_score_or_default_value(extract_actions(legal_moves[i]));
+                double score = moves[current_player - 1].get_score_or_default_value(legal_moves[i]);
                 if (score > best_score) {
                     best_score = score;
                     indices.resize(1);
@@ -84,7 +75,7 @@ public:
             double best_score = 0.0;
             for (uint i = lower; i < lst; ++i) {
                 assert(children[i].index == 0);
-                double score = moves[current_player - 1].get_score_or_default_value(children[i].get_actions());
+                double score = moves[current_player - 1].get_score_or_default_value(children[i].get_edge());
                 if (score > best_score) {
                     best_score = score;
                     indices.resize(1);
@@ -125,13 +116,14 @@ public:
         }
     }
 
-    void update_move(const reasoner::move_representation& actions, const simulation_result& results, const int player, const uint depth) {
-        moves[player - 1].insert_or_update(actions, results[player - 1], depth);
+    template <typename M>
+    void update_move(const M& move, const simulation_result& results, const int player, const uint depth) {
+        moves[player - 1].insert_or_update(move, results[player - 1], depth);
     }
 
     void update_all_moves(const simulation_result& results, const uint depth) {
         for (const auto& [move, player] : path) {
-            moves[player - 1].insert_or_update(extract_actions(move), results[player - 1], depth);
+            moves[player - 1].insert_or_update(move, results[player - 1], depth);
         }
     }
 };

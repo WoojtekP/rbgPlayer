@@ -214,14 +214,14 @@ uint Tree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].get_actions(), results, player, depth);
+        move_chooser.update_move(children[child_index].semimove, results, player, depth);
         #endif
     }
     ++root_sim_count;
     #if MAST > 0
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
-            move_chooser.update_move(semimove.get_actions(), results, current_player, depth);
+            move_chooser.update_move(semimove, results, current_player, depth);
         }
     }
     move_chooser.update_all_moves(results, depth);

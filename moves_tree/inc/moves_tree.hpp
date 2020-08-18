@@ -35,7 +35,7 @@ public:
         const auto c_node = get_cell_node(i_node, semimove.cell - 1);
         auto& states_scores = cell_nodes[c_node].states_scores;
         auto it = std::lower_bound(states_scores.begin(), states_scores.end(), semimove.state);
-        if (it == states_scores.end() || it->state != semimove.state || it->weight == 0) {
+        if (it == states_scores.end() || it->state != semimove.state || it->total_score.weight == 0) {
             return EXPECTED_MAX_SCORE;
         }
         return it->total_score.get_score();

@@ -22,6 +22,7 @@ struct Child : ChildBase {
     ~Child(void)=default;
     Child(const reasoner::move& move);
     const reasoner::move_representation& get_actions() const;
+    const reasoner::move& get_edge() const;
 };
 
 #endif

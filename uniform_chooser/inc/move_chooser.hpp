@@ -10,7 +10,6 @@
 #include "node.hpp"
 #include "random_generator.hpp"
 
-#include <iostream>
 
 template <typename T>
 class MoveChooser {
@@ -26,10 +25,6 @@ public:
 
     const std::vector<std::pair<T, int>>& get_path() const {
         return path;
-    }
-
-    const reasoner::move_representation extract_actions(const T& move) {
-        return move.get_actions();
     }
 
     template <typename M>
@@ -74,8 +69,5 @@ public:
         path.clear();
     }
 };
-
-template<>
-const reasoner::move_representation MoveChooser<reasoner::move>::extract_actions(const reasoner::move&);
 
 #endif

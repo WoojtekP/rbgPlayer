@@ -80,7 +80,7 @@ uint Tree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].get_actions(), results, player, path_len);
+        move_chooser.update_move(children[child_index].move, results, player, path_len);
         #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[children[child_index].index].children_range;

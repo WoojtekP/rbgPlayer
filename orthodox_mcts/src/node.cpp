@@ -14,3 +14,7 @@ Child::Child(const reasoner::move& move)
 const reasoner::move_representation& Child::get_actions() const {
     return move.mr;
 }
+
+const reasoner::move& Child::get_edge() const {
+    return move;
+}

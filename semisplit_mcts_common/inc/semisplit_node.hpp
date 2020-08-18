@@ -35,6 +35,7 @@ struct SemisplitChild : ChildBase {
     ~SemisplitChild(void)=default;
     SemisplitChild(const reasoner::semimove&);
     const reasoner::move_representation& get_actions() const;
+    const reasoner::semimove& get_edge() const;
 };
 
 #endif

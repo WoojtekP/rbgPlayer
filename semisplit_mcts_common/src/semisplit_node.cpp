@@ -25,3 +25,7 @@ SemisplitChild::SemisplitChild(const reasoner::semimove& semimove)
 const reasoner::move_representation& SemisplitChild::get_actions() const {
     return semimove.get_actions();
 }
+
+const reasoner::semimove& SemisplitChild::get_edge() const {
+    return semimove;
+}
