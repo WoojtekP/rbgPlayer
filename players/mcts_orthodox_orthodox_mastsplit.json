@@ -1,0 +1,24 @@
+{
+    "general" : {
+        "buffer_time" : 50
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "orthodox",
+        "simulation_strategy" : "orthodox",
+        "parameters" : {
+            "exploration_constant" : 0.7
+        }
+    },
+    "heuristics" : [
+        {
+            "name" : "MASTSPLIT",
+            "parameters" : {
+                "epsilon" : 0.4,
+                "decay_factor" : 0.2,
+                "weight_scaling" : false,
+                "tree_only" : false
+            }
+        }
+    ]
+}
