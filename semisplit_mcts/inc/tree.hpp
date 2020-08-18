@@ -22,7 +22,6 @@ public:
     Tree& operator=(Tree&&)=default;
     ~Tree(void)=default;
     Tree(const reasoner::game_state&);
-    uint perform_simulation();
     reasoner::move choose_best_move();
 };
 

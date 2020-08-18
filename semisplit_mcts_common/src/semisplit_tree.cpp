@@ -120,6 +120,9 @@ uint SemisplitTree::perform_simulation() {
             assert(node.children_range.first == node.children_range.second);
         }
     }
+    children_stack.clear();
+    move_chooser.clear_path();
+    path.clear();
     uint state_count = 0;
     uint node_index = 0;
     uint node_sim_count = root_sim_count;
@@ -273,9 +276,6 @@ uint SemisplitTree::perform_simulation() {
     }
     move_chooser.update_all_moves(results, depth);
     #endif
-    children_stack.clear();
-    move_chooser.clear_path();
-    path.clear();
     return state_count;
 }
 
@@ -363,7 +363,6 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
     if (!nodes.front().is_expanded()) {
         create_children(0, root_state);
     }
-    children_stack.clear();
 }
 
 reasoner::move SemisplitTree::choose_best_greedy_move() {
