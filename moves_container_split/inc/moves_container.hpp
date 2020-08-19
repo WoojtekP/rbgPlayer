@@ -18,7 +18,7 @@ private:
 public:
     moves_container();
     template <typename T>
-    void insert_or_update(const T& semimove, const uint score, const uint depth) {
+    int insert_or_update(const T& semimove, const uint score, const uint depth, const int) {
         insert_or_update(semimove.mr, score, depth);
         auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
         if constexpr (WEIGHT_SCALING) {
@@ -29,13 +29,15 @@ public:
             map2[index].weight += 1.0;
             map2[index].sum += static_cast<double>(score);
         }
+        return 0;
     }
-    void insert_or_update(const reasoner::move& move, const uint score, const uint depth) {
+    int insert_or_update(const reasoner::move& move, const uint score, const uint depth, const int) {
         insert_or_update(move.mr, score, depth);
+        return 0;
     }
 
     template <typename T>
-    double get_score_or_default_value(const T& semimove) {
+    double get_score_or_default_value(const T& semimove, const int) {
         double total_sum = 0;
         [[maybe_unused]] double weight_sum = 0;
         for (const auto& action : semimove.mr) {
@@ -65,7 +67,7 @@ public:
             return total_sum / (1 + semimove.mr.size());
         }
     }
-    double get_score_or_default_value(const reasoner::move&);
+    double get_score_or_default_value(const reasoner::move&, const int);
     void apply_decay_factor();
 };
 

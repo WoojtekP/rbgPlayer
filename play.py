@@ -31,9 +31,11 @@ available_players = set([
     "orthodoxMcts_semisplitSim_mastsplit",
     "semisplitMcts_semisplitSim",
     "semisplitMcts_semisplitSim_mastsplit",
+    "semisplitMcts_semisplitSim_contextmast",
     "semisplitMcts_orthodoxSim",
     "semisplitMcts_orthodoxSim_mastsplit",
     "rollupMcts_semisplitSim",
+    "rollupMcts_semisplitSim_contextmast",
     "rollupMcts_orthodoxSim",
     "simple_best_select"])
 
@@ -197,7 +199,7 @@ def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, pla
         "PLAYER_ID="+str(player_id),
         "DEBUG="+str(debug_mode),
         "STATS="+str(stats),
-        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics)),
+        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("CONTEXTMAST" in heuristics)),
         "RAVE="+str(int("RAVE" in heuristics))]
     print("   subprocess.run:", *run_list)
     subprocess.run(run_list)

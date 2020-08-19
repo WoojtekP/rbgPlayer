@@ -84,3 +84,6 @@ void MovesTree::apply_decay_factor() {
     }
 }
 
+int MovesTree::get_context(const reasoner::move_representation& mr, const int context) {
+    return get_index_node_by_move_representation(mr, context);
+}

@@ -25,6 +25,7 @@ public:
     }
 
     void apply_decay_factor();
+    int get_context(const reasoner::move_representation&, const int);
 };
 
 #endif

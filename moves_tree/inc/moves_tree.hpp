@@ -44,6 +44,7 @@ public:
     double get_score_or_default_value(const reasoner::move&, const int = 0);
     double get_score_or_default_value(const reasoner::move_representation&, const int);
     void apply_decay_factor();
+    int get_context(const reasoner::move_representation&, const int = 0);
 };
 
 #endif

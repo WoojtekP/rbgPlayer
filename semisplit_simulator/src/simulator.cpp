@@ -14,15 +14,17 @@ namespace {
                                       uint semidepth) {
         state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
         while (not legal_semimoves[semidepth].empty()) {
-            uint chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], state.get_current_player());
+            const auto current_player = state.get_current_player();
+            const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);
+            const auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
+            const auto is_nodal = state.is_nodal();
             #if MAST > 0
             if constexpr (not TREE_ONLY)
-                move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], state.get_current_player());
+                move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player, is_nodal);
             #endif
-            auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
             legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
             legal_semimoves[semidepth].pop_back();
-            if (state.is_nodal())
+            if (is_nodal)
                 return true;
             if (apply_random_move_exhaustive(state, move_chooser, cache, semidepth+1))
                 return true;

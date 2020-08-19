@@ -25,7 +25,7 @@ void moves_container::insert_or_update(const reasoner::move_representation& mr, 
     }
 }
 
-double moves_container::get_score_or_default_value(const reasoner::move& move) {
+double moves_container::get_score_or_default_value(const reasoner::move& move, const int) {
     double total_sum = 0;
     [[maybe_unused]] double weight_sum = 0;
     for (const auto& action : move.mr) {
