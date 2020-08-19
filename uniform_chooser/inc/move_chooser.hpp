@@ -68,6 +68,13 @@ public:
     void clear_path() {
         path.clear();
     }
+
+    template <typename M>
+    void switch_context(const M&, const int) {}
+
+    void revert_context() {}
+
+    void reset_context() {}
 };
 
 #endif
