@@ -17,7 +17,7 @@
     },
     "heuristics" : [
         {
-            "name" : "CONTEXTMAST",
+            "name" : "MASTCONTEXT",
             "parameters" : {
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,
