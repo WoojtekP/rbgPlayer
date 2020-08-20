@@ -38,6 +38,7 @@ public:
 
     template <typename M>
     uint get_random_move(const std::vector<M>& legal_moves, const int current_player) {
+        assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         if (rand_gen.random_real_number() < EPSILON) {
             double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front(), context);
@@ -61,6 +62,7 @@ public:
     }
 
     uint get_unvisited_child_index(std::vector<Child>& children, const Node& node, const uint node_sim_count, const int current_player) {
+        assert(current_player != KEEPER);
         auto [fst, lst] = node.children_range;
         assert(fst < lst);
         auto lower = std::min(fst + node_sim_count, lst - 1);
@@ -123,6 +125,7 @@ public:
         path.pop_back();
         #if MAST == 2
         assert(!context_stack.empty());
+        context = context_stack.front();
         context_stack.pop_back();
         #endif
     }
@@ -144,6 +147,7 @@ public:
 
     template <typename M>
     void update_move(const M& move, const simulation_result& results, const int player, const uint depth, [[maybe_unused]] const bool end_of_context = true) {
+        assert(player != KEEPER);
         [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], depth, context);
         #if MAST == 2
         context = end_of_context ? 0 : new_context;
@@ -167,6 +171,7 @@ public:
         }
         #if MAST == 2
         assert(context_length.empty());
+        assert(context == 0);
         #endif
     }
 
