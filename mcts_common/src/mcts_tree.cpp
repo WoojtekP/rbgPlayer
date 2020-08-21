@@ -35,6 +35,22 @@ void MctsTree::get_scores_from_state(reasoner::game_state& state, simulation_res
     }
 }
 
+uint MctsTree::get_unvisited_child_index(std::vector<Child>& children, const Node& node, const uint node_sim_count, const int) {
+    auto [fst, lst] = node.children_range;
+    assert(fst < lst);
+    auto lower = std::min(fst + node_sim_count, lst - 1);
+    while (lower > fst && children[lower - 1].index == 0) {
+        --lower;
+    }
+    assert(children[lst - 1].index == 0);
+    RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
+    uint chosen_child = lower + rand_gen.uniform_choice(lst - lower);
+    if (chosen_child != lower) {
+        std::swap(children[chosen_child], children[lower]);
+    }
+    return lower;
+}
+
 uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_sim_count) {
     static std::vector<uint> children_indices;
     children_indices.clear();

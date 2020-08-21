@@ -61,7 +61,7 @@ uint Tree::perform_simulation() {
     }
     else {
         const auto current_player = state.get_current_player();
-        const auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
+        const auto child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         state.apply_move(children[child_index].move);
         complete_turn(state);
         auto new_node_index = create_node(state);
