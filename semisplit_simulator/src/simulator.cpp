@@ -22,13 +22,13 @@ namespace {
             if constexpr (not TREE_ONLY)
                 move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player, is_nodal);
             #endif
-            legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
-            legal_semimoves[semidepth].pop_back();
             if (is_nodal)
                 return true;
             if (apply_random_move_exhaustive(state, move_chooser, cache, semidepth+1))
                 return true;
             state.revert(ri);
+            legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
+            legal_semimoves[semidepth].pop_back();
             #if MAST > 0
             if constexpr (not TREE_ONLY)
                 move_chooser.revert_move();
