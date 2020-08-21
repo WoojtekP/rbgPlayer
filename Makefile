@@ -34,7 +34,11 @@ ROLLUP_MCTS := rollup_mcts
 
 C := g++
 ifeq (0, $(DEBUG))
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
+ifeq (0, $(RELEASE))
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
+else
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DNDEBUG -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
+endif
 else
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 endif
