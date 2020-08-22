@@ -1,0 +1,21 @@
+{
+    "general" : {
+        "buffer_time" : 50
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "orthodox",
+        "simulation_strategy" : "orthodox",
+        "parameters" : {
+            "exploration_constant" : 0.7
+        }
+    },
+    "heuristics" : [
+        {
+            "name" : "RAVE",
+            "parameters" : {
+                "equivalence_parameter" : 500
+            }
+        }
+    ]
+}

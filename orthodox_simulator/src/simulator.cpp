@@ -28,6 +28,8 @@ uint play(reasoner::game_state& state,
                 move_chooser.save_move(move_list[chosen_move], state.get_current_player());
                 #endif
             }
+            #elif RAVE
+            move_chooser.save_move(move_list[chosen_move], state.get_current_player());
             #endif
             state.apply_move(move_list[chosen_move]);
             ++state_count;

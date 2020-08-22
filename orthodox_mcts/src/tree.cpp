@@ -48,6 +48,9 @@ uint Tree::perform_simulation() {
         state.apply_move(children[child_index].move);
         complete_turn(state);
         children_stack.emplace_back(child_index, current_player);
+        #if RAVE
+        moves_tree[current_player - 1].insert_or_update(children[child_index].move);
+        #endif
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
@@ -71,8 +74,13 @@ uint Tree::perform_simulation() {
         children[child_index].sim_count = 1;
         children[child_index].total_score += results[current_player - 1];
     }
+    #if RAVE
+    for (const auto& [move, player] : move_chooser.get_path()) {
+        moves_tree[player - 1].insert_or_update(move);
+    }
+    #endif
     [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO calculate only nodal-depth
-    [[maybe_unused]] uint depth = 0;
+    [[maybe_unused]] int depth = 1;
     node_index = 0;
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
@@ -83,37 +91,25 @@ uint Tree::perform_simulation() {
         move_chooser.update_move(children[child_index].move, results, player, path_len);
         #endif
         #if RAVE > 0
-        const auto [fst, lst] = nodes[children[child_index].index].children_range;
+        const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (i == child_index) {
-                continue;
-            }
-            bool found = false;
-            for (uint j = depth; j < children_stack.size(); ++j) {
-                const auto [new_child_index, new_player] = children_stack[j];
-                if (new_player == player && children[new_child_index].move == children[i].move) {
-                    ++children[i].amaf_count;
-                    children[i].amaf_score += results[new_player - 1];
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                for (const auto [move, new_player] : move_chooser.get_path()) {
-                    if (new_player == player && children[i].move == move) {
-                        ++children[i].amaf_count;
-                        children[i].amaf_score += results[new_player - 1];
-                        break;
-                    }
-                }
+            if (moves_tree[player - 1].find(children[i].move) > depth) {
+                children[i].amaf_score += results[player - 1];
+                ++children[i].amaf_count;
             }
         }
         ++depth;
+        node_index = children[child_index].index;
         #endif
     }
     ++root_sim_count;
     #if MAST > 0
     move_chooser.update_all_moves(results, path_len);
+    #endif
+    #if RAVE
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        moves_tree[i - 1].reset();
+    }
     #endif
     move_chooser.clear_path();
     children_stack.clear();

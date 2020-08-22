@@ -9,6 +9,9 @@
 #include "node.hpp"
 #include "move_chooser.hpp"
 #include "simulator.hpp"
+#if RAVE
+#include "rave_tree.hpp"
+#endif
 
 
 class MctsTree {
@@ -19,6 +22,9 @@ protected:
     std::vector<Child> children;
     std::vector<std::pair<uint,int>> children_stack;
     MoveChooser<move_type> move_chooser;
+    #if RAVE
+    RaveTree moves_tree[reasoner::NUMBER_OF_PLAYERS - 1];
+    #endif
     uint root_sim_count = 0;
     #if STATS
     uint turn_number = 0;
