@@ -3,7 +3,7 @@
 #include "constants.hpp"
 #include "random_generator.hpp"
 #include "move_chooser.hpp"
-
+#include <iostream>
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
     nodes.reserve(4 * MEBIBYTE / sizeof(Node));
@@ -43,6 +43,25 @@ uint MctsTree::get_unvisited_child_index(std::vector<Child>& children, const Nod
         --lower;
     }
     assert(children[lst - 1].index == 0);
+    
+    // MSZ: If we want to try Rave instead of random
+    /*
+    #if RAVE > 0
+    double max_priority = 0.0;
+    uint chosen_child = lower;
+    for (uint i = lower; i < lst; i++) {
+        double priority = 1.0;
+        if (children[i].amaf_count > 0)
+          priority = children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count;
+        if (priority > max_priority) {
+            max_priority = priority;
+            chosen_child = i;
+        }
+    }
+    if (chosen_child != lower) {
+        std::swap(children[chosen_child], children[lower]);
+    }
+    #endif*/
     RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
     uint chosen_child = lower + rand_gen.uniform_choice(lst - lower);
     if (chosen_child != lower) {
@@ -62,11 +81,13 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
     const auto [fst, lst] = nodes[node_index].children_range;
     for (uint i = fst; i < lst; ++i) {
         double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count;
+        assert(children[i].sim_count > 0);
         #if RAVE > 0
+        assert(children[i].amaf_count > 0);// MSZ: True if we add the applied move to amaf
         if (children[i].amaf_count > 0) {
             priority *= 1.0 - beta;
-            priority += beta * children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count;
-        }
+            priority += beta * (children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count);
+        }   
         #endif
         priority += c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
         if (priority > max_priority) {
