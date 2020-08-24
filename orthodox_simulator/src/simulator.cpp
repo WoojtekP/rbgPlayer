@@ -17,23 +17,16 @@ uint play(reasoner::game_state& state,
         if(move_list.empty()) {
             break;
         }
-        else {
-            uint chosen_move = move_chooser.get_random_move(move_list, state.get_current_player());
-            #if MAST > 0
-            if constexpr (not TREE_ONLY) {
-                move_chooser.save_move(move_list[chosen_move], state.get_current_player());
-            }
-            else {
-                #if RAVE > 0
-                move_chooser.save_move(move_list[chosen_move], state.get_current_player());
-                #endif
-            }
-            #elif RAVE
+        uint chosen_move = move_chooser.get_random_move(move_list, state.get_current_player());
+        #if RAVE > 0
+        move_chooser.save_move(move_list[chosen_move], state.get_current_player());
+        #elif MAST > 0
+        if constexpr (not TREE_ONLY) {
             move_chooser.save_move(move_list[chosen_move], state.get_current_player());
-            #endif
-            state.apply_move(move_list[chosen_move]);
-            ++state_count;
         }
+        #endif
+        state.apply_move(move_list[chosen_move]);
+        ++state_count;
         while (state.get_current_player() == KEEPER) {
             if (not state.apply_any_move(cache)) {
                 break;

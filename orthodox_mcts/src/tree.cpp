@@ -162,18 +162,26 @@ reasoner::move Tree::choose_best_move() {
     static std::vector<uint> children_indices;
     assert(nodes.front().is_expanded());
     const auto [fst, lst] = nodes.front().children_range;
+    children_indices.clear();
 
-    // MSZ: Highest average score
-    uint best_child = fst;
-    double best_score = -1.0;
+    // MSZ: Highest average score, then largest number of simulations
+    double max_score = -1.0;
+    uint max_sim = 0;
     for (auto i = fst; i < lst; ++i) {
        if (children[i].sim_count == 0) continue;
        double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
-       if (score > best_score) {
-           best_score = score;
-           best_child = i;
+       if (score > max_score || (score == max_score && children[i].sim_count > max_sim)) {
+           max_score = score;
+           max_sim = children[i].sim_count;
+           children_indices.resize(1);
+           children_indices[0] = i;
+       } else
+       if (score == max_score && children[i].sim_count == max_sim) {
+           children_indices.push_back(i);
        }
     }
+    assert(children_indices.size() > 0);
+    uint best_child = children_indices[RBGRandomGenerator::get_instance().uniform_choice(children_indices.size())];
     /*    
     auto max_sim = children[fst].sim_count;
     children_indices.resize(1);
@@ -198,6 +206,10 @@ reasoner::move Tree::choose_best_move() {
     }*/
     #if STATS
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
+    #if RAVE > 0
+    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * root_sim_count + EQUIVALENCE_PARAMETER));
+    std::cout << "rave beta " << beta << std::endl;
+    #endif
     std::cout << std::fixed << std::setprecision(2);
     for (auto i = fst; i < lst; ++i) {
         char prefix = (i == best_child) ? '*' : ' ';
@@ -207,8 +219,12 @@ reasoner::move Tree::choose_best_move() {
             std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
         }
         std::cout << "]";
-        #if RAVE
-        std::cout << " amaf_avg " << (children[i].amaf_count > 0 ? static_cast<double>(children[i].amaf_score) / children[i].amaf_count : -1.0) << " amaf_count " << children[i].amaf_count;
+        #if RAVE > 0
+        std::cout << " amaf_avg " << (static_cast<double>(children[i].amaf_score) / children[i].amaf_count) << " amaf_count " << children[i].amaf_count;
+        if (children[i].amaf_count > 0) {
+            double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf_score / children[i].amaf_count);
+            std::cout << " (avg_with_rave " << priority << ")";
+        }   
         #endif
         std::cout << std::endl;
     }

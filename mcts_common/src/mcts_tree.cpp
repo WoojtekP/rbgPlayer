@@ -87,7 +87,7 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
         if (children[i].amaf_count > 0) {
             priority *= 1.0 - beta;
             priority += beta * (children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count);
-        }   
+        }
         #endif
         priority += c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
         if (priority > max_priority) {
