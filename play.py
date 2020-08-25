@@ -187,7 +187,7 @@ def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, pla
     assert(player_kind in available_players)
     with Cd(gen_directory(player_id)):
         if tree_strategy in ["semisplit", "rollup"] or sim_strategy == "semisplit":
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fmod-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
