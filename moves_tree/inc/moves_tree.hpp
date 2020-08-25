@@ -1,6 +1,7 @@
 #ifndef MOVESTREE
 #define MOVESTREE
 
+#include <algorithm>
 #include <vector>
 
 #include "tree_nodes.hpp"
@@ -11,12 +12,16 @@ class MovesTree {
 private:
     std::vector<cell_node> cell_nodes;
     std::vector<index_node> index_nodes = {{}};
+    std::vector<state_score> states_scores;
 
     int get_index_node(const int, const int);
     int get_cell_node(const int, const int);
     int get_index_node_by_move_representation(const reasoner::move_representation&, int);
     void update_score_at_cell_node(const int, const int, const score_type, const score_type);
     void update_score_at_index_node(const int, const score_type, const score_type);
+    void init(const int);
+    void extend(const int);
+    void allocate_space(const int);
 public:
     template <typename T>
     int insert_or_update(const T& semimove, const score_type score, const score_type weight, const int context = 0) {
@@ -33,9 +38,10 @@ public:
     double get_score_or_default_value(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation(semimove.mr, context);
         const auto c_node = get_cell_node(i_node, semimove.cell - 1);
-        auto& states_scores = cell_nodes[c_node].states_scores;
-        auto it = std::lower_bound(states_scores.begin(), states_scores.end(), semimove.state);
-        if (it == states_scores.end() || it->state != semimove.state || it->total_score.weight == 0) {
+        const auto& cell_node = cell_nodes[c_node];
+        const auto end_it = states_scores.begin() + cell_node.lst;
+        const auto it = std::find(states_scores.begin() + cell_node.fst, end_it, semimove.state);
+        if (it == end_it || it->total_score.weight == 0) {
             return EXPECTED_MAX_SCORE;
         }
         return it->total_score.get_score();
