@@ -69,12 +69,14 @@ public:
         while (lower > fst && children[lower - 1].index == 0) {
             --lower;
         }
+        #ifndef NDEBUG
         for (auto i = fst; i < lower; ++i) {
             assert(children[i].index > 0);
         }
         for (auto i = lower; i < lst; ++i) {
             assert(children[i].index == 0);
         }
+        #endif
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         uint chosen_child;
         if (rand_gen.random_real_number() < EPSILON) {

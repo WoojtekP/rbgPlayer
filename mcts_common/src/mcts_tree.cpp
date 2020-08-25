@@ -17,11 +17,13 @@ bool MctsTree::is_node_fully_expanded(const uint node_index) {
     }
     assert(nodes[node_index].children_range.second > nodes[node_index].children_range.first);
     bool result = children[nodes[node_index].children_range.second - 1].index != 0;
+    #ifndef NDEBUG
     if (result) {
         for (auto i = nodes[node_index].children_range.first; i < nodes[node_index].children_range.second; ++i) {
             assert(children[i].index != 0);
         }
     }
+    #endif
     return result;
 }
 
@@ -42,6 +44,14 @@ uint MctsTree::get_unvisited_child_index(std::vector<Child>& children, const Nod
     while (lower > fst && children[lower - 1].index == 0) {
         --lower;
     }
+    #ifndef NDEBUG
+    for (auto i = fst; i < lower; ++i) {
+        assert(children[i].index > 0);
+    }
+    for (auto i = lower; i < lst; ++i) {
+        assert(children[i].index == 0);
+    }
+    #endif
     assert(children[lst - 1].index == 0);
     
     // MSZ: If we want to try Rave instead of random
