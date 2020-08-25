@@ -103,6 +103,31 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
     return children_indices[rand_gen.uniform_choice(children_indices.size())];
 }
 
+uint MctsTree::get_top_ranked_child_index(const uint node_index) {
+    static std::vector<uint> children_indices;
+    children_indices.clear();
+    double max_score = -1.0;
+    uint max_sim = 0;
+    const auto [fst, lst] = nodes[node_index].children_range;
+    for (auto i = fst; i < lst; ++i) {
+        if (children[i].sim_count == 0)
+            continue;
+        double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
+        // if (children[i].sim_count > max_sim || (children[i].sim_count == max_sim && score > max_score)) {
+        if (score > max_score || (score == max_score && children[i].sim_count > max_sim)) {
+            max_score = score;
+            max_sim = children[i].sim_count;
+            children_indices.resize(1);
+            children_indices[0] = i;
+        }
+        else if (score == max_score && children[i].sim_count == max_sim) {
+            children_indices.push_back(i);
+        }
+    }
+    assert(children_indices.size() > 0);
+    return children_indices[RBGRandomGenerator::get_instance().uniform_choice(children_indices.size())];
+}
+
 void MctsTree::root_at_index(const uint root_index) {
     static std::vector<Node> nodes_tmp;
     static std::vector<Child> children_tmp;

@@ -33,8 +33,9 @@ protected:
     bool is_node_fully_expanded(const uint);
     void complete_turn(reasoner::game_state&);
     void get_scores_from_state(reasoner::game_state&, simulation_result&);
-    uint get_best_uct_child_index(const uint, const uint);
     uint get_unvisited_child_index(std::vector<Child>&, const Node&, const uint, const int);
+    uint get_best_uct_child_index(const uint, const uint);
+    uint get_top_ranked_child_index(const uint);
     void root_at_index(const uint);
     uint fix_tree(std::vector<Node>&, std::vector<Child>&, const uint);
 public:

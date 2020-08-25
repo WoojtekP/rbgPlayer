@@ -159,51 +159,8 @@ void Tree::reparent_along_move(const reasoner::move& move) {
 }
 
 reasoner::move Tree::choose_best_move() {
-    static std::vector<uint> children_indices;
     assert(nodes.front().is_expanded());
-    const auto [fst, lst] = nodes.front().children_range;
-    children_indices.clear();
-
-    // MSZ: Highest average score, then largest number of simulations
-    double max_score = -1.0;
-    uint max_sim = 0;
-    for (auto i = fst; i < lst; ++i) {
-       if (children[i].sim_count == 0) continue;
-       double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
-       if (score > max_score || (score == max_score && children[i].sim_count > max_sim)) {
-           max_score = score;
-           max_sim = children[i].sim_count;
-           children_indices.resize(1);
-           children_indices[0] = i;
-       } else
-       if (score == max_score && children[i].sim_count == max_sim) {
-           children_indices.push_back(i);
-       }
-    }
-    assert(children_indices.size() > 0);
-    uint best_child = children_indices[RBGRandomGenerator::get_instance().uniform_choice(children_indices.size())];
-    /*    
-    auto max_sim = children[fst].sim_count;
-    children_indices.resize(1);
-    children_indices[0] = fst;
-    for (auto i = fst + 1; i < lst; ++i) {
-        if (children[i].sim_count > max_sim) {
-            max_sim = children[i].sim_count;
-            children_indices.resize(1);
-            children_indices[0] = i;
-        }
-        else if (children[i].sim_count == max_sim) {
-            children_indices.push_back(i);
-        }
-    }
-    auto best_child = children_indices.front();
-    auto best_score = children[best_child].total_score;
-    for (const auto child_index : children_indices) {
-        if (children[child_index].total_score > best_score) {
-            best_score = children[child_index].total_score;
-            best_child = child_index;
-        }
-    }*/
+    const auto best_child = get_top_ranked_child_index(0);
     #if STATS
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     #if RAVE > 0

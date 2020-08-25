@@ -387,29 +387,7 @@ reasoner::move SemisplitTree::choose_best_greedy_move() {
     reasoner::move move;
     uint node_index = 0;
     while (true) {
-        const auto [fst, lst] = nodes[node_index].children_range;
-        auto max_sim = children[fst].sim_count;
-        children_indices.resize(1);
-        children_indices[0] = fst;
-        for (auto i = fst + 1; i < lst; ++i) {
-            if (children[i].sim_count > max_sim) {
-                max_sim = children[i].sim_count;
-                children_indices.resize(1);
-                children_indices[0] = i;
-            }
-            else if (children[i].sim_count == max_sim) {
-                children_indices.push_back(i);
-            }
-        }
-        assert(max_sim > 0);
-        auto best_child = children_indices.front();
-        auto best_score = children[best_child].total_score;
-        for (const auto child_index : children_indices) {
-            if (children[child_index].total_score > best_score) {
-                best_score = children[child_index].total_score;
-                best_child = child_index;
-            }
-        }
+        const auto best_child = get_top_ranked_child_index(node_index);
         const auto& semimove = children[best_child].semimove.get_actions();
         move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
         #if STATS
