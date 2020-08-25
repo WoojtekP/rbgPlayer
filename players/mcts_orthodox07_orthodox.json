@@ -5,11 +5,9 @@
     "algorithm" : {
         "name" : "MCTS",
         "tree_strategy" : "orthodox",
-        "simulation_strategy" : "semisplit",
+        "simulation_strategy" : "orthodox",
         "parameters" : {
-            "exploration_constant" : 0.4,
-            "max_semidepth" : 50,
-            "semilength" : 0
+            "exploration_constant" : 0.7
         }
     },
     "heuristics" : []

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 
 #include "moves_tree.hpp"
@@ -33,20 +34,64 @@ int MovesTree::get_index_node_by_move_representation(const reasoner::move_repres
 }
 
 void MovesTree::update_score_at_cell_node(const int c_node, const int state, const score_type score, const score_type weight) {
-    auto& states_scores = cell_nodes[c_node].states_scores;
-    auto it = std::lower_bound(states_scores.begin(), states_scores.end(), state);
-    if (it == states_scores.end() || it->state != state) {
-        states_scores.emplace(it, state, score, weight);
+    const auto& cell_node = cell_nodes[c_node];
+    if (cell_node.size == 0) {
+        init(c_node);
+        auto& lst = cell_nodes[c_node].lst;
+        states_scores[lst].total_score.sum = score;
+        states_scores[lst].total_score.weight = weight;
+        states_scores[lst].state = state;
+        ++lst;
     }
     else {
-        it->total_score.sum += score;
-        it->total_score.weight += weight;
+        const auto end_it = states_scores.begin() + cell_node.lst;
+        const auto it = std::find(states_scores.begin() + cell_node.fst, end_it, state);
+        if (it == end_it) {
+            if (cell_node.lst - cell_node.fst == cell_node.size) {
+                extend(c_node);
+            }
+            auto& lst = cell_nodes[c_node].lst;
+            states_scores[lst].total_score.sum = score;
+            states_scores[lst].total_score.weight = weight;
+            states_scores[lst].state = state;
+            ++lst;
+        }
+        else {
+            it->total_score.sum += score;
+            it->total_score.weight += weight;
+        }
     }
 }
 
 void MovesTree::update_score_at_index_node(const int i_node, const score_type score, const score_type weight) {
     index_nodes[i_node].total_score.sum += score;
     index_nodes[i_node].total_score.weight += weight;
+}
+
+void MovesTree::init(const int c_node) {
+    auto& cell_node = cell_nodes[c_node];
+    cell_node.fst = cell_node.lst = states_scores.size();
+    cell_node.size = 1;
+    allocate_space(cell_node.size);
+}
+
+void MovesTree::extend(const int c_node) {
+    auto& cell_node = cell_nodes[c_node];
+    const auto old_fst = cell_node.fst;
+    const auto old_lst = cell_node.lst;
+    cell_node.fst = states_scores.size();
+    cell_node.lst = cell_node.fst + (old_lst - old_fst);
+    cell_node.size *= 2;
+    allocate_space(cell_node.size);
+    std::copy(states_scores.begin() + old_fst, states_scores.begin() + old_lst, states_scores.begin() + cell_node.fst);
+}
+
+void MovesTree::allocate_space(const int size) {
+    size_t new_size = states_scores.size() + size;
+    if (new_size > states_scores.capacity()) {
+        states_scores.reserve(2 * new_size);
+    }
+    states_scores.resize(new_size);
 }
 
 double MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
@@ -76,11 +121,9 @@ void MovesTree::apply_decay_factor() {
         node.total_score.sum *= DECAY_FACTOR;
         node.total_score.weight *= DECAY_FACTOR;
     }
-    for (auto& node : cell_nodes) {
-        for (auto state_score : node.states_scores) {
-            state_score.total_score.sum *= DECAY_FACTOR;
-            state_score.total_score.weight *= DECAY_FACTOR;
-        }
+    for (auto state_score : states_scores) {
+        state_score.total_score.sum *= DECAY_FACTOR;
+        state_score.total_score.weight *= DECAY_FACTOR;
     }
 }
 

@@ -20,10 +20,13 @@ struct score {
 struct state_score {
     state_score()=default;
     state_score(const int state, const score_type score, const score_type weight) : state(state), total_score(score, weight) {}
-    int state;
+    int state = -1;
     score total_score;
     bool operator<(const int& rhs) const {
         return state < rhs;
+    }
+    bool operator==(const int& rhs) const {
+        return state == rhs;
     }
 };
 
@@ -34,7 +37,9 @@ struct cell_node {
         }
     }
     int index[reasoner::NUMBER_OF_MODIFIERS];
-    std::vector<state_score> states_scores;
+    int fst = -1;
+    int lst = -1;
+    int size = 0;
 };
 
 struct index_node {
