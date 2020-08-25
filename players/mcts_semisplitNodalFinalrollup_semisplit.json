@@ -4,15 +4,14 @@
     },
     "algorithm" : {
         "name" : "MCTS",
-        "tree_strategy" : "rollup",
-        "simulation_strategy" : "orthodox",
+        "tree_strategy" : "semisplit",
+        "simulation_strategy" : "semisplit",
         "parameters" : {
-            "exploration_constant" : 0.7,
+            "exploration_constant" : 0.4,
             "max_semidepth" : 50,
             "semilength" : 0,
             "is_nodal" : true,
-            "min_simulations_factor" : 1.0,
-            "min_score_diff" : 0.0
+            "greedy_choice" : false
         }
     },
     "heuristics" : []
