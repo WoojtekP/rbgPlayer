@@ -23,9 +23,8 @@ private:
     #if MAST == 2
     std::vector<int> context_stack;
 
-    template <typename M>
-    bool end_of_context(const T& move) const {
-        return !move.mr.empty() && reasoner::is_switch(move.mr.back().index);
+    bool end_of_context(const reasoner::semimove& semimove) const {
+        return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
     }
     #endif
 
