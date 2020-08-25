@@ -169,6 +169,7 @@ reasoner::move Tree::choose_best_move() {
     std::cout << "rave beta " << beta << std::endl;
     #endif
     std::cout << std::fixed << std::setprecision(2);
+    const auto [fst, lst] = nodes.front().children_range;
     for (auto i = fst; i < lst; ++i) {
         char prefix = (i == best_child) ? '*' : ' ';
         std::cout << prefix << " sim " << std::setw(4) << children[i].sim_count;

@@ -68,9 +68,6 @@ reasoner::move Tree::choose_best_move() {
     }
     static std::vector<uint> children_indices;
     children_indices.clear();
-    #if STATS
-    std::cout << std::setprecision(2);
-    #endif
     choose_best_rolledup_move(0, children_indices);
     reasoner::move move;
     for (const auto child_index : children_indices) {

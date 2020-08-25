@@ -12,7 +12,7 @@
 #if STATS
 void SemisplitTree::print_node_stats(const SemisplitChild& child) {
     std::cout << "sim " << std::setw(4) << child.sim_count;
-    std::cout << "   avg " << std::setw(6) << static_cast<double>(child.total_score) / child.sim_count << "   ";
+    std::cout << "   avg " << std::setw(6) << std::setprecision(2) << static_cast<double>(child.total_score) / child.sim_count << "   ";
     std::cout << "(" << std::setw(3) << child.semimove.cell << " " << std::setw(3) << child.semimove.state << ") ";
 }
 
@@ -395,6 +395,7 @@ reasoner::move SemisplitTree::choose_best_greedy_move() {
         move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
         #if STATS
         std::cout << "moves at level " << level << std::endl;
+        const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             char prefix = (i == best_child) ? '*' : ' ';
             std::cout << prefix << " ";
