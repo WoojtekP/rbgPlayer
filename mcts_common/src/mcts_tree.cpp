@@ -138,9 +138,6 @@ void MctsTree::root_at_index(const uint root_index) {
     fix_tree(nodes_tmp, children_tmp, root_index);
     std::swap(nodes, nodes_tmp);
     std::swap(children, children_tmp);
-    #if MAST > 0
-    move_chooser.complete_turn();
-    #endif
 }
 
 uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {

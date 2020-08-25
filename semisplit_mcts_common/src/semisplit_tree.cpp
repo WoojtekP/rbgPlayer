@@ -364,7 +364,7 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
         if (nodes.front().status == node_status::unknown) {
             if (has_nodal_successor(root_state)) {
                 nodes.front().status = node_status::nonterminal;
-            } 
+            }
             else {
                 nodes.front().status = node_status::terminal;
                 nodes.front().children_range = {0, 0};
@@ -374,6 +374,9 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
     if (!nodes.front().is_expanded()) {
         create_children(0, root_state);
     }
+    #if MAST > 0
+    move_chooser.complete_turn();
+    #endif
 }
 
 reasoner::move SemisplitTree::choose_best_greedy_move() {

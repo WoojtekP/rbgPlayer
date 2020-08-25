@@ -147,7 +147,6 @@ void Tree::reparent_along_move(const reasoner::move& move) {
         nodes.clear();
         children.clear();
         create_node(root_state);
-        // MSZ: Mast decay?
     }
     else {
         root_at_index(root_index);
@@ -155,7 +154,9 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     if (!nodes.front().is_expanded()) {
         create_children(0, root_state);
     }
-    children_stack.clear();
+    #if MAST > 0
+    move_chooser.complete_turn();
+    #endif
 }
 
 reasoner::move Tree::choose_best_move() {
