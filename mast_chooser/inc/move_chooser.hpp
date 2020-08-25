@@ -22,8 +22,13 @@ private:
     int context = 0;
     #if MAST == 2
     std::vector<int> context_stack;
-    std::deque<int> context_length;
+
+    template <typename M>
+    bool end_of_context(const T& move) const {
+        return !move.mr.empty() && reasoner::is_switch(move.mr.back().index);
+    }
     #endif
+
 public:
     MoveChooser(const MoveChooser&)=delete;
     MoveChooser(MoveChooser&&)=default;
@@ -106,37 +111,34 @@ public:
         return lower;
     }
 
-    void save_move(const T& move, const int current_player, [[maybe_unused]] const bool end_of_context = true) {
+    void save_move(const T& move, const int current_player) {
         assert(current_player != KEEPER);
         path.emplace_back(move, current_player);
-        #if MAST == 2
-        if (end_of_context) {
-            context_length.push_back(context_stack.size() + 1);
-            context_stack.clear();
-            context = 0;
-        }
-        else {
-            context_stack.push_back(context);
-            context = moves[current_player - 1].get_context(move.mr, context);
-        }
-        #endif
     }
 
     void revert_move() {
-        assert(!path.empty());
         path.pop_back();
-        #if MAST == 2
-        assert(!context_stack.empty());
-        context = context_stack.front();
-        context_stack.pop_back();
-        #endif
     }
 
     void clear_path() {
         path.clear();
+        reset_context();
+    }
+
+    template <typename M>
+    void update_move(const M& move, const simulation_result& results, const int player, const uint depth) {
+        assert(player != KEEPER);
+        [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], depth, context);
         #if MAST == 2
-        assert(context_length.empty());
-        assert(context_stack.empty());
+        context = end_of_context(move) ? 0 : new_context;
+        #endif
+    }
+
+    void update_all_moves(const simulation_result& results, const uint depth) {
+        for (const auto& [move, player] : path) {
+            update_move(move, results, player, depth);
+        }
+        #if MAST == 2
         assert(context == 0);
         #endif
     }
@@ -148,40 +150,15 @@ public:
     }
 
     template <typename M>
-    void update_move(const M& move, const simulation_result& results, const int player, const uint depth, [[maybe_unused]] const bool end_of_context = true) {
-        assert(player != KEEPER);
-        [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], depth, context);
-        #if MAST == 2
-        context = end_of_context ? 0 : new_context;
-        #endif
-    }
-
-    void update_all_moves(const simulation_result& results, const uint depth) {
-        for (const auto& [move, player] : path) {
-            [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], depth, context);
-            #if MAST == 2
-            assert(!context_length.empty());
-            --context_length.front();
-            if (context_length.front() == 0) {
-                context_length.pop_front();
-                context = 0;
-            }
-            else {
-                context = new_context;
-            }
-            #endif
-        }
-        #if MAST == 2
-        assert(context_length.empty());
-        assert(context == 0);
-        #endif
-    }
-
-    template <typename M>
     void switch_context([[maybe_unused]] const M& move, [[maybe_unused]] const int current_player) {
         #if MAST == 2
-        context_stack.push_back(context);
-        context = moves[current_player - 1].get_context(move.mr, context);
+        if (end_of_context(move)) {
+            reset_context();
+        }
+        else {
+            context_stack.push_back(context);
+            context = moves[current_player - 1].get_context(move.mr, context);
+        }
         #endif
     }
 

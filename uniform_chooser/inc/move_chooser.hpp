@@ -56,13 +56,13 @@ public:
     }
 
     void save_move(const T& move, const int current_player) {
+        assert(current_player != KEEPER);
         path.emplace_back(move, current_player);
     }
 
     void revert_move() {
-        if (!path.empty()) {
-            path.pop_back();
-        }
+        assert(!path.empty());
+        path.pop_back();
     }
 
     void clear_path() {
