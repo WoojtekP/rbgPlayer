@@ -1,9 +1,11 @@
-#include"tree_handler.hpp"
-#include"tree.hpp"
-#include"concurrent_queue.hpp"
-#include"client_response.hpp"
-#include"constants.hpp"
-#include<iostream>
+#include <exception>
+#include <iostream>
+
+#include "tree_handler.hpp"
+#include "tree.hpp"
+#include "concurrent_queue.hpp"
+#include "client_response.hpp"
+#include "constants.hpp"
 
 
 namespace{
@@ -11,7 +13,7 @@ int get_player_index(const std::string& name){
     for(int i = 0; i < reasoner::NUMBER_OF_PLAYERS - 1; ++i)
         if(reasoner::variable_to_string(i) == name)
             return i;
-    assert(false); // no such player?
+    throw std::invalid_argument("player \'" + name + "\' not found!");
 }
 }
 
