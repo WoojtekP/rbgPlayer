@@ -44,19 +44,13 @@ uint play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
     uint state_count = 0;
-    while(true) {
+    while(state.get_current_player() != KEEPER) {
         if (not apply_random_move_exhaustive(state, move_chooser, cache, 0)) {
             break;
         }
         ++state_count;
-        while(state.get_current_player() == KEEPER) {
-            auto any_move = state.apply_any_move(cache);
-            if (not any_move) {
-                goto terminal;
-            }
-        }
+        while(state.get_current_player() == KEEPER && state.apply_any_move(cache)) {}
     }
-    terminal:
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }
