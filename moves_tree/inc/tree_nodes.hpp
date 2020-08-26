@@ -1,6 +1,7 @@
 #ifndef TRIE_NODE
 #define TRIE_NODE
 
+#include "constants.hpp"
 #include "reasoner.hpp"
 #include "types.hpp"
 
@@ -13,7 +14,7 @@ struct score {
     score_type sum = 0;
     score_type weight = 0;
     double get_score() const {
-        return static_cast<double>(sum) / static_cast<double>(weight);
+        return weight == 0 ? EXPECTED_MAX_SCORE : static_cast<double>(sum) / static_cast<double>(weight);
     }
 };
 

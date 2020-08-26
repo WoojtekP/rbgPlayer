@@ -94,12 +94,9 @@ void MovesTree::allocate_space(const int size) {
     states_scores.resize(new_size);
 }
 
-double MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
+score MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
     const auto i_node = get_index_node_by_move_representation(mr, context);
-    if (index_nodes[i_node].total_score.weight == 0) {
-        return EXPECTED_MAX_SCORE;
-    }
-    return index_nodes[i_node].total_score.get_score();
+    return index_nodes[i_node].total_score;
 }
 
 int MovesTree::insert_or_update(const reasoner::move_representation& mr, const score_type score, const score_type weight, const int context) {
@@ -112,7 +109,7 @@ int MovesTree::insert_or_update(const reasoner::move& move, const score_type sco
     return insert_or_update(move.mr, score, weight, context);
 }
 
-double MovesTree::get_score_or_default_value(const reasoner::move& move, const int context) {
+score MovesTree::get_score_or_default_value(const reasoner::move& move, const int context) {
     return get_score_or_default_value(move.mr, context);
 }
 

@@ -35,20 +35,20 @@ public:
     int insert_or_update(const reasoner::move_representation&, const score_type, const score_type, const int);
 
     template <typename T>
-    double get_score_or_default_value(const T& semimove, const int context = 0) {
+    score get_score_or_default_value(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation(semimove.mr, context);
         const auto c_node = get_cell_node(i_node, semimove.cell - 1);
         const auto& cell_node = cell_nodes[c_node];
         const auto end_it = states_scores.begin() + cell_node.lst;
         const auto it = std::find(states_scores.begin() + cell_node.fst, end_it, semimove.state);
-        if (it == end_it || it->total_score.weight == 0) {
-            return EXPECTED_MAX_SCORE;
+        if (it == end_it) {
+            return {};
         }
-        return it->total_score.get_score();
+        return it->total_score;
     }
 
-    double get_score_or_default_value(const reasoner::move&, const int = 0);
-    double get_score_or_default_value(const reasoner::move_representation&, const int);
+    score get_score_or_default_value(const reasoner::move&, const int = 0);
+    score get_score_or_default_value(const reasoner::move_representation&, const int);
     void apply_decay_factor();
     int get_context(const reasoner::move_representation&, const int = 0);
 };
