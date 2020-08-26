@@ -241,6 +241,7 @@ uint SemisplitTree::perform_simulation() {
         assert(state.is_nodal());
         auto states_in_simulation = play(state, move_chooser, cache, results);
         if (states_in_simulation > 0) {
+            assert(nodes[new_node_index].status != node_status::terminal);
             nodes[new_node_index].status = node_status::nonterminal;
             state_count += states_in_simulation;
         }

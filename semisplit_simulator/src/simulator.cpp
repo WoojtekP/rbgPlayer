@@ -44,13 +44,21 @@ uint play(reasoner::game_state& state,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
     uint state_count = 0;
-    while(state.get_current_player() != KEEPER) {
+    if (state.get_current_player() == KEEPER) {
+        goto lb_terminal;
+    }
+    while (true) {
         if (not apply_random_move_exhaustive(state, move_chooser, cache, 0)) {
             break;
         }
         ++state_count;
-        while(state.get_current_player() == KEEPER && state.apply_any_move(cache)) {}
+        while (state.get_current_player() == KEEPER) {
+            if (!state.apply_any_move(cache)) {
+                goto lb_terminal;
+            }
+        }
     }
+    lb_terminal:
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }
