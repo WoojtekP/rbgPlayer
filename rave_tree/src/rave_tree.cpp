@@ -68,6 +68,7 @@ int RaveTree::find(const reasoner::move& move, const int context) {
 
 void RaveTree::reset() {
     cell_nodes.clear();
-    index_nodes = {{}};
+    index_nodes.clear();
+    index_nodes.emplace_back();
     turn = 1;
 }
