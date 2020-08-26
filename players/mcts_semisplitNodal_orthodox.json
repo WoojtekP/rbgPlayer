@@ -1,6 +1,6 @@
 {
     "general" : {
-        "buffer_time" : 50
+        "buffer_time" : 100
     },
     "algorithm" : {
         "name" : "MCTS",
