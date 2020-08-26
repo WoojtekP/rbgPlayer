@@ -52,10 +52,11 @@ uint play(reasoner::game_state& state,
         while(state.get_current_player() == KEEPER) {
             auto any_move = state.apply_any_move(cache);
             if (not any_move) {
-                break;
+                goto terminal;
             }
         }
     }
+    terminal:
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }
