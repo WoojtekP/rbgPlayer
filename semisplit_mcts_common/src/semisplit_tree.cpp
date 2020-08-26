@@ -265,7 +265,22 @@ uint SemisplitTree::perform_simulation() {
         }
     }
     terminal:
-    [[maybe_unused]] const uint depth = children_stack.size() + move_chooser.get_path().size();  // TODO fix
+    #if RAVE > 0
+    for (const auto [child_index, player] : children_stack) {
+        moves_tree[player - 1].insert_or_update(children[child_index].semimove);
+    }
+    if constexpr (!IS_NODAL) {
+        for (const auto& semimove : path) {
+            moves_tree[current_player - 1].insert_or_update(semimove);
+        }
+    }
+    for (const auto& [move, player] : move_chooser.get_path()) {
+        moves_tree[player - 1].insert_or_update(move);
+    }
+    #endif
+    [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO fix
+    [[maybe_unused]] int depth[reasoner::NUMBER_OF_PLAYERS-1] = {0};
+    node_index = 0;
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
@@ -273,18 +288,35 @@ uint SemisplitTree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].semimove, results, player, depth);
+        move_chooser.update_move(children[child_index].semimove, results, player, path_len);
+        #endif
+        #if RAVE > 0
+        ++depth[player-1];
+        assert(moves_tree[player - 1].find(children[child_index].semimove) >= depth[player-1]);
+        const auto [fst, lst] = nodes[node_index].children_range;
+        for (auto i = fst; i < lst; ++i) {
+            if (moves_tree[player - 1].find(children[i].semimove) >= depth[player-1]) {
+                children[i].amaf_score += results[player - 1];
+                ++children[i].amaf_count;
+            }
+        }
+        node_index = children[child_index].index;
         #endif
     }
     ++root_sim_count;
     #if MAST > 0
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
-            move_chooser.update_move(semimove, results, current_player, depth);
+            move_chooser.update_move(semimove, results, current_player, path_len);
         }
     }
     move_chooser.reset_context();
-    move_chooser.update_all_moves(results, depth);
+    move_chooser.update_all_moves(results, path_len);
+    #endif
+    #if RAVE > 0
+    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
+        moves_tree[i - 1].reset();
+    }
     #endif
     return state_count;
 }

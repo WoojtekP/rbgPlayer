@@ -18,9 +18,12 @@ namespace {
             const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);
             const auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
             move_chooser.switch_context(legal_semimoves[semidepth][chosen_semimove], current_player);
-            #if MAST > 0
-            if constexpr (not TREE_ONLY)
+            #if RAVE > 0
+            move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player);
+            #elif MAST > 0
+            if constexpr (not TREE_ONLY) {
                 move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player);
+            }
             #endif
             if (state.is_nodal())
                 return true;
@@ -30,9 +33,12 @@ namespace {
             move_chooser.revert_context();
             legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
             legal_semimoves[semidepth].pop_back();
-            #if MAST > 0
-            if constexpr (not TREE_ONLY)
+            #if RAVE > 0
+            move_chooser.revert_move();
+            #elif MAST > 0
+            if constexpr (not TREE_ONLY) {
                 move_chooser.revert_move();
+            }
             #endif
         }
         return false;

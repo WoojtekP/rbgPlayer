@@ -36,7 +36,7 @@ void RaveTree::update_at_cell_node(const int c_node, const int state) {
     auto& states_turns = cell_nodes[c_node].states_turns;
     auto it = std::lower_bound(states_turns.begin(), states_turns.end(), state);
     if (it == states_turns.end() || it->state != state) {
-        states_turns.emplace(it, state, turn);
+        states_turns.emplace(it, state, turn++);
     }
     else {
         it->turn = turn++;

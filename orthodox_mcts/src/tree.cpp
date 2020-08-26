@@ -86,7 +86,7 @@ uint Tree::perform_simulation() {
     }
     #endif
     [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO calculate only nodal-depth
-    [[maybe_unused]] int depth[reasoner::NUMBER_OF_PLAYERS-1] = {0};// MSZ: The depth must be counted separately for each player
+    [[maybe_unused]] int depth[reasoner::NUMBER_OF_PLAYERS-1] = {0};
     node_index = 0;
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
@@ -111,7 +111,9 @@ uint Tree::perform_simulation() {
     }
     ++root_sim_count;
     #if MAST > 0
-    move_chooser.update_all_moves(results, path_len);
+    if constexpr (!TREE_ONLY) {
+        move_chooser.update_all_moves(results, path_len);
+    }
     #endif
     #if RAVE > 0
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
