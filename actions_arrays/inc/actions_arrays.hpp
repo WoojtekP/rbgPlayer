@@ -20,7 +20,9 @@ public:
     actions_arrays();
     template <typename T>
     int insert_or_update(const T& semimove, const double score, const double weight) {
-        insert_or_update(semimove.mr, score, weight);
+        if constexpr (not ONLY_STATES) {
+            insert_or_update(semimove.mr, score, weight);
+        }
         auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
         arr2[index].weight += weight;
         arr2[index].sum += score;
