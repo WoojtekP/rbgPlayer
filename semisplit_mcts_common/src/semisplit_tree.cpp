@@ -277,7 +277,7 @@ uint SemisplitTree::perform_simulation() {
     int context = 0;
     for (const auto [child_index, player] : children_stack) {
         #if RAVE == 3
-        moves_tree[player - 1].insert_or_update(children[child_index].semimove);
+        moves_tree_base[player - 1].insert_or_update(children[child_index].semimove);
         #endif
         [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
         #if RAVE >= 2
@@ -287,7 +287,7 @@ uint SemisplitTree::perform_simulation() {
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
             #if RAVE == 3
-            moves_tree[current_player - 1].insert_or_update(semimove);
+            moves_tree_base[current_player - 1].insert_or_update(semimove);
             #endif
             [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(semimove, context);
             #if RAVE >= 2
@@ -298,7 +298,7 @@ uint SemisplitTree::perform_simulation() {
     context = 0;
     for (const auto& [move, player] : move_chooser.get_path()) {
         #if RAVE == 3
-        moves_tree[player - 1].insert_or_update(move);
+        moves_tree_base[player - 1].insert_or_update(move);
         #endif
         [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(move, context);
         #if RAVE >= 2
@@ -325,7 +325,7 @@ uint SemisplitTree::perform_simulation() {
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             #if RAVE == 3
-            if (moves_tree[player - 1].find(children[i].semimove) >= depth[player-1]) {
+            if (moves_tree_base[player - 1].find(children[i].semimove) >= depth[player-1]) {
                 children[i].amaf_score_base += results[player - 1];
                 ++children[i].amaf_count_base;
             }
@@ -354,6 +354,9 @@ uint SemisplitTree::perform_simulation() {
     #if RAVE > 0
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         moves_tree[i - 1].reset();
+        #if RAVE == 3
+        moves_tree_base[i - 1].reset();
+        #endif
     }
     #endif
     return state_count;

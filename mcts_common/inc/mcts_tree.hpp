@@ -22,8 +22,11 @@ protected:
     std::vector<Child> children;
     std::vector<std::pair<uint,int>> children_stack;
     MoveChooser<move_type> move_chooser;
-    #if RAVE
+    #if RAVE > 0
     RaveTree moves_tree[reasoner::NUMBER_OF_PLAYERS - 1];
+    #endif
+    #if RAVE == 3
+    RaveTree moves_tree_base[reasoner::NUMBER_OF_PLAYERS - 1];
     #endif
     uint root_sim_count = 0;
     #if STATS
