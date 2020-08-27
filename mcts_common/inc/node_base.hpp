@@ -20,6 +20,10 @@ struct ChildBase {
     uint amaf_score = 0;// MSZ: uint64 for safety, since we expect a much larger count than the number of simulations
     uint amaf_count = 0;
     #endif
+    #if RAVE == 3
+    uint amaf_score_base = 0;
+    uint amaf_count_base = 0;
+    #endif
 };
 
 #endif

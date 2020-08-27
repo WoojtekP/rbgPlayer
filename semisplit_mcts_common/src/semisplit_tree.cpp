@@ -9,7 +9,7 @@
 #include "constants.hpp"
 
 
-#if RAVE == 2
+#if RAVE >= 2
 namespace {
     bool end_of_context(const reasoner::semimove& semimove) {
         return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
@@ -276,23 +276,32 @@ uint SemisplitTree::perform_simulation() {
     #if RAVE > 0
     int context = 0;
     for (const auto [child_index, player] : children_stack) {
+        #if RAVE == 3
+        moves_tree[player - 1].insert_or_update(children[child_index].semimove);
+        #endif
         [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
-        #if RAVE == 2
+        #if RAVE >= 2
         context = end_of_context(children[child_index].semimove) ? 0 : new_context;
         #endif
     }
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
+            #if RAVE == 3
+            moves_tree[current_player - 1].insert_or_update(semimove);
+            #endif
             [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(semimove, context);
-            #if RAVE == 2
+            #if RAVE >= 2
             context = new_context;
             #endif
         }
     }
     context = 0;
     for (const auto& [move, player] : move_chooser.get_path()) {
+        #if RAVE == 3
+        moves_tree[player - 1].insert_or_update(move);
+        #endif
         [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(move, context);
-        #if RAVE == 2
+        #if RAVE >= 2
         context = end_of_context(move) ? 0 : new_context;
         #endif
     }
@@ -315,12 +324,18 @@ uint SemisplitTree::perform_simulation() {
         assert(moves_tree[player - 1].find(children[child_index].semimove, context) >= depth[player-1]);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
+            #if RAVE == 3
+            if (moves_tree[player - 1].find(children[i].semimove) >= depth[player-1]) {
+                children[i].amaf_score_base += results[player - 1];
+                ++children[i].amaf_count_base;
+            }
+            #endif
             if (moves_tree[player - 1].find(children[i].semimove, context) >= depth[player-1]) {
                 children[i].amaf_score += results[player - 1];
                 ++children[i].amaf_count;
             }
         }
-        #if RAVE == 2
+        #if RAVE >= 2
         context = end_of_context(children[child_index].semimove) ? 0 : moves_tree[player - 1].get_context(children[child_index].semimove.mr, context);
         #endif
         node_index = children[child_index].index;

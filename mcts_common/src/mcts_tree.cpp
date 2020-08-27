@@ -86,18 +86,22 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
     const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(node_sim_count));
     double max_priority = 0.0;
     #if RAVE > 0
-    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * node_sim_count + EQUIVALENCE_PARAMETER));
+    const double beta = std::sqrt(EQUIVALENCE_PARAMETER / (3.0 * node_sim_count + EQUIVALENCE_PARAMETER));
     #endif
     const auto [fst, lst] = nodes[node_index].children_range;
     for (uint i = fst; i < lst; ++i) {
-        double priority = children[i].total_score / EXPECTED_MAX_SCORE / children[i].sim_count;
         assert(children[i].sim_count > 0);
+        double priority = static_cast<double>(children[i].total_score) / EXPECTED_MAX_SCORE / children[i].sim_count;
         #if RAVE > 0
-        assert(children[i].amaf_count > 0);// MSZ: True if we add the applied move to amaf
-        if (children[i].amaf_count > 0) {
-            priority *= 1.0 - beta;
-            priority += beta * (children[i].amaf_score / EXPECTED_MAX_SCORE / children[i].amaf_count);
-        }
+        assert(children[i].amaf_count > 0);
+        double amaf_score = static_cast<double>(children[i].amaf_score) / EXPECTED_MAX_SCORE / children[i].amaf_count;
+        #if RAVE == 3
+        double mix_beta = std::sqrt(MIX_EQUIVALENCE_PARAMETER / (3.0 * children[i].amaf_count_base + MIX_EQUIVALENCE_PARAMETER));
+        assert(children[i].amaf_count_base > 0);
+        double base_score = static_cast<double>(children[i].amaf_score_base) / EXPECTED_MAX_SCORE / children[i].amaf_count_base;
+        amaf_score = base_score * (1.0 - mix_beta) + amaf_score * mix_beta;
+        #endif
+        priority = priority * (1.0 - beta) + amaf_score * beta;
         #endif
         priority += c_sqrt_logn / std::sqrt(static_cast<double>(children[i].sim_count));
         if (priority > max_priority) {
