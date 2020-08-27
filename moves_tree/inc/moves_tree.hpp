@@ -17,6 +17,7 @@ private:
     int get_index_node(const int, const int);
     int get_cell_node(const int, const int);
     int get_index_node_by_move_representation(const reasoner::move_representation&, int);
+    int get_index_node_by_move_representation_if_exists(const reasoner::move_representation&, int);
     void update_score_at_cell_node(const int, const int, const score_type, const score_type);
     void update_score_at_index_node(const int, const score_type, const score_type);
     void init(const int);
@@ -36,8 +37,14 @@ public:
 
     template <typename T>
     score get_score_or_default_value(const T& semimove, const int context = 0) {
-        const auto i_node = get_index_node_by_move_representation(semimove.mr, context);
-        const auto c_node = get_cell_node(i_node, semimove.cell - 1);
+        const auto i_node = get_index_node_by_move_representation_if_exists(semimove.mr, context);
+        if (i_node == -1) {
+            return {};
+        }
+        const auto c_node = index_nodes[i_node].cell[semimove.cell - 1];
+        if (c_node == -1) {
+            return {};
+        }
         const auto& cell_node = cell_nodes[c_node];
         const auto end_it = states_scores.begin() + cell_node.lst;
         const auto it = std::find(states_scores.begin() + cell_node.fst, end_it, semimove.state);

@@ -33,6 +33,24 @@ int MovesTree::get_index_node_by_move_representation(const reasoner::move_repres
     return i_node;
 }
 
+int MovesTree::get_index_node_by_move_representation_if_exists(const reasoner::move_representation& mr, int i_node) {
+    if (i_node >= index_nodes.size()) {
+        return -1;
+    }
+    for (const auto& action : mr) {
+        const auto c_node = index_nodes[i_node].cell[action.cell - 1];
+        if (c_node == -1) {
+            return -1;
+        }
+        const auto modifier_index = reasoner::action_to_modifier_index(action.index);
+        i_node = cell_nodes[c_node].index[modifier_index];
+        if (i_node == -1) {
+            return -1;
+        }
+    }
+    return i_node;
+}
+
 void MovesTree::update_score_at_cell_node(const int c_node, const int state, const score_type score, const score_type weight) {
     const auto& cell_node = cell_nodes[c_node];
     if (cell_node.size == 0) {
@@ -95,7 +113,10 @@ void MovesTree::allocate_space(const int size) {
 }
 
 score MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
-    const auto i_node = get_index_node_by_move_representation(mr, context);
+    const auto i_node = get_index_node_by_move_representation_if_exists(mr, context);
+    if (i_node == -1) {
+        return {};
+    }
     return index_nodes[i_node].total_score;
 }
 
