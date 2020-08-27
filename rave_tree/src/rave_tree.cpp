@@ -72,3 +72,7 @@ void RaveTree::reset() {
     index_nodes.emplace_back();
     turn = 1;
 }
+
+int RaveTree::get_context(const reasoner::move_representation& mr, const int context) {
+    return get_index_node_by_move_representation(mr, context);
+}

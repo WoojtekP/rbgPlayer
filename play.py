@@ -34,6 +34,7 @@ available_players = set([
     "semisplitMcts_semisplitSim_mastsplit",
     "semisplitMcts_semisplitSim_mastcontext",
     "semisplitMcts_semisplitSim_rave",
+    "semisplitMcts_semisplitSim_ravecontext",
     "semisplitMcts_orthodoxSim",
     "semisplitMcts_orthodoxSim_mastsplit",
     "semisplitMcts_orthodoxSim_rave",
@@ -204,7 +205,7 @@ def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, pla
         "RELEASE="+str(release_mode),
         "STATS="+str(stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics)),
-        "RAVE="+str(int("RAVE" in heuristics))]
+        "RAVE="+str(int("RAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics))]
     print("   subprocess.run:", *run_list)
     subprocess.run(run_list)
 

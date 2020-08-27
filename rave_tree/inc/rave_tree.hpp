@@ -45,6 +45,7 @@ public:
     int find(const reasoner::move&, const int = 0);
     int find(const reasoner::move_representation&, const int);
     void reset();
+    int get_context(const reasoner::move_representation&, const int = 0);
 };
 
 #endif

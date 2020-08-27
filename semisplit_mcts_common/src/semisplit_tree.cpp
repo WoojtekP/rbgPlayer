@@ -9,6 +9,14 @@
 #include "constants.hpp"
 
 
+#if RAVE == 2
+namespace {
+    bool end_of_context(const reasoner::semimove& semimove) {
+        return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
+    }
+}
+#endif
+
 #if STATS
 void SemisplitTree::print_node_stats(const SemisplitChild& child) {
     std::cout << "sim " << std::setw(4) << child.sim_count;
@@ -266,17 +274,29 @@ uint SemisplitTree::perform_simulation() {
     }
     terminal:
     #if RAVE > 0
+    int context = 0;
     for (const auto [child_index, player] : children_stack) {
-        moves_tree[player - 1].insert_or_update(children[child_index].semimove);
+        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
+        #if RAVE == 2
+        context = end_of_context(children[child_index].semimove) ? 0 : new_context;
+        #endif
     }
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
-            moves_tree[current_player - 1].insert_or_update(semimove);
+            [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(semimove, context);
+            #if RAVE == 2
+            context = new_context;
+            #endif
         }
     }
+    context = 0;
     for (const auto& [move, player] : move_chooser.get_path()) {
-        moves_tree[player - 1].insert_or_update(move);
+        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(move, context);
+        #if RAVE == 2
+        context = end_of_context(move) ? 0 : new_context;
+        #endif
     }
+    assert(context == 0);
     #endif
     [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO fix
     [[maybe_unused]] int depth[reasoner::NUMBER_OF_PLAYERS-1] = {0};
@@ -292,14 +312,17 @@ uint SemisplitTree::perform_simulation() {
         #endif
         #if RAVE > 0
         ++depth[player-1];
-        assert(moves_tree[player - 1].find(children[child_index].semimove) >= depth[player-1]);
+        assert(moves_tree[player - 1].find(children[child_index].semimove, context) >= depth[player-1]);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (moves_tree[player - 1].find(children[i].semimove) >= depth[player-1]) {
+            if (moves_tree[player - 1].find(children[i].semimove, context) >= depth[player-1]) {
                 children[i].amaf_score += results[player - 1];
                 ++children[i].amaf_count;
             }
         }
+        #if RAVE == 2
+        context = end_of_context(children[child_index].semimove) ? 0 : moves_tree[player - 1].get_context(children[child_index].semimove.mr, context);
+        #endif
         node_index = children[child_index].index;
         #endif
     }
