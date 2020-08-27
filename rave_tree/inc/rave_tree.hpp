@@ -1,6 +1,7 @@
 #ifndef RAVETREE
 #define RAVETREE
 
+#include <algorithm>
 #include <vector>
 
 #include "rave_nodes.hpp"
@@ -11,6 +12,7 @@ class RaveTree {
 private:
     std::vector<cell_node> cell_nodes;
     std::vector<index_node> index_nodes = {{}};
+    std::vector<state_turn> states_turns;
     int turn = 1;
 
     int get_index_node(const int, const int);
@@ -18,6 +20,9 @@ private:
     int get_index_node_by_move_representation(const reasoner::move_representation&, int);
     void update_at_cell_node(const int, const int);
     void update_at_index_node(const int);
+    void init(const int);
+    void extend(const int);
+    void allocate_space(const int);
 public:
     template <typename T>
     int insert_or_update(const T& semimove, const int context = 0) {
@@ -34,9 +39,10 @@ public:
     int find(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation(semimove.mr, context);
         const auto c_node = get_cell_node(i_node, semimove.cell - 1);
-        auto& states_turns = cell_nodes[c_node].states_turns;
-        auto it = std::lower_bound(states_turns.begin(), states_turns.end(), semimove.state);
-        if (it == states_turns.end() || it->state != semimove.state) {
+        const auto& cell_node = cell_nodes[c_node];
+        const auto end_it = states_turns.begin() + cell_node.lst;
+        const auto it = std::find(states_turns.begin() + cell_node.fst, end_it, semimove.state);
+        if (it == end_it) {
             return -1;
         }
         return it->turn;

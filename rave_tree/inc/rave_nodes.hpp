@@ -6,11 +6,15 @@
 
 
 struct state_turn {
-    int state;
-    int turn;
+    state_turn()=default;
     state_turn(const int state, const int turn) : state(state), turn(turn) {}
+    int state = -1;
+    int turn = -1;
     bool operator<(const int rhs) {
         return state < rhs;
+    }
+    bool operator==(const int& rhs) const {
+        return state == rhs;
     }
 };
 
@@ -21,7 +25,9 @@ struct cell_node {
         }
     }
     int index[reasoner::NUMBER_OF_MODIFIERS];
-    std::vector<state_turn> states_turns;
+    int fst = -1;
+    int lst = -1;
+    int size = 0;
 };
 
 struct index_node {
