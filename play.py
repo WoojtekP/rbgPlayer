@@ -30,6 +30,7 @@ available_players = set([
     "orthodoxMcts_semisplitSim",
     "orthodoxMcts_semisplitSim_mastsplit",
     "semisplitMcts_semisplitSim",
+    "semisplitMcts_semisplitSim_mast",
     "semisplitMcts_semisplitSim_mastsplit",
     "semisplitMcts_semisplitSim_mastcontext",
     "semisplitMcts_semisplitSim_rave",
