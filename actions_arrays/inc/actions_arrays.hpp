@@ -30,6 +30,10 @@ public:
 
     template <typename T>
     double get_score_or_default_value(const T& semimove) {
+        const auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
+        if constexpr (ONLY_STATES) {
+            return arr2[index].sum / arr2[index].weight;
+        }
         double total_sum = 0;
         [[maybe_unused]] double weight_sum = 0;
         for (const auto& action : semimove.mr) {
@@ -45,7 +49,6 @@ public:
                 total_sum += arr1[action_index].sum / arr1[action_index].weight;
             }
         }
-        auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
         if (arr2[index].weight == 0) {
             return EXPECTED_MAX_SCORE;
         }

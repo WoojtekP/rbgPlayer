@@ -22,7 +22,8 @@
                 "decay_factor" : 0.2,
                 "weight_scaling" : false,
                 "tree_only" : false,
-                "weighted_mean" : true
+                "weighted_mean" : true,
+                "only_states" : false
             }
         }
     ]
