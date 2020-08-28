@@ -7,12 +7,39 @@
 
 
 int RaveTree::get_index_node(const int c_node, const int index) {
-    auto i_node = cell_nodes[c_node].index[index];
-    if (i_node == -1) {
-        i_node = cell_nodes[c_node].index[index] = index_nodes.size();
-        index_nodes.emplace_back();
+    auto& cell_node = cell_nodes[c_node];
+    switch (cell_node.status) {
+        case empty: {
+            cell_node.status = node_status::one_index;
+            cell_node.index.value = index;
+            cell_node.index.node = index_nodes.size();
+            index_nodes.emplace_back();
+            return cell_node.index.node;
+        }
+        case one_index: {
+            assert(cell_node.index.node != -1);
+            assert(cell_node.index.value >= 0 && cell_node.index.value <= reasoner::NUMBER_OF_MODIFIERS);
+            if (index == cell_node.index.value) {
+                return cell_node.index.node;
+            }
+            cell_node.status = node_status::expanded;
+            const auto offset = index_nodes_indices.size();
+            allocate_and_initialize(index_nodes_indices, reasoner::NUMBER_OF_MODIFIERS, -1);
+            index_nodes_indices[offset + cell_node.index.value] = cell_node.index.node;
+            cell_node.offset = offset;
+            break;
+        }
+        case expanded: {
+            assert(cell_node.offset % reasoner::NUMBER_OF_MODIFIERS == 0);
+            if (index_nodes_indices[cell_node.offset + index] > 0) {
+                return index_nodes_indices[cell_node.offset + index];
+            }
+        }
     }
-    return i_node;
+    assert(index_nodes_indices[cell_node.offset + index] == -1);
+    index_nodes_indices[cell_node.offset + index] = index_nodes.size();
+    index_nodes.emplace_back();
+    return index_nodes_indices[cell_node.offset + index];
 }
 
 int RaveTree::get_cell_node(const int i_node, const int cell) {
@@ -44,7 +71,24 @@ int RaveTree::get_index_node_by_move_representation_if_exists(const reasoner::mo
             return -1;
         }
         const auto modifier_index = reasoner::action_to_modifier_index(action.index);
-        i_node = cell_nodes[c_node].index[modifier_index];
+        const auto& cell_node = cell_nodes[c_node];
+        switch (cell_node.status) {
+            case node_status::empty: {
+                return -1;
+            }
+            case node_status::one_index: {
+                if (modifier_index == cell_node.index.value) {
+                    i_node = cell_node.index.node;
+                    assert(i_node != -1);
+                    break;
+                }
+                return -1;
+            }
+            case node_status::expanded: {
+                assert(cell_node.offset % reasoner::NUMBER_OF_MODIFIERS == 0);
+                i_node = index_nodes_indices[cell_node.offset + modifier_index];
+            }
+        }
         if (i_node == -1) {
             return -1;
         }
@@ -78,7 +122,7 @@ void RaveTree::init(const int c_node) {
     auto& cell_node = cell_nodes[c_node];
     cell_node.fst = cell_node.lst = states_turns.size();
     cell_node.size = 1;
-    allocate_space(cell_node.size);
+    allocate_space(states_turns, cell_node.size);
 }
 
 void RaveTree::extend(const int c_node) {
@@ -88,16 +132,8 @@ void RaveTree::extend(const int c_node) {
     cell_node.fst = states_turns.size();
     cell_node.lst = cell_node.fst + (old_lst - old_fst);
     cell_node.size *= 2;
-    allocate_space(cell_node.size);
+    allocate_space(states_turns, cell_node.size);
     std::copy(states_turns.begin() + old_fst, states_turns.begin() + old_lst, states_turns.begin() + cell_node.fst);
-}
-
-void RaveTree::allocate_space(const int size) {
-    size_t new_size = states_turns.size() + size;
-    if (new_size > states_turns.capacity()) {
-        states_turns.reserve(2 * new_size);
-    }
-    states_turns.resize(new_size);
 }
 
 int RaveTree::find(const reasoner::move_representation& mr, const int context) {
@@ -124,6 +160,7 @@ void RaveTree::reset() {
     index_nodes.clear();
     index_nodes.emplace_back();
     states_turns.clear();
+    index_nodes_indices.clear();
     turn = 1;
 }
 

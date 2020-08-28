@@ -18,16 +18,25 @@ struct state_turn {
     }
 };
 
+enum node_status : char {
+    empty,
+    one_index,
+    expanded,
+};
+
 struct cell_node {
-    cell_node() {
-        for (int i = 0; i < reasoner::NUMBER_OF_MODIFIERS; ++i) {
-            index[i] = -1;
-        }
-    }
-    int index[reasoner::NUMBER_OF_MODIFIERS];
+    cell_node()=default;
+    union {
+        struct {
+            int value;
+            int node;
+        } index;
+        int offset;
+    };
     int fst = -1;
     int lst = -1;
-    int size = 0;
+    short int size = 0;
+    node_status status = node_status::empty;
 };
 
 struct index_node {

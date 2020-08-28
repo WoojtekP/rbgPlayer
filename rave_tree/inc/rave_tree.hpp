@@ -13,6 +13,7 @@ private:
     std::vector<cell_node> cell_nodes;
     std::vector<index_node> index_nodes = {{}};
     std::vector<state_turn> states_turns;
+    std::vector<int> index_nodes_indices;
     int turn = 1;
 
     int get_index_node(const int, const int);
@@ -23,7 +24,23 @@ private:
     void update_at_index_node(const int);
     void init(const int);
     void extend(const int);
-    void allocate_space(const int);
+    template <typename T>
+    void allocate_space(std::vector<T>& vec, const int size) {
+        size_t new_size = vec.size() + size;
+        if (new_size > vec.capacity()) {
+            vec.reserve(2 * new_size);
+        }
+        vec.resize(new_size);
+    }
+    template <typename T>
+    void allocate_and_initialize(std::vector<T>& vec, const int size, const T init) {
+        size_t new_size = vec.size() + size;
+        if (new_size > vec.capacity()) {
+            vec.reserve(2 * new_size);
+        }
+        vec.resize(new_size, init);
+    }
+
 public:
     template <typename T>
     int insert_or_update(const T& semimove, const int context = 0) {
