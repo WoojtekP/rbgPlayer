@@ -34,6 +34,24 @@ int RaveTree::get_index_node_by_move_representation(const reasoner::move_represe
     return i_node;
 }
 
+int RaveTree::get_index_node_by_move_representation_if_exists(const reasoner::move_representation& mr, int i_node) {
+    if (i_node >= index_nodes.size()) {
+        return -1;
+    }
+    for (const auto& action : mr) {
+        const auto c_node = index_nodes[i_node].cell[action.cell - 1];
+        if (c_node == -1) {
+            return -1;
+        }
+        const auto modifier_index = reasoner::action_to_modifier_index(action.index);
+        i_node = cell_nodes[c_node].index[modifier_index];
+        if (i_node == -1) {
+            return -1;
+        }
+    }
+    return i_node;
+}
+
 void RaveTree::update_at_cell_node(const int c_node, const int state) {
     const auto& cell_node = cell_nodes[c_node];
     const auto end_it = states_turns.begin() + cell_node.lst;
@@ -83,8 +101,8 @@ void RaveTree::allocate_space(const int size) {
 }
 
 int RaveTree::find(const reasoner::move_representation& mr, const int context) {
-    const auto i_node = get_index_node_by_move_representation(mr, context);
-    return index_nodes[i_node].turn;
+    const auto i_node = get_index_node_by_move_representation_if_exists(mr, context);
+    return (i_node == -1) ? -1 : index_nodes[i_node].turn;
 }
 
 int RaveTree::insert_or_update(const reasoner::move_representation& mr, const int context) {

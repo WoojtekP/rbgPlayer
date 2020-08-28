@@ -114,10 +114,7 @@ void MovesTree::allocate_space(const int size) {
 
 score MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
     const auto i_node = get_index_node_by_move_representation_if_exists(mr, context);
-    if (i_node == -1) {
-        return {};
-    }
-    return index_nodes[i_node].total_score;
+    return (i_node == -1) ? {} : index_nodes[i_node].total_score;
 }
 
 int MovesTree::insert_or_update(const reasoner::move_representation& mr, const score_type score, const score_type weight, const int context) {
