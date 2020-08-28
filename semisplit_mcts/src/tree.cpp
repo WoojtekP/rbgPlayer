@@ -31,7 +31,7 @@ void Tree::choose_best_rolledup_move(const uint node_index, std::vector<uint>& b
         auto index = children[i].index;
         if (index > 0) {
             move_path.push_back(i);
-            if (nodes[index].is_nodal) {
+            if (nodes[index].is_nodal || !nodes[index].is_expanded()) {
                 #if STATS
                 print_node_stats(children[i]);
                 print_rolledup_move(move_path);
@@ -70,15 +70,30 @@ reasoner::move Tree::choose_best_move() {
     children_indices.clear();
     choose_best_rolledup_move(0, children_indices);
     reasoner::move move;
+    reasoner::game_state state = root_state;
     for (const auto child_index : children_indices) {
-        const auto& semimove = children[child_index].semimove.get_actions();
-        move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
+        const auto& semimove = children[child_index].semimove;
+        state.apply_semimove(semimove);
+        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
     }
+    if (!state.is_nodal()) {
+        #if STATS
+        std::cout << "random continuation..." << std::endl << std::endl;
+        #endif
+        static std::vector<reasoner::semimove> move_suffix;
+        move_suffix.clear();
+        random_walk_to_nodal(state, move_suffix);
+        for (const auto& semimove : move_suffix) {
+            move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
+        }
+    }
+    else {
     #if STATS
     std::cout << std::endl << "chosen move:" << std::endl;
     print_node_stats(children[children_indices.back()]);
     print_rolledup_move(children_indices);
     std::cout << std::endl;
     #endif
+    }
     return move;
 }

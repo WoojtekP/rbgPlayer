@@ -7,15 +7,18 @@
 #include "semisplit_node.hpp"
 #include "simulator.hpp"
 #include "constants.hpp"
+#include "random_generator.hpp"
 
+
+namespace {
+    std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
 
 #if RAVE >= 2
-namespace {
     bool end_of_context(const reasoner::semimove& semimove) {
         return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
     }
-}
 #endif
+}
 
 #if STATS
 void SemisplitTree::print_node_stats(const SemisplitChild& child) {
@@ -74,7 +77,6 @@ void SemisplitTree::create_children(const uint node_index, reasoner::game_state&
 }
 
 bool SemisplitTree::has_nodal_successor(reasoner::game_state& state, uint semidepth) {
-    static std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
     if (state.get_current_player() == KEEPER) {
         return false;
     }
@@ -96,7 +98,6 @@ bool SemisplitTree::has_nodal_successor(reasoner::game_state& state, uint semide
 }
 
 bool SemisplitTree::save_path_to_nodal_state(reasoner::game_state& state, std::vector<reasoner::semimove>& path, uint semidepth) {
-    static std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
     if (state.is_nodal()) {
         move_chooser.reset_context();
         return true;
@@ -117,6 +118,26 @@ bool SemisplitTree::save_path_to_nodal_state(reasoner::game_state& state, std::v
         path.pop_back();
         state.revert(ri);
         move_chooser.revert_context();
+    }
+    return false;
+}
+
+bool SemisplitTree::random_walk_to_nodal(reasoner::game_state& state, std::vector<reasoner::semimove>& path, uint semidepth) {
+    if (state.is_nodal()) {
+        return true;
+    }
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    while (!legal_semimoves[semidepth].empty()) {
+        const auto chosen_semimove = RBGRandomGenerator::get_instance().uniform_choice(legal_semimoves[semidepth].size());
+        auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
+        path.push_back(legal_semimoves[semidepth][chosen_semimove]);
+        if (random_walk_to_nodal(state, path, semidepth+1)) {
+            return true;
+        }
+        legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
+        legal_semimoves[semidepth].pop_back();
+        state.revert(ri);
+        path.pop_back();
     }
     return false;
 }
@@ -461,10 +482,13 @@ reasoner::move SemisplitTree::choose_best_greedy_move() {
     children_indices.clear();
     reasoner::move move;
     uint node_index = 0;
+    reasoner::game_state state = root_state;
     while (true) {
+        assert(nodes[node_index].is_expanded());
         const auto best_child = get_top_ranked_child_index(node_index);
-        const auto& semimove = children[best_child].semimove.get_actions();
-        move.mr.insert(move.mr.end(), semimove.begin(), semimove.end());
+        const auto& semimove = children[best_child].semimove;
+        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
+        state.apply_semimove(semimove);
         #if STATS
         std::cout << "moves at level " << level << std::endl;
         const auto [fst, lst] = nodes[node_index].children_range;
@@ -481,7 +505,18 @@ reasoner::move SemisplitTree::choose_best_greedy_move() {
             break;
         }
         node_index = children[best_child].index;
-        assert(node_index != 0);
+        if (node_index == 0 || !nodes[node_index].is_expanded()) {
+            #if STATS
+            std::cout << "random continuation..." << std::endl << std::endl;
+            #endif
+            static std::vector<reasoner::semimove> move_suffix;
+            move_suffix.clear();
+            random_walk_to_nodal(state, move_suffix);
+            for (const auto& semimove : move_suffix) {
+                move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
+            }
+            break;
+        }
     }
     return move;
 }
