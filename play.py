@@ -23,25 +23,24 @@ game_name = "game"
 def game_path(player_id):
     return gen_directory(player_id)+"/"+game_name+".rbg"
 available_players = set([
-    "orthodoxMcts_orthodoxSim",
-    "orthodoxMcts_orthodoxSim_mast",
-    "orthodoxMcts_orthodoxSim_mastsplit",
-    "orthodoxMcts_orthodoxSim_rave",
-    "orthodoxMcts_semisplitSim",
-    "orthodoxMcts_semisplitSim_mastsplit",
-    "semisplitMcts_semisplitSim",
-    "semisplitMcts_semisplitSim_mast",
-    "semisplitMcts_semisplitSim_mastsplit",
-    "semisplitMcts_semisplitSim_mastcontext",
-    "semisplitMcts_semisplitSim_rave",
-    "semisplitMcts_semisplitSim_ravecontext",
-    "semisplitMcts_semisplitSim_ravemix",
-    "semisplitMcts_orthodoxSim",
-    "semisplitMcts_orthodoxSim_mastsplit",
-    "semisplitMcts_orthodoxSim_rave",
-    "rollupMcts_semisplitSim",
-    "rollupMcts_semisplitSim_mastcontext",
-    "rollupMcts_orthodoxSim",
+    "orthodox_orthodox",
+    "orthodox_orthodox_mast",
+    "orthodox_orthodox_mastsplit",
+    "orthodox_orthodox_rave",
+    "orthodox_semisplit",
+    "orthodox_semisplit_mastsplit",
+    "semisplit_semisplit",
+    "semisplit_semisplit_mast",
+    "semisplit_semisplit_mastsplit",
+    "semisplit_semisplit_mastcontext",
+    "semisplit_semisplit_rave",
+    "semisplit_semisplit_ravecontext",
+    "semisplit_semisplit_ravemix",
+    "semisplit_orthodox",
+    "semisplit_orthodox_mastsplit",
+    "rollup_semisplit",
+    "rollup_semisplit_mastcontext",
+    "rollup_orthodox",
     "simple_best_select"])
 
 
@@ -126,7 +125,7 @@ class PlayerConfig:
             config_file.write("#endif\n")
 
 def get_player_kind(config):
-    return config["algorithm"]["tree_strategy"].lower() + config["algorithm"]["name"].capitalize() + "_" + config["algorithm"]["simulation_strategy"].lower() + "Sim"
+    return config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
 
 def get_player_full_name(config):
     heuristics = [heuristic["name"].lower() for heuristic in config["heuristics"]]
