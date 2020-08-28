@@ -31,11 +31,13 @@ struct state_score {
     }
 };
 
-enum node_status : char {
-    empty,
-    one_index,
-    expanded,
-};
+namespace moves_tree {
+    enum node_status : char {
+        empty,
+        one_index,
+        expanded,
+    };
+}
 
 struct cell_node {
     cell_node()=default;
@@ -49,7 +51,7 @@ struct cell_node {
     int fst = -1;
     int lst = -1;
     short int size = 0;
-    node_status status = empty;
+    moves_tree::node_status status = moves_tree::node_status::empty;
 };
 
 struct index_node {

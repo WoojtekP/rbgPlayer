@@ -9,27 +9,27 @@
 int RaveTree::get_index_node(const int c_node, const int index) {
     auto& cell_node = cell_nodes[c_node];
     switch (cell_node.status) {
-        case empty: {
-            cell_node.status = node_status::one_index;
+        case rave_tree::node_status::empty: {
+            cell_node.status = rave_tree::node_status::one_index;
             cell_node.index.value = index;
             cell_node.index.node = index_nodes.size();
             index_nodes.emplace_back();
             return cell_node.index.node;
         }
-        case one_index: {
+        case rave_tree::node_status::one_index: {
             assert(cell_node.index.node != -1);
             assert(cell_node.index.value >= 0 && cell_node.index.value <= reasoner::NUMBER_OF_MODIFIERS);
             if (index == cell_node.index.value) {
                 return cell_node.index.node;
             }
-            cell_node.status = node_status::expanded;
+            cell_node.status = rave_tree::node_status::expanded;
             const auto offset = index_nodes_indices.size();
             allocate_and_initialize(index_nodes_indices, reasoner::NUMBER_OF_MODIFIERS, -1);
             index_nodes_indices[offset + cell_node.index.value] = cell_node.index.node;
             cell_node.offset = offset;
             break;
         }
-        case expanded: {
+        case rave_tree::node_status::expanded: {
             assert(cell_node.offset % reasoner::NUMBER_OF_MODIFIERS == 0);
             if (index_nodes_indices[cell_node.offset + index] > 0) {
                 return index_nodes_indices[cell_node.offset + index];
@@ -73,10 +73,10 @@ int RaveTree::get_index_node_by_move_representation_if_exists(const reasoner::mo
         const auto modifier_index = reasoner::action_to_modifier_index(action.index);
         const auto& cell_node = cell_nodes[c_node];
         switch (cell_node.status) {
-            case node_status::empty: {
+            case rave_tree::node_status::empty: {
                 return -1;
             }
-            case node_status::one_index: {
+            case rave_tree::node_status::one_index: {
                 if (modifier_index == cell_node.index.value) {
                     i_node = cell_node.index.node;
                     assert(i_node != -1);
@@ -84,7 +84,7 @@ int RaveTree::get_index_node_by_move_representation_if_exists(const reasoner::mo
                 }
                 return -1;
             }
-            case node_status::expanded: {
+            case rave_tree::node_status::expanded: {
                 assert(cell_node.offset % reasoner::NUMBER_OF_MODIFIERS == 0);
                 i_node = index_nodes_indices[cell_node.offset + modifier_index];
             }
