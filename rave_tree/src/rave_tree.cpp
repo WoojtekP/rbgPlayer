@@ -35,7 +35,7 @@ int RaveTree::get_index_node_by_move_representation(const reasoner::move_represe
 }
 
 int RaveTree::get_index_node_by_move_representation_if_exists(const reasoner::move_representation& mr, int i_node) {
-    if (i_node >= index_nodes.size()) {
+    if (i_node >= (int)index_nodes.size()) {
         return -1;
     }
     for (const auto& action : mr) {
