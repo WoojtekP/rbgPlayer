@@ -8,6 +8,8 @@
 
 typedef double score_type;
 
+namespace moves_tree {
+
 struct score {
     score()=default;
     score(const score_type sum, const score_type weight) : sum(sum), weight(weight) {}
@@ -31,13 +33,11 @@ struct state_score {
     }
 };
 
-namespace moves_tree {
-    enum node_status : char {
-        empty,
-        one_index,
-        expanded,
-    };
-}
+enum node_status : char {
+    empty,
+    one_index,
+    expanded,
+};
 
 struct cell_node {
     cell_node()=default;
@@ -51,7 +51,7 @@ struct cell_node {
     int fst = -1;
     int lst = -1;
     short int size = 0;
-    moves_tree::node_status status = moves_tree::node_status::empty;
+    node_status status = node_status::empty;
 };
 
 struct index_node {
@@ -63,5 +63,7 @@ struct index_node {
     int cell[reasoner::BOARD_SIZE];
     score total_score;
 };
+
+}
 
 #endif

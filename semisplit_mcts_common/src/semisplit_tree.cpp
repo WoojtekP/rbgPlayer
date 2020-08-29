@@ -364,13 +364,15 @@ uint SemisplitTree::perform_simulation() {
     }
     ++root_sim_count;
     #if MAST > 0
-    if constexpr (!IS_NODAL) {
+    if constexpr (!IS_NODAL && !TREE_ONLY) {
         for (const auto& semimove : path) {
             move_chooser.update_move(semimove, results, current_player, path_len);
         }
     }
+    if constexpr (!TREE_ONLY) {
+        move_chooser.update_all_moves(results, path_len);
+    }
     move_chooser.reset_context();
-    move_chooser.update_all_moves(results, path_len);
     #endif
     #if RAVE > 0
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {

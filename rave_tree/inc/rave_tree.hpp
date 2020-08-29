@@ -10,9 +10,9 @@
 
 class RaveTree {
 private:
-    std::vector<cell_node> cell_nodes;
-    std::vector<index_node> index_nodes = {{}};
-    std::vector<state_turn> states_turns;
+    std::vector<rave_tree::cell_node> cell_nodes;
+    std::vector<rave_tree::index_node> index_nodes = {{}};
+    std::vector<rave_tree::state_turn> states_turns;
     std::vector<int> index_nodes_indices;
     int turn = 1;
 

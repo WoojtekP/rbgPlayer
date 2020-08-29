@@ -148,7 +148,7 @@ void MovesTree::extend(const int c_node) {
     std::copy(states_scores.begin() + old_fst, states_scores.begin() + old_lst, states_scores.begin() + cell_node.fst);
 }
 
-score MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
+moves_tree::score MovesTree::get_score_or_default_value(const reasoner::move_representation& mr, const int context) {
     const auto i_node = get_index_node_by_move_representation_if_exists(mr, context);
     if (i_node == -1) {
         return {};
@@ -166,7 +166,7 @@ int MovesTree::insert_or_update(const reasoner::move& move, const score_type sco
     return insert_or_update(move.mr, score, weight, context);
 }
 
-score MovesTree::get_score_or_default_value(const reasoner::move& move, const int context) {
+moves_tree::score MovesTree::get_score_or_default_value(const reasoner::move& move, const int context) {
     return get_score_or_default_value(move.mr, context);
 }
 

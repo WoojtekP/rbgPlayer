@@ -5,6 +5,8 @@
 #include "types.hpp"
 
 
+namespace rave_tree {
+
 struct state_turn {
     state_turn()=default;
     state_turn(const int state, const int turn) : state(state), turn(turn) {}
@@ -18,13 +20,11 @@ struct state_turn {
     }
 };
 
-namespace rave_tree {
-    enum node_status : char {
-        empty,
-        one_index,
-        expanded,
-    };
-}
+enum node_status : char {
+    empty,
+    one_index,
+    expanded,
+};
 
 struct cell_node {
     cell_node()=default;
@@ -38,7 +38,7 @@ struct cell_node {
     int fst = -1;
     int lst = -1;
     short int size = 0;
-    rave_tree::node_status status = rave_tree::node_status::empty;
+    node_status status = node_status::empty;
 };
 
 struct index_node {
@@ -50,5 +50,7 @@ struct index_node {
     int cell[reasoner::BOARD_SIZE];
     int turn = -1;
 };
+
+}
 
 #endif

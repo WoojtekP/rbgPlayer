@@ -10,9 +10,9 @@
 
 class MovesTree {
 private:
-    std::vector<cell_node> cell_nodes;
-    std::vector<index_node> index_nodes = {{}};
-    std::vector<state_score> states_scores;
+    std::vector<moves_tree::cell_node> cell_nodes;
+    std::vector<moves_tree::index_node> index_nodes = {{}};
+    std::vector<moves_tree::state_score> states_scores;
     std::vector<int> index_nodes_indices;
 
     int get_index_node(const int, const int);
@@ -53,7 +53,7 @@ public:
     int insert_or_update(const reasoner::move_representation&, const score_type, const score_type, const int);
 
     template <typename T>
-    score get_score_or_default_value(const T& semimove, const int context = 0) {
+    moves_tree::score get_score_or_default_value(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation_if_exists(semimove.mr, context);
         if (i_node == -1) {
             return {};
@@ -71,8 +71,8 @@ public:
         return it->total_score;
     }
 
-    score get_score_or_default_value(const reasoner::move&, const int = 0);
-    score get_score_or_default_value(const reasoner::move_representation&, const int);
+    moves_tree::score get_score_or_default_value(const reasoner::move&, const int = 0);
+    moves_tree::score get_score_or_default_value(const reasoner::move_representation&, const int);
     void apply_decay_factor();
     int get_context(const reasoner::move_representation&, const int = 0);
 };

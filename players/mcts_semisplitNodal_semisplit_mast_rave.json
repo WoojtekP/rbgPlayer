@@ -1,0 +1,34 @@
+{
+    "general" : {
+        "buffer_time" : 100
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "semisplit",
+        "simulation_strategy" : "semisplit",
+        "parameters" : {
+            "exploration_constant" : 0.4,
+            "max_semidepth" : 50,
+            "semilength" : 0,
+            "is_nodal" : true,
+            "greedy_choice" : true
+        }
+    },
+    "heuristics" : [
+        {
+            "name" : "MAST",
+            "parameters" : {
+                "epsilon" : 0.4,
+                "decay_factor" : 0.2,
+                "weight_scaling" : false,
+                "tree_only" : false
+            }
+        },
+        {
+            "name" : "RAVE",
+            "parameters" : {
+                "equivalence_parameter" : 500
+            }
+        }
+    ]
+}
