@@ -22,7 +22,7 @@
                 "decay_factor" : 0.2,
                 "weight_scaling" : false,
                 "tree_only" : false,
-                "only_states" : false
+                "only_states" : true
             }
         }
     ]
