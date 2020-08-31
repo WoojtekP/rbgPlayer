@@ -32,20 +32,9 @@ double actions_arrays::get_score_or_default_value(const reasoner::move& move) {
         if (arr1[action_index].weight == 0) {
             return EXPECTED_MAX_SCORE;
         }
-        if constexpr (WEIGHTED_MEAN) {
-            total_sum += arr1[action_index].sum;
-            weight_sum += arr1[action_index].weight;
-        }
-        else {
-            total_sum += arr1[action_index].sum / arr1[action_index].weight;
-        }
+        total_sum += arr1[action_index].sum / arr1[action_index].weight;
     }
-    if constexpr (WEIGHTED_MEAN) {
-        return total_sum / weight_sum;
-    }
-    else {
-        return total_sum / move.mr.size();
-    }
+    return total_sum / move.mr.size();
 }
 
 void actions_arrays::apply_decay_factor() {

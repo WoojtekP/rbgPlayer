@@ -43,26 +43,13 @@ public:
             if (arr1[action_index].weight == 0) {
                 return EXPECTED_MAX_SCORE;
             }
-            if constexpr (WEIGHTED_MEAN) {
-                total_sum += arr1[action_index].sum;
-                weight_sum += arr1[action_index].weight;
-            }
-            else {
-                total_sum += arr1[action_index].sum / arr1[action_index].weight;
-            }
+            total_sum += arr1[action_index].sum / arr1[action_index].weight;
         }
         if (arr2[index].weight == 0) {
             return EXPECTED_MAX_SCORE;
         }
-        if constexpr (WEIGHTED_MEAN) {
-            total_sum += arr2[index].sum;
-            weight_sum += arr2[index].weight;
-            return total_sum / weight_sum;
-        }
-        else {
-            total_sum += arr2[index].sum / arr2[index].weight;
-            return total_sum / (1 + semimove.mr.size());
-        }
+        total_sum += arr2[index].sum / arr2[index].weight;
+        return total_sum / (1 + semimove.mr.size());
     }
     double get_score_or_default_value(const reasoner::move&);
     void apply_decay_factor();

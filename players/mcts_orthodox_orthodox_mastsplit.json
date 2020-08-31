@@ -17,8 +17,7 @@
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,
                 "weight_scaling" : false,
-                "tree_only" : false,
-                "weighted_mean" : true
+                "tree_only" : false
             }
         }
     ]
