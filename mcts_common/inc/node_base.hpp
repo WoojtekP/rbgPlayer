@@ -12,17 +12,21 @@ struct NodeBase {
     bool is_expanded() const;
 };
 
+struct amaf_score {
+    uint64_t score = 0;
+    uint count = 0;
+    #if RAVE == 3
+    uint count_base = 0;
+    uint64_t score_base = 0;
+    #endif
+};
+
 struct ChildBase {
     uint index = 0;
     uint sim_count = 0;
     uint total_score = 0;
     #if RAVE > 0
-    uint amaf_score = 0;// MSZ: uint64 for safety, since we expect a much larger count than the number of simulations
-    uint amaf_count = 0;
-    #endif
-    #if RAVE == 3
-    uint amaf_score_base = 0;
-    uint amaf_count_base = 0;
+    amaf_score amaf;
     #endif
 };
 

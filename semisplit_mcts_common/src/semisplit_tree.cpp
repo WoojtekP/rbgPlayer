@@ -347,13 +347,13 @@ uint SemisplitTree::perform_simulation() {
         for (auto i = fst; i < lst; ++i) {
             #if RAVE == 3
             if (moves_tree_base[player - 1].find(children[i].semimove) >= depth[player-1]) {
-                children[i].amaf_score_base += results[player - 1];
-                ++children[i].amaf_count_base;
+                children[i].amaf.score_base += results[player - 1];
+                ++children[i].amaf.count_base;
             }
             #endif
             if (moves_tree[player - 1].find(children[i].semimove, context) >= depth[player-1]) {
-                children[i].amaf_score += results[player - 1];
-                ++children[i].amaf_count;
+                children[i].amaf.score += results[player - 1];
+                ++children[i].amaf.count;
             }
         }
         #if RAVE >= 2

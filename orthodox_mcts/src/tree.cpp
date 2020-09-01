@@ -102,8 +102,8 @@ uint Tree::perform_simulation() {
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             if (moves_tree[player - 1].find(children[i].move) >= depth[player-1]) {// MSZ: >= if we add also the applied move to amaf
-                children[i].amaf_score += results[player - 1];
-                ++children[i].amaf_count;
+                children[i].amaf.score += results[player - 1];
+                ++children[i].amaf.count;
             }
         }
         node_index = children[child_index].index;
@@ -181,9 +181,9 @@ reasoner::move Tree::choose_best_move() {
         }
         std::cout << "]";
         #if RAVE > 0
-        std::cout << " amaf_avg " << (static_cast<double>(children[i].amaf_score) / children[i].amaf_count) << " amaf_count " << children[i].amaf_count;
-        if (children[i].amaf_count > 0) {
-            double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf_score / children[i].amaf_count);
+        std::cout << " amaf_avg " << (static_cast<double>(children[i].amaf.score) / children[i].amaf.count) << " amaf_count " << children[i].amaf.count;
+        if (children[i].amaf.count > 0) {
+            double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf.score / children[i].amaf.count);
             std::cout << " (avg_with_rave " << priority << ")";
         }   
         #endif
