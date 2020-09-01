@@ -19,7 +19,8 @@
             "name" : "RAVEMIX",
             "parameters" : {
                 "equivalence_parameter" : 500,
-                "mix_equivalence_parameter" : 10
+                "mix_equivalence_parameter" : 10,
+                "ref" : 0
             }
         }
     ]

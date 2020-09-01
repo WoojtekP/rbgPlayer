@@ -3,7 +3,7 @@
 #include "constants.hpp"
 #include "random_generator.hpp"
 #include "move_chooser.hpp"
-#include <iostream>
+
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
     nodes.reserve(4 * MEBIBYTE / sizeof(Node));
@@ -80,25 +80,66 @@ uint MctsTree::get_unvisited_child_index(std::vector<Child>& children, const Nod
     return lower;
 }
 
+#if RAVE
+void MctsTree::get_amaf_scores(std::vector<std::tuple<amaf_score, uint, bool>>& amaf_scores, uint node_pos, uint found_counter) {
+    if (node_pos > 0 && children[children_stack[node_pos - 1].first].sim_count <= REF) {
+        get_amaf_scores(amaf_scores, node_pos - 1, found_counter);
+        return;
+    }
+    const uint node_index = (node_pos == 0) ? 0 : children[children_stack[node_pos - 1].first].index;
+    const auto [fst, lst] = nodes[node_index].children_range;
+    for (uint i = fst; i < lst; ++i) {
+        for (auto& [score, index, found] : amaf_scores) {
+            if (found) {
+                continue;
+            }
+            if (children[index].get_edge() == children[i].get_edge()) {
+                score = children[i].amaf;
+                found = true;
+                ++found_counter;
+                if (found_counter == amaf_scores.size()) {
+                    return;
+                }
+            }
+        }
+    }
+    if (node_pos > 0) {
+        get_amaf_scores(amaf_scores, node_pos - 1, found_counter);
+    }
+}
+#endif
+
 uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_sim_count) {
     static std::vector<uint> children_indices;
     children_indices.clear();
     const double c_sqrt_logn = EXPLORATION_CONSTANT * std::sqrt(std::log(node_sim_count));
     double max_priority = 0.0;
+    const auto [fst, lst] = nodes[node_index].children_range;
     #if RAVE > 0
+    static std::vector<std::tuple<amaf_score, uint, bool>> amaf_scores;
+    amaf_scores.clear();
+    if (node_sim_count <= REF && root_sim_count > REF) {
+        assert(node_index != 0);
+        assert(!children_stack.empty());
+        amaf_scores.reserve(lst - fst);
+        for (uint i = fst; i < lst; ++i) {
+            amaf_scores.emplace_back(children[i].amaf, i, false);
+        }
+        get_amaf_scores(amaf_scores, children_stack.size() - 1, 0);
+    }
     const double beta = std::sqrt(EQUIVALENCE_PARAMETER / (3.0 * node_sim_count + EQUIVALENCE_PARAMETER));
     #endif
-    const auto [fst, lst] = nodes[node_index].children_range;
     for (uint i = fst; i < lst; ++i) {
         assert(children[i].sim_count > 0);
         double priority = static_cast<double>(children[i].total_score) / EXPECTED_MAX_SCORE / children[i].sim_count;
         #if RAVE > 0
-        assert(children[i].amaf.count > 0);
-        double amaf_score = static_cast<double>(children[i].amaf.score) / EXPECTED_MAX_SCORE / children[i].amaf.count;
+        const auto& amaf = amaf_scores.empty() ? children[i].amaf : std::get<0>(amaf_scores[i - fst]);
+        assert(amaf.count > 0);
+        double amaf_score = static_cast<double>(amaf.score) / EXPECTED_MAX_SCORE / amaf.count;
         #if RAVE == 3
-        double mix_beta = std::sqrt(MIX_EQUIVALENCE_PARAMETER / (3.0 * children[i].amaf.count_base + MIX_EQUIVALENCE_PARAMETER));
-        assert(children[i].amaf.count_base > 0);
-        double base_score = static_cast<double>(children[i].amaf.score_base) / EXPECTED_MAX_SCORE / children[i].amaf.count_base;
+        double mix_beta = std::sqrt(MIX_EQUIVALENCE_PARAMETER / (3.0 * amaf.count_base + MIX_EQUIVALENCE_PARAMETER));
+        assert(amaf.count_base > 0);
+        double base_score = static_cast<double>(amaf.score_base) / EXPECTED_MAX_SCORE / amaf.count_base;
         amaf_score = base_score * (1.0 - mix_beta) + amaf_score * mix_beta;
         #endif
         priority = priority * (1.0 - beta) + amaf_score * beta;

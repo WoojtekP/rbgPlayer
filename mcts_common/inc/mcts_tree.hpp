@@ -37,6 +37,7 @@ protected:
     void complete_turn(reasoner::game_state&);
     void get_scores_from_state(reasoner::game_state&, simulation_result&);
     uint get_unvisited_child_index(std::vector<Child>&, const Node&, const uint, const int);
+    void get_amaf_scores(std::vector<std::tuple<amaf_score, uint, bool>>&, uint, uint);
     uint get_best_uct_child_index(const uint, const uint);
     uint get_top_ranked_child_index(const uint);
     void root_at_index(const uint);
