@@ -28,7 +28,7 @@ public:
     }
 
     template <typename M>
-    uint get_random_move(const std::vector<M>& legal_moves, const int current_player) {
+    uint get_random_move(const std::vector<M>& legal_moves, [[maybe_unused]] const int current_player) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         return rand_gen.uniform_choice(legal_moves.size());
