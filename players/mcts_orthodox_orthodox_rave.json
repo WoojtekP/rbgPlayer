@@ -14,7 +14,7 @@
         {
             "name" : "RAVE",
             "parameters" : {
-                "equivalence_parameter" : 500,
+                "equivalence_parameter" : 250,
                 "ref" : 0
             }
         }
