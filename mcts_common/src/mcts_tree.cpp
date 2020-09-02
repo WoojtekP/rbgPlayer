@@ -133,7 +133,8 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
         assert(children[i].sim_count > 0);
         double priority = static_cast<double>(children[i].total_score) / EXPECTED_MAX_SCORE / children[i].sim_count;
         #if RAVE > 0
-        const auto& amaf = amaf_scores.empty() ? children[i].amaf : std::get<0>(amaf_scores[i - fst]);
+        constexpr bool rave = REF == 0;
+        const auto& amaf = (rave || amaf_scores.empty()) ? children[i].amaf : std::get<0>(amaf_scores[i - fst]);
         assert(amaf.count > 0);
         double amaf_score = static_cast<double>(amaf.score) / EXPECTED_MAX_SCORE / amaf.count;
         #if RAVE == 3
