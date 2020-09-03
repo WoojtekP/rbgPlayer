@@ -33,9 +33,16 @@ public:
         if constexpr (MAST_EQUIVALENCE_PARAMETER == 0) {
             return context_score.get_score();
         }
+        if (context_score.weight < MAST_EQUIVALENCE_PARAMETER)
+            return arr.get_score_or_default_value(move);
+        else
+            return context_score.get_score();
+        /*
+        // Smooth mix
         double split_score = arr.get_score_or_default_value(move);
-        double beta = std::sqrt(MAST_EQUIVALENCE_PARAMETER / (3.0 * context_score.weight  + MAST_EQUIVALENCE_PARAMETER));
+        double beta = std::sqrt(MAST_EQUIVALENCE_PARAMETER / (3.0 * context_score.weight  + MAST_EQUIVALENCE_PARAMETER)); // Normal
         return beta * split_score + (1.0 - beta) * context_score.get_score();
+        */
     }
 
     void apply_decay_factor();
