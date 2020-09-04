@@ -17,7 +17,6 @@ BIN_DIR := bin_$(PLAYER_ID)
 DEP_DIR := dep_$(PLAYER_ID)
 GEN_DIR := gen_$(PLAYER_ID)
 COMMON := common
-SBS := simple_best_select
 # MCTS
 MCTS_COMMON := mcts_common
 SEMISPLIT_MCTS_COMMON := semisplit_mcts_common $(MCTS_COMMON)
@@ -78,8 +77,6 @@ ifeq (1, $$(words $$(findstring $(MAKECMDGOALS), $(2))))
     -include $$($(1)_DEP)
 endif
 endef
-
-$(eval $(call PLAYER_KIND_RULES,SBS,simple_best_select,$(SBS) $(GEN_DIR)))
 
 # ORTHODOX-TREE PLAYERS
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX,orthodox_orthodox,\
