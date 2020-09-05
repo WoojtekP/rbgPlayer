@@ -12,7 +12,7 @@
 class SemisplitTree : public MctsTree {
 protected:
     #if STATS
-    void print_node_stats(const SemisplitChild&);
+    void print_node_stats(const semisplit_child&);
     void print_actions(const reasoner::move_representation&);
     void print_move(const reasoner::move_representation&);
     #endif

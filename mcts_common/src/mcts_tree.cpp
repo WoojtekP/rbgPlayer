@@ -6,8 +6,8 @@
 
 
 MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
-    nodes.reserve(4 * MEBIBYTE / sizeof(Node));
-    children.reserve(4 * MEBIBYTE / sizeof(Child));
+    nodes.reserve(4 * MEBIBYTE / sizeof(node));
+    children.reserve(4 * MEBIBYTE / sizeof(child));
 }
 
 bool MctsTree::is_node_fully_expanded(const uint node_index) {
@@ -37,7 +37,7 @@ void MctsTree::get_scores_from_state(reasoner::game_state& state, simulation_res
     }
 }
 
-uint MctsTree::get_unvisited_child_index(std::vector<Child>& children, const Node& node, const uint node_sim_count, const int) {
+uint MctsTree::get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int) {
     auto [fst, lst] = node.children_range;
     assert(fst < lst);
     auto lower = std::min(fst + node_sim_count, lst - 1);
@@ -185,8 +185,8 @@ uint MctsTree::get_top_ranked_child_index(const uint node_index) {
 }
 
 void MctsTree::root_at_index(const uint root_index) {
-    static std::vector<Node> nodes_tmp;
-    static std::vector<Child> children_tmp;
+    static std::vector<node> nodes_tmp;
+    static std::vector<child> children_tmp;
     nodes_tmp.clear();
     children_tmp.clear();
     nodes_tmp.reserve(nodes.size());
@@ -196,7 +196,7 @@ void MctsTree::root_at_index(const uint root_index) {
     std::swap(children, children_tmp);
 }
 
-uint MctsTree::fix_tree(std::vector<Node>& nodes_tmp, std::vector<Child>& children_tmp, const uint index) {
+uint MctsTree::fix_tree(std::vector<node>& nodes_tmp, std::vector<child>& children_tmp, const uint index) {
     auto new_index = nodes_tmp.size();
     nodes_tmp.push_back(nodes[index]);
     if (!nodes[index].is_expanded()) {

@@ -1,17 +1,17 @@
 #include "semisplit_node.hpp"
 #include "reasoner.hpp"
 
-SemisplitNode::SemisplitNode(const uint first_child_index, const uint child_count, const bool is_nodal, const node_status status)
-    : NodeBase(first_child_index, child_count)
+semisplit_node::semisplit_node(const uint first_child_index, const uint child_count, const bool is_nodal, const node_status status)
+    : node_base(first_child_index, child_count)
     , is_nodal(is_nodal)
     , status(status) {}
 
-SemisplitNode::SemisplitNode(const bool is_nodal, const node_status status)
-    : NodeBase()
+semisplit_node::semisplit_node(const bool is_nodal, const node_status status)
+    : node_base()
     , is_nodal(is_nodal)
     , status(status) {}
 
-bool SemisplitNode::is_terminal() const {
+bool semisplit_node::is_terminal() const {
     bool result = status == node_status::terminal;
     if (result) {
         assert(children_range.first == children_range.second);
@@ -19,13 +19,13 @@ bool SemisplitNode::is_terminal() const {
     return result;
 }
 
-SemisplitChild::SemisplitChild(const reasoner::semimove& semimove)
+semisplit_child::semisplit_child(const reasoner::semimove& semimove)
     : semimove(semimove) {}
 
-const reasoner::move_representation& SemisplitChild::get_actions() const {
+const reasoner::move_representation& semisplit_child::get_actions() const {
     return semimove.get_actions();
 }
 
-const reasoner::semimove& SemisplitChild::get_edge() const {
+const reasoner::semimove& semisplit_child::get_edge() const {
     return semimove;
 }

@@ -34,7 +34,7 @@ public:
         return rand_gen.uniform_choice(legal_moves.size());
     }
 
-    uint get_unvisited_child_index(std::vector<Child>& children, const Node& node, const uint node_sim_count, const int) {
+    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int) {
         auto [fst, lst] = node.children_range;
         assert(fst < lst);
         auto lower = std::min(fst + node_sim_count, lst - 1);

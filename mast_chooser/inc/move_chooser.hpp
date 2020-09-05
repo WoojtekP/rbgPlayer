@@ -18,7 +18,7 @@ class MoveChooser {
 private:
     std::vector<std::pair<T, int>> path;
     std::vector<uint> indices;
-    moves_container moves[reasoner::NUMBER_OF_PLAYERS - 1];
+    MovesContainer moves[reasoner::NUMBER_OF_PLAYERS - 1];
     int context = 0;
     #if MAST == 2
     std::vector<int> context_stack;
@@ -65,7 +65,7 @@ public:
         return rand_gen.uniform_choice(legal_moves.size());
     }
 
-    uint get_unvisited_child_index(std::vector<Child>& children, const Node& node, const uint node_sim_count, const int current_player) {
+    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int current_player) {
         assert(current_player != KEEPER);
         auto [fst, lst] = node.children_range;
         assert(fst < lst);

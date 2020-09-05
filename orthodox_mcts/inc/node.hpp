@@ -6,21 +6,21 @@
 #include "types.hpp"
 
 
-struct Node : NodeBase {
-    Node(void)=default;
-    Node(const uint, const uint);
+struct node : node_base {
+    node(void)=default;
+    node(const uint, const uint);
     bool is_terminal() const;
 };
 
-struct Child : ChildBase {
+struct child : child_base {
     reasoner::move move;
-    Child(void)=delete;
-    Child(const Child&)=default;
-    Child(Child&&)=default;
-    Child& operator=(const Child&)=default;
-    Child& operator=(Child&&)=default;
-    ~Child(void)=default;
-    Child(const reasoner::move& move);
+    child(void)=delete;
+    child(const child&)=default;
+    child(child&&)=default;
+    child& operator=(const child&)=default;
+    child& operator=(child&&)=default;
+    ~child(void)=default;
+    child(const reasoner::move& move);
     const reasoner::move_representation& get_actions() const;
     const reasoner::move& get_edge() const;
 };

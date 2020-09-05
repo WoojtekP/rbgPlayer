@@ -21,7 +21,7 @@ namespace {
 }
 
 #if STATS
-void SemisplitTree::print_node_stats(const SemisplitChild& child) {
+void SemisplitTree::print_node_stats(const semisplit_child& child) {
     std::cout << "sim " << std::setw(4) << child.sim_count;
     std::cout << "   avg " << std::setw(6) << std::setprecision(2) << static_cast<double>(child.total_score) / child.sim_count << "   ";
     std::cout << "(" << std::setw(3) << child.semimove.cell << " " << std::setw(3) << child.semimove.state << ") ";

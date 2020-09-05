@@ -4,7 +4,7 @@
 #include "moves_tree.hpp"
 
 
-class moves_container {
+class MovesContainer {
 private:
     MovesTree moves;
 public:
