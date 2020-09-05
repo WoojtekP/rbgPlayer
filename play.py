@@ -3,15 +3,15 @@ import socket
 import os
 import subprocess
 import shutil
-from threading import Thread
 import queue
 import time
 import argparse
-from argparse import RawTextHelpFormatter
 import signal
 import json
-from itertools import chain
 import time
+from threading import Thread
+from argparse import RawTextHelpFormatter
+from itertools import chain
 
 def gen_directory(player_id):
     return "gen_"+str(player_id)
@@ -43,8 +43,7 @@ available_players = set([
     "semisplit_orthodox_mastsplit",
     "rollup_semisplit",
     "rollup_semisplit_mastcontext",
-    "rollup_orthodox",
-    "simple_best_select"])
+    "rollup_orthodox"])
 
 
 class BufferedSocket:
@@ -89,8 +88,8 @@ class Cd:
         os.chdir(self.saved_path)
 
 class PlayerConfig:
-    def __init__(self, program_args, player_kind, constants, player_name, player_port):
-        self.player_kind = player_kind
+    def __init__(self, program_args, player_full_name, constants, player_name, player_port):
+        self.player_full_name = player_full_name
         self.config_constants = constants
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
@@ -104,7 +103,7 @@ class PlayerConfig:
             print("at most one type of limit is allowed", sys.stderr)
             exit(1)
     def runnable_list(self):
-        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+self.player_kind]
+        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+self.player_full_name]
     def print_config_file(self, name):
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
@@ -138,8 +137,8 @@ def get_player_full_name(config):
 def parse_config_file(file_name):
     with open(file_name) as config_file:
         config = json.load(config_file)
-        player_kind = get_player_full_name(config);
-        print("player name", player_kind)
+        player_full_name = get_player_full_name(config);
+        print("player name", player_full_name)
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
         for k, v in chain(config["general"].items(),
                           config["algorithm"]["parameters"].items(),
@@ -152,7 +151,8 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        return player_kind, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
+        is_semisplit = (config["algorithm"]["tree_strategy"] in ["semisplit", "rollup"]) or (config["algorithm"]["simulation_strategy"] == "semisplit")
+        return player_full_name, constants, is_semisplit, [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -190,10 +190,10 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, player_id, heuristics, debug_mode, release_mode, stats):
-    assert(player_kind in available_players)
+def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_mode, release_mode, stats):
+    assert(player_full_name in available_players)
     with Cd(gen_directory(player_id)):
-        if tree_strategy in ["semisplit", "rollup"] or sim_strategy == "semisplit":
+        if is_semisplit:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
             subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
@@ -201,8 +201,7 @@ def compile_player(num_of_threads, player_kind, tree_strategy, sim_strategy, pla
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
     run_list = [
         "make",
-        "-j"+str(num_of_threads),
-        player_kind,
+        player_full_name,
         "PLAYER_ID="+str(player_id),
         "DEBUG="+str(debug_mode),
         "RELEASE="+str(release_mode),
@@ -285,16 +284,15 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_kind, constants, tree_strategy, sim_strategy, heuristics = parse_config_file(program_args.player_config)
+player_full_name, constants, is_semisplit, heuristics = parse_config_file(program_args.player_config)
 
-assert(player_kind in available_players)
+assert(player_full_name in available_players)
 
-player_config = PlayerConfig(program_args, player_kind, constants, player_name, player_port)
+player_config = PlayerConfig(program_args, player_full_name, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-compile_player(1, player_kind, tree_strategy, sim_strategy, player_port, heuristics, int(program_args.debug), int(program_args.release), int(program_args.stats))
+compile_player(player_full_name, is_semisplit, player_port, heuristics, int(program_args.debug), int(program_args.release), int(program_args.stats))
 print("Player compiled!")
-time.sleep(1.) # to give other players time to end compilation
 
 player_socket, player_process = start_and_connect_player("localhost", player_config, listener_queue, listener_thread)
 print("Player started on port",player_port)
@@ -310,6 +308,7 @@ server_to_client.daemon = True
 client_to_server.start()
 server_to_client.start()
 signal.signal(signal.SIGTERM, lambda _1,_2: cleanup_process(player_process))
+signal.signal(signal.SIGINT, lambda _1,_2: cleanup_process(player_process))
 client_to_server.join()
 server_to_client.join()
 player_process.terminate()
