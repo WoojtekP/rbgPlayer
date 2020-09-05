@@ -1,11 +1,11 @@
 #ifndef ACTIONSARRAYS
 #define ACTIONSARRAYS
 
-#include "reasoner.hpp"
 #include "constants.hpp"
+#include "reasoner.hpp"
 
 
-class actions_arrays {
+class ActionsArrays {
 private:
     struct score {
         double sum;
@@ -13,14 +13,15 @@ private:
     };
     static constexpr uint size1 = reasoner::BOARD_SIZE * reasoner::NUMBER_OF_MODIFIERS;
     static constexpr uint size2 = reasoner::BOARD_SIZE * reasoner::AUTOMATON_SIZE;
-    score arr1[actions_arrays::size1];
-    score arr2[actions_arrays::size2];
+    score arr1[ActionsArrays::size1];
+    score arr2[ActionsArrays::size2];
     void insert_or_update(const reasoner::move_representation&, const double, const double);
+
 public:
-    actions_arrays();
+    ActionsArrays();
     template <typename T>
     int insert_or_update(const T& semimove, const double score, const double weight) {
-        if constexpr (not ONLY_STATES) {
+        if constexpr (!ONLY_STATES) {
             insert_or_update(semimove.mr, score, weight);
         }
         auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;

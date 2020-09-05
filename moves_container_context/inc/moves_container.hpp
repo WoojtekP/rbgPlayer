@@ -8,10 +8,10 @@
 #include "moves_tree.hpp"
 
 
-class moves_container {
+class MovesContainer {
 private:
     MovesTree moves;
-    actions_arrays arr;
+    ActionsArrays arr;
 public:
     template <typename T>
     int insert_or_update(const T& move, const uint score, [[maybe_unused]] const uint depth, const int context = 0) {

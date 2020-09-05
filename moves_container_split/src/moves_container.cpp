@@ -2,6 +2,6 @@
 #include "reasoner.hpp"
 
 
-void moves_container::apply_decay_factor() {
+void MovesContainer::apply_decay_factor() {
     arr.apply_decay_factor();
 }

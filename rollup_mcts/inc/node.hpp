@@ -3,8 +3,8 @@
 
 #include "semisplit_node.hpp"
 
-typedef SemisplitNode Node;
+typedef semisplit_node node;
 
-typedef SemisplitChild Child;
+typedef semisplit_child child;
 
 #endif

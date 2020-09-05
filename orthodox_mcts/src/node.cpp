@@ -1,20 +1,20 @@
 #include "node.hpp"
 #include "reasoner.hpp"
 
-Node::Node(const uint first_child_index, const uint child_count) 
-    : NodeBase(first_child_index, child_count) {}
+node::node(const uint first_child_index, const uint child_count)
+    : node_base(first_child_index, child_count) {}
 
-bool Node::is_terminal() const {
+bool node::is_terminal() const {
     return children_range.second == children_range.first;
 }
 
-Child::Child(const reasoner::move& move) 
+child::child(const reasoner::move& move)
     : move(move) {}
 
-const reasoner::move_representation& Child::get_actions() const {
+const reasoner::move_representation& child::get_actions() const {
     return move.mr;
 }
 
-const reasoner::move& Child::get_edge() const {
+const reasoner::move& child::get_edge() const {
     return move;
 }

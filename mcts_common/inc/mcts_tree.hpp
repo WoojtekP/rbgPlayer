@@ -18,8 +18,8 @@ class MctsTree {
 protected:
     reasoner::game_state root_state;
     reasoner::resettable_bitarray_stack cache;
-    std::vector<Node> nodes;
-    std::vector<Child> children;
+    std::vector<node> nodes;
+    std::vector<child> children;
     std::vector<std::pair<uint,int>> children_stack;
     MoveChooser<move_type> move_chooser;
     #if RAVE > 0
@@ -36,12 +36,12 @@ protected:
     bool is_node_fully_expanded(const uint);
     void complete_turn(reasoner::game_state&);
     void get_scores_from_state(reasoner::game_state&, simulation_result&);
-    uint get_unvisited_child_index(std::vector<Child>&, const Node&, const uint, const int);
+    uint get_unvisited_child_index(std::vector<child>&, const node&, const uint, const int);
     void get_amaf_scores(std::vector<std::tuple<amaf_score, uint, bool>>&, uint, uint);
     uint get_best_uct_child_index(const uint, const uint);
     uint get_top_ranked_child_index(const uint);
     void root_at_index(const uint);
-    uint fix_tree(std::vector<Node>&, std::vector<Child>&, const uint);
+    uint fix_tree(std::vector<node>&, std::vector<child>&, const uint);
 public:
     MctsTree(void)=delete;
     MctsTree(const MctsTree&)=delete;

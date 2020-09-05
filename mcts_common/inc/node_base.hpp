@@ -5,10 +5,10 @@
 #include "types.hpp"
 
 
-struct NodeBase {
+struct node_base {
     std::pair<uint, uint> children_range = {1, 0};
-    NodeBase(void)=default;
-    NodeBase(const uint, const uint);
+    node_base(void) = default;
+    node_base(const uint, const uint);
     bool is_expanded() const;
 };
 
@@ -21,7 +21,7 @@ struct amaf_score {
     #endif
 };
 
-struct ChildBase {
+struct child_base {
     uint index = 0;
     uint sim_count = 0;
     uint total_score = 0;
