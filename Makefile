@@ -60,6 +60,7 @@ $(DEP_DIR)/$(1)/%.d: $(3)/$(SRC_DIR)/%.cpp | $(DEP_DIR)/$(1)
 endef
 
 define PLAYER_KIND_RULES
+ifeq ($(MAKECMDGOALS), $(2))
 $(1)_DIRS := $(3)
 $(1)_INCLUDE := $$(foreach dir,$$($(1)_DIRS),-I$$(wildcard $$(dir)/$(INC_DIR)))
 $(1)_CFLAGS := $(COMMON_CFLAGS) $$($(1)_INCLUDE)
@@ -75,6 +76,7 @@ $(2): $$($(1)_OBJECTS) | $(BIN_DIR)
 	$(C) $$($(1)_CFLAGS) $$($(1)_OBJECTS) -o $(BIN_DIR)/$$@
 ifeq (1, $$(words $$(findstring $(MAKECMDGOALS), $(2))))
     -include $$($(1)_DEP)
+endif
 endif
 endef
 
