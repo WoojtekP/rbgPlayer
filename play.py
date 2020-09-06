@@ -38,6 +38,8 @@ available_players = set([
     "semisplit_semisplit_ravecontext",
     "semisplit_semisplit_ravemix",
     "semisplit_semisplit_mast_rave",
+    "semisplit_semisplit_mast_ravecontext",
+    "semisplit_semisplit_mastsplit_rave",
     "semisplit_semisplit_mastsplit_ravecontext",
     "semisplit_semisplit_mastcontext_ravecontext",
     "semisplit_orthodox",
