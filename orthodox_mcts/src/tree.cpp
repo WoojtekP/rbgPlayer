@@ -3,11 +3,13 @@
 #include <iomanip>
 #endif
 
+#include <type_traits>
+
 #include "tree.hpp"
 #include "node.hpp"
 #include "simulator.hpp"
 #include "constants.hpp"
-#include <iostream>
+
 
 Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
     complete_turn(root_state);
@@ -81,8 +83,18 @@ uint Tree::perform_simulation() {
         //children[child_index].total_score += results[current_player - 1];
     }
     #if RAVE > 0
+    [[maybe_unused]] reasoner::move_representation mr;
     for (const auto& [move, player] : move_chooser.get_path()) {
-        moves_tree[player - 1].insert_or_update(move);
+        if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
+            moves_tree[player - 1].insert_or_update(move);
+        }
+        else {
+            mr.insert(mr.end(), move.mr.begin(), move.mr.end());
+            if (!move.mr.empty() && reasoner::is_switch(move.mr.back().index)) {
+                moves_tree[player - 1].insert_or_update(mr);
+                mr.clear();
+            }
+        }
     }
     #endif
     [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO calculate only nodal-depth

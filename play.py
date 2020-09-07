@@ -30,6 +30,7 @@ available_players = set([
     "orthodox_orthodox_mast_rave",
     "orthodox_semisplit",
     "orthodox_semisplit_mastsplit",
+    "orthodox_semisplit_mastsplit_rave",
     "semisplit_semisplit",
     "semisplit_semisplit_mast",
     "semisplit_semisplit_mastsplit",

@@ -51,7 +51,7 @@ public:
     }
 
     int insert_or_update(const reasoner::move&, const int = 0);
-    int insert_or_update(const reasoner::move_representation&, const int);
+    int insert_or_update(const reasoner::move_representation&, const int = 0);
 
     template <typename T>
     int find(const T& semimove, const int context = 0) {
