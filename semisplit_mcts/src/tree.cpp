@@ -32,22 +32,19 @@ void Tree::choose_best_rolledup_move(const uint node_index, std::vector<uint>& b
         if (index > 0) {
             move_path.push_back(i);
             if (nodes[index].is_nodal || !nodes[index].is_expanded()) {
+                if (children[i].sim_count > 0) {
+                    double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
+                    // if (children[i].sim_count > max_sim || (children[i].sim_count == max_sim && score > max_score)) {
+                    if (score > max_score || (score == max_score && children[i].sim_count > max_sim)) {
+                        max_score = score;
+                        max_sim = children[i].sim_count;
+                        best_move_path = move_path;
+                    }
+                }
                 #if STATS
                 print_node_stats(children[i]);
                 print_rolledup_move(move_path);
                 #endif
-                if (children[i].sim_count > max_sim) {
-                    max_sim = children[i].sim_count;
-                    max_score = static_cast<double>(children[i].total_score) / children[i].sim_count;
-                    best_move_path = move_path;
-                }
-                else if (children[i].sim_count == max_sim) {
-                    auto score = static_cast<double>(children[i].total_score) / children[i].sim_count;
-                    if (score > max_score) {
-                        max_score = score;
-                        best_move_path = move_path;
-                    }
-                }
             }
             else {
                 choose_best_rolledup_move(index, best_move_path);
