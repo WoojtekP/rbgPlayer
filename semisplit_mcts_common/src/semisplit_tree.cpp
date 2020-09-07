@@ -342,16 +342,16 @@ uint SemisplitTree::perform_simulation() {
         #endif
         #if RAVE > 0
         ++depth[player-1];
-        assert(moves_tree[player - 1].find(children[child_index].semimove, context) >= depth[player-1]);
+        // assert(moves_tree[player - 1].find(children[child_index].semimove, context) >= depth[player-1]);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             #if RAVE == 3
-            if (moves_tree_base[player - 1].find(children[i].semimove) >= depth[player-1]) {
+            if (moves_tree_base[player - 1].find(children[i].semimove) > depth[player-1]) {
                 children[i].amaf.score_base += results[player - 1];
                 ++children[i].amaf.count_base;
             }
             #endif
-            if (moves_tree[player - 1].find(children[i].semimove, context) >= depth[player-1]) {
+            if (moves_tree[player - 1].find(children[i].semimove, context) > depth[player-1]) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }

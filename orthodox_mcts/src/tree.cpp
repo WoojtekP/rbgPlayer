@@ -110,10 +110,10 @@ uint Tree::perform_simulation() {
         #endif
         #if RAVE > 0
         ++depth[player-1];
-        assert(moves_tree[player - 1].find(children[child_index].move) >= depth[player-1]);
+        // assert(moves_tree[player - 1].find(children[child_index].move) >= depth[player-1]);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (moves_tree[player - 1].find(children[i].move) >= depth[player-1]) {// MSZ: >= if we add also the applied move to amaf
+            if (moves_tree[player - 1].find(children[i].move) > depth[player-1]) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }
