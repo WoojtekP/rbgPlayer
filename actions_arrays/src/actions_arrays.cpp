@@ -20,7 +20,9 @@ void ActionsArrays::insert_or_update(const reasoner::move_representation& mr, co
 }
 
 int ActionsArrays::insert_or_update(const reasoner::move& move, const double score, const double weight) {
-    insert_or_update(move.mr, score, weight);
+    if constexpr (!ONLY_STATES) {
+        insert_or_update(move.mr, score, weight);
+    }
     return 0;
 }
 
