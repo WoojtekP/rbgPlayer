@@ -7,7 +7,7 @@
 #include "move_chooser.hpp"
 
 uint play(reasoner::game_state& state,
-          MoveChooser<move_type>& move_chooser,
+          MoveChooser<simulation_move_type>& move_chooser,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
     static std::vector<reasoner::move> move_list;
