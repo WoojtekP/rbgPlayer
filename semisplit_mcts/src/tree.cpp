@@ -60,12 +60,13 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const ui
 }
 
 reasoner::move Tree::choose_best_move() {
+    #if STATS
+    std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
+    std::cout << std::fixed << std::setprecision(2);
+    #endif
     static std::vector<uint> children_indices;
     children_indices.clear();
-    if constexpr (GREEDY_CHOICE) {
-        choose_best_greedy_move(children_indices);
-    }
-    else {
+    if constexpr (!GREEDY_CHOICE) {
         choose_best_rolledup_move(children_indices);
         #if STATS
         std::cout << std::endl << "chosen move:" << std::endl;
@@ -74,5 +75,6 @@ reasoner::move Tree::choose_best_move() {
         std::cout << std::endl;
         #endif
     }
+    choose_best_greedy_move(children_indices);
     return get_move_from_saved_path_with_random_suffix(children_indices);
 }

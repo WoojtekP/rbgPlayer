@@ -475,11 +475,7 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
 }
 
 void SemisplitTree::choose_best_greedy_move(std::vector<uint>& children_indices) {
-    #if STATS
-    uint level = 1;
-    std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
-    std::cout << std::fixed << std::setprecision(2);
-    #endif
+    [[maybe_unused]] uint level = 1;
     uint node_index = 0;
     if (!children_indices.empty()) {
         const uint last_child = children_indices.back();
