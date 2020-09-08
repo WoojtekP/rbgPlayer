@@ -474,23 +474,26 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
     #endif
 }
 
-reasoner::move SemisplitTree::choose_best_greedy_move() {
-    static std::vector<uint> children_indices;
+void SemisplitTree::choose_best_greedy_move(std::vector<uint>& children_indices) {
     #if STATS
     uint level = 1;
     std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
     std::cout << std::fixed << std::setprecision(2);
     #endif
-    children_indices.clear();
-    reasoner::move move;
     uint node_index = 0;
-    reasoner::game_state state = root_state;
-    while (true) {
+    if (!children_indices.empty()) {
+        const uint last_child = children_indices.back();
+        const uint last_node =  children[last_child].index;
+        if (last_node == 0 || nodes[last_node].is_nodal || !nodes[last_node].is_expanded()) {
+            return;
+        }
+        node_index = last_node;
+    }
+    do {
         assert(nodes[node_index].is_expanded());
+        assert(node_index == 0 || !nodes[node_index].is_nodal);
         const auto best_child = get_top_ranked_child_index(node_index);
-        const auto& semimove = children[best_child].semimove;
-        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
-        state.apply_semimove(semimove);
+        children_indices.emplace_back(best_child);
         #if STATS
         std::cout << "moves at level " << level << std::endl;
         const auto [fst, lst] = nodes[node_index].children_range;
@@ -503,21 +506,29 @@ reasoner::move SemisplitTree::choose_best_greedy_move() {
         std::cout << std::endl;
         ++level;
         #endif
-        if (nodes[children[best_child].index].is_nodal) {
-            break;
-        }
         node_index = children[best_child].index;
-        if (node_index == 0 || !nodes[node_index].is_expanded()) {
-            #if STATS
-            std::cout << "random continuation..." << std::endl << std::endl;
-            #endif
-            static std::vector<reasoner::semimove> move_suffix;
-            move_suffix.clear();
-            random_walk_to_nodal(state, move_suffix);
-            for (const auto& semimove : move_suffix) {
-                move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
-            }
-            break;
+    } while (node_index > 0 && !nodes[node_index].is_nodal && nodes[node_index].is_expanded());
+}
+
+reasoner::move SemisplitTree::get_move_from_saved_path_with_random_suffix(std::vector<uint>& children_indices) {
+    static reasoner::game_state state;
+    state = root_state;
+    reasoner::move move;
+    for (const auto child_index : children_indices) {
+        const auto& semimove = children[child_index].semimove;
+        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
+        state.apply_semimove(semimove);
+    }
+    if (!state.is_nodal()) {
+        #if STATS
+        std::cout << "random continuation..." << std::endl << std::endl;
+        #endif
+        static std::vector<reasoner::semimove> move_suffix;
+        move_suffix.clear();
+        assert(random_walk_to_nodal(state, move_suffix));
+        assert(!move_suffix.empty());
+        for (const auto& semimove : move_suffix) {
+            move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
         }
     }
     return move;

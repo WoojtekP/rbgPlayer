@@ -99,5 +99,8 @@ uint Tree::perform_simulation() {
 }
 
 reasoner::move Tree::choose_best_move() {
-    return choose_best_greedy_move();
+    static std::vector<uint> children_indices;
+    children_indices.clear();
+    choose_best_greedy_move(children_indices);
+    return get_move_from_saved_path_with_random_suffix(children_indices);
 }

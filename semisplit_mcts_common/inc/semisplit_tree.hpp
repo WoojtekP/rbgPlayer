@@ -21,7 +21,8 @@ protected:
     bool has_nodal_successor(reasoner::game_state&, uint = 0);
     bool save_path_to_nodal_state(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
     bool random_walk_to_nodal(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
-    reasoner::move choose_best_greedy_move();
+    void choose_best_greedy_move(std::vector<uint>&);
+    reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:
     SemisplitTree(void)=delete;
     SemisplitTree(const SemisplitTree&)=delete;

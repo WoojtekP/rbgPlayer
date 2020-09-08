@@ -22,7 +22,7 @@ void Tree::print_rolledup_move(const std::vector<uint>& children_indices) {
 
 Tree::Tree(const reasoner::game_state& initial_state) : SemisplitTree(initial_state) {}
 
-void Tree::choose_best_rolledup_move(const uint node_index, std::vector<uint>& best_move_path) {
+void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const uint node_index) {
     static std::vector<uint> move_path;
     static uint max_sim = 0;
     static double max_score = 0;
@@ -47,7 +47,7 @@ void Tree::choose_best_rolledup_move(const uint node_index, std::vector<uint>& b
                 #endif
             }
             else {
-                choose_best_rolledup_move(index, best_move_path);
+                choose_best_rolledup_move(best_move_path, index);
             }
             move_path.pop_back();
         }
@@ -60,37 +60,19 @@ void Tree::choose_best_rolledup_move(const uint node_index, std::vector<uint>& b
 }
 
 reasoner::move Tree::choose_best_move() {
-    if constexpr (GREEDY_CHOICE) {
-        return choose_best_greedy_move();
-    }
     static std::vector<uint> children_indices;
     children_indices.clear();
-    choose_best_rolledup_move(0, children_indices);
-    reasoner::move move;
-    reasoner::game_state state = root_state;
-    for (const auto child_index : children_indices) {
-        const auto& semimove = children[child_index].semimove;
-        state.apply_semimove(semimove);
-        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
-    }
-    if (!state.is_nodal()) {
-        #if STATS
-        std::cout << "random continuation..." << std::endl << std::endl;
-        #endif
-        static std::vector<reasoner::semimove> move_suffix;
-        move_suffix.clear();
-        random_walk_to_nodal(state, move_suffix);
-        for (const auto& semimove : move_suffix) {
-            move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
-        }
+    if constexpr (GREEDY_CHOICE) {
+        choose_best_greedy_move(children_indices);
     }
     else {
-    #if STATS
-    std::cout << std::endl << "chosen move:" << std::endl;
-    print_node_stats(children[children_indices.back()]);
-    print_rolledup_move(children_indices);
-    std::cout << std::endl;
-    #endif
+        choose_best_rolledup_move(children_indices);
+        #if STATS
+        std::cout << std::endl << "chosen move:" << std::endl;
+        print_node_stats(children[children_indices.back()]);
+        print_rolledup_move(children_indices);
+        std::cout << std::endl;
+        #endif
     }
-    return move;
+    return get_move_from_saved_path_with_random_suffix(children_indices);
 }
