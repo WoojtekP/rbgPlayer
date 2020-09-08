@@ -13,7 +13,16 @@ uint play(reasoner::game_state& state,
     static std::vector<reasoner::move> move_list;
     uint state_count = 0;
     while (true) {
-        state.get_all_moves(cache, move_list);
+        #ifdef SEMISPLIT_SIMULATOR
+        static std::vector<reasoner::semimove> semimoves;
+        state.get_all_semimoves(cache, semimoves, 1000);
+        move_list.clear();
+        for (const auto& semimove : semimoves) {
+            move_list.emplace_back(semimove.mr);
+        }
+        #else
+            state.get_all_moves(cache, move_list);
+        #endif
         if(move_list.empty()) {
             break;
         }

@@ -92,8 +92,10 @@ class Cd:
         os.chdir(self.saved_path)
 
 class PlayerConfig:
-    def __init__(self, program_args, player_full_name, constants, player_name, player_port):
+    def __init__(self, program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, player_port):
         self.player_full_name = player_full_name
+        self.tree_strategy = tree_strategy
+        self.simulation_strategy = simulation_strategy
         self.config_constants = constants
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
@@ -112,6 +114,9 @@ class PlayerConfig:
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
             config_file.write("#define CONFIG\n")
+            config_file.write("\n")
+            config_file.write("#define {}_TREE\n".format(self.tree_strategy.upper()))
+            config_file.write("#define {}_SIMULATOR\n".format(self.simulation_strategy.upper()))
             config_file.write("\n")
             config_file.write("#include \"types.hpp\"\n")
             config_file.write("#include <string>\n")
@@ -155,8 +160,7 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
-        is_semisplit = (config["algorithm"]["tree_strategy"] in ["semisplit", "rollup"]) or (config["algorithm"]["simulation_strategy"] == "semisplit")
-        return player_full_name, constants, is_semisplit, [heuristic["name"].upper() for heuristic in config["heuristics"]]
+        return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -288,13 +292,14 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_full_name, constants, is_semisplit, heuristics = parse_config_file(program_args.player_config)
+player_full_name, constants, tree_strategy, simulation_strategy, heuristics = parse_config_file(program_args.player_config)
 
 assert(player_full_name in available_players)
 
-player_config = PlayerConfig(program_args, player_full_name, constants, player_name, player_port)
+player_config = PlayerConfig(program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
+is_semisplit = (tree_strategy in ["semisplit", "rollup"]) or (simulation_strategy == "semisplit")
 compile_player(player_full_name, is_semisplit, player_port, heuristics, int(program_args.debug), int(program_args.release), int(program_args.stats))
 print("Player compiled!")
 
