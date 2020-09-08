@@ -28,12 +28,20 @@ uint Tree::create_node(reasoner::game_state& state) {
 }
 
 void Tree::create_children(const uint node_index, reasoner::game_state& state) {
-    static std::vector<reasoner::move> move_list;
-    state.get_all_moves(cache, move_list);
     nodes[node_index].children_range.first = children.size();
-    for (const auto& move : move_list) {
-        children.emplace_back(move);
-    }
+    #ifdef SEMISPLIT_SIMULATOR
+        static std::vector<reasoner::semimove> semimoves;
+        state.get_all_semimoves(cache, semimoves, 1000);
+        for (const auto& semimove : semimoves) {
+            children.emplace_back(semimove.mr);
+        }
+    #else
+        static std::vector<reasoner::move> moves;
+        state.get_all_moves(cache, moves);
+        for (const auto& move : moves) {
+            children.emplace_back(move);
+        }
+    #endif
     nodes[node_index].children_range.second = children.size();
 }
 

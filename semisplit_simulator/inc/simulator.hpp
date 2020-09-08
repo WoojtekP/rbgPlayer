@@ -1,5 +1,5 @@
-#ifndef SIMULATOR
-#define SIMULATOR
+#ifndef SEMISPLIT_SIMULATOR
+#define SEMISPLIT_SIMULATOR
 
 #include <vector>
 #include <random>

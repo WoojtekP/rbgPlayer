@@ -1,5 +1,5 @@
-#ifndef SIMULATOR
-#define SIMULATOR
+#ifndef ORTHODOX_SIMULATOR
+#define ORTHODOX_SIMULATOR
 
 #include <vector>
 #include <random>
