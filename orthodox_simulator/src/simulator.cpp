@@ -6,35 +6,37 @@
 #include "constants.hpp"
 #include "move_chooser.hpp"
 
+#include <iostream>
+
 uint play(reasoner::game_state& state,
           MoveChooser<simulation_move_type>& move_chooser,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
-    static std::vector<reasoner::move> move_list;
+    static std::vector<reasoner::move> moves;
     uint state_count = 0;
     while (true) {
-        #ifdef SEMISPLIT_SIMULATOR
+        #ifdef SEMISPLIT_TREE
         static std::vector<reasoner::semimove> semimoves;
         state.get_all_semimoves(cache, semimoves, 1000);
-        move_list.clear();
+        moves.clear();
         for (const auto& semimove : semimoves) {
-            move_list.emplace_back(semimove.mr);
+            moves.emplace_back(semimove.mr);
         }
         #else
-            state.get_all_moves(cache, move_list);
+            state.get_all_moves(cache, moves);
         #endif
-        if(move_list.empty()) {
+        if(moves.empty()) {
             break;
         }
-        uint chosen_move = move_chooser.get_random_move(move_list, state.get_current_player());
+        uint chosen_move = move_chooser.get_random_move(moves, state.get_current_player());
         #if RAVE > 0
-        move_chooser.save_move(move_list[chosen_move], state.get_current_player());
+        move_chooser.save_move(moves[chosen_move], state.get_current_player());
         #elif MAST > 0
         if constexpr (not TREE_ONLY) {
-            move_chooser.save_move(move_list[chosen_move], state.get_current_player());
+            move_chooser.save_move(moves[chosen_move], state.get_current_player());
         }
         #endif
-        state.apply_move(move_list[chosen_move]);
+        state.apply_move(moves[chosen_move]);
         ++state_count;
         while (state.get_current_player() == KEEPER) {
             if (not state.apply_any_move(cache)) {
