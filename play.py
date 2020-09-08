@@ -156,10 +156,12 @@ def parse_config_file(file_name):
                 constants["bool"][k.upper()] = v.__str__().lower()
             elif isinstance(v, float):
                 constants["double"][k.upper()] = v.__str__()
-            elif v > 0:
+            elif v >= 0:
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
+        if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
+            constants["uint"]["ROLLUP_THRESHOLD"] = "0"
         return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):

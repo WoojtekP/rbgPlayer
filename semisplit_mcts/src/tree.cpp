@@ -26,30 +26,35 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const ui
     static std::vector<uint> move_path;
     static uint max_sim = 0;
     static double max_score = 0;
-    const auto [fst, lst] = nodes[node_index].children_range;
-    for (auto i = fst; i < lst; ++i) {
-        auto index = children[i].index;
-        if (index > 0) {
-            move_path.push_back(i);
-            if (nodes[index].is_nodal || !nodes[index].is_expanded()) {
-                if (children[i].sim_count > 0) {
-                    double score = static_cast<double>(children[i].total_score) / children[i].sim_count;
-                    // if (children[i].sim_count > max_sim || (children[i].sim_count == max_sim && score > max_score)) {
-                    if (score > max_score || (score == max_score && children[i].sim_count > max_sim)) {
-                        max_score = score;
-                        max_sim = children[i].sim_count;
-                        best_move_path = move_path;
-                    }
+    bool all_children_below_limit = true;
+    if (!nodes[node_index].is_nodal || node_index == 0) {
+        const auto [fst, lst] = nodes[node_index].children_range;
+        for (auto i = fst; i < lst; ++i) {
+            if (children[i].index > 0) {
+                if (children[i].sim_count > ROLLUP_THRESHOLD) {
+                    move_path.push_back(i);
+                    choose_best_rolledup_move(best_move_path, children[i].index);
+                    move_path.pop_back();
+                    all_children_below_limit = false;
                 }
-                #if STATS
-                print_node_stats(children[i]);
-                print_rolledup_move(move_path);
-                #endif
             }
-            else {
-                choose_best_rolledup_move(best_move_path, index);
+        }
+    }
+    if (all_children_below_limit) {
+        if (node_index > 0) {
+            uint child_index = move_path.back();
+            assert(children[child_index].sim_count > 0);
+            double score = static_cast<double>(children[child_index].total_score) / children[child_index].sim_count;
+            // if (children[child_index].sim_count > max_sim || (children[child_index].sim_count == max_sim && score > max_score)) {
+            if (score > max_score || (score == max_score && children[child_index].sim_count > max_sim)) {
+                max_score = score;
+                max_sim = children[child_index].sim_count;
+                best_move_path = move_path;
             }
-            move_path.pop_back();
+            #if STATS
+            print_node_stats(children[child_index]);
+            print_rolledup_move(move_path);
+            #endif
         }
     }
     if (node_index == 0) {
