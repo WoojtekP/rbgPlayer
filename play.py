@@ -317,7 +317,6 @@ server_to_client.daemon = True
 client_to_server.start()
 server_to_client.start()
 signal.signal(signal.SIGTERM, lambda _1,_2: cleanup_process(player_process))
-signal.signal(signal.SIGINT, lambda _1,_2: cleanup_process(player_process))
 client_to_server.join()
 server_to_client.join()
 player_process.terminate()
