@@ -1,0 +1,19 @@
+{
+    "general" : {
+        "buffer_time" : 100
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "semisplit",
+        "simulation_strategy" : "semisplit",
+        "parameters" : {
+            "exploration_constant" : 0.4,
+            "max_semidepth" : 50,
+            "semilength" : 0,
+            "is_nodal" : true,
+            "greedy_choice" : false,
+            "rollup_threshold" : 250
+        }
+    },
+    "heuristics" : []
+}
