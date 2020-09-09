@@ -44,7 +44,7 @@ public:
     uint get_random_move(const std::vector<M>& legal_moves, const int current_player) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
-        if (rand_gen.random_real_number() < EPSILON) {
+        if (rand_gen.random_real_number() >= EPSILON) {
             double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front(), context);
             indices.resize(1);
             indices[0] = 0;
@@ -83,7 +83,7 @@ public:
         #endif
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         uint chosen_child;
-        if (rand_gen.random_real_number() < EPSILON) {
+        if (rand_gen.random_real_number() >= EPSILON) {
             indices.clear();
             indices.reserve(lst - lower);
             double best_score = 0.0;
