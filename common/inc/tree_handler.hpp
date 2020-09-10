@@ -18,7 +18,7 @@ namespace reasoner{
 }
 
 class tree_handler{
-        Tree t;
+        Tree* t;
         const int own_player_index;
         uint simulations_count = 0;
         uint states_count = 0;
@@ -27,12 +27,12 @@ class tree_handler{
     public:
         tree_handler(void)=delete;
         tree_handler(const tree_handler&)=delete;
-        tree_handler(tree_handler&&)=default;
+        tree_handler(tree_handler&&)=delete;
         tree_handler& operator=(const tree_handler&)=delete;
-        tree_handler& operator=(tree_handler&&)=default;
-        ~tree_handler(void)=default;
+        tree_handler& operator=(tree_handler&&)=delete;
         tree_handler(const reasoner::game_state& initial_state,
                      concurrent_queue<client_response>& responses_to_server);
+        ~tree_handler(void);
         void handle_move_request(void);
         void handle_move_indication(const reasoner::move& m);
         void handle_reset_request(const reasoner::game_state& initial_state);
