@@ -13,13 +13,12 @@ private:
     };
     static constexpr uint size1 = reasoner::BOARD_SIZE * reasoner::NUMBER_OF_MODIFIERS;
     static constexpr uint size2 = reasoner::BOARD_SIZE * reasoner::AUTOMATON_SIZE;
-    score* arr1 = nullptr;
-    score* arr2 = nullptr;
+    score arr1[ActionsArrays::size1];
+    score arr2[ActionsArrays::size2];
     void insert_or_update(const reasoner::move_representation&, const double, const double);
 
 public:
     ActionsArrays();
-    ~ActionsArrays();
     template <typename T>
     int insert_or_update(const T& semimove, const double score, const double weight) {
         if constexpr (!ONLY_STATES) {

@@ -3,23 +3,12 @@
 #include "reasoner.hpp"
 
 ActionsArrays::ActionsArrays() {
-    if constexpr (!ONLY_STATES) {
-        arr1 = new score [ActionsArrays::size1];
-        for (uint i = 0; i < ActionsArrays::size1; ++i) {
-            arr1[i].weight = arr1[i].sum = 0.0;
-        }
+    for (uint i = 0; i < ActionsArrays::size1; ++i) {
+        arr1[i].weight = arr1[i].sum = 0.0;
     }
-    arr2 = new score [ActionsArrays::size2];
     for (uint i = 0; i < ActionsArrays::size2; ++i) {
         arr2[i].weight = arr2[i].sum = 0.0;
     }
-}
-
-ActionsArrays::~ActionsArrays() {
-    if constexpr (!ONLY_STATES) {
-        delete [] arr1;
-    }
-    delete [] arr2;
 }
 
 void ActionsArrays::insert_or_update(const reasoner::move_representation& mr, const double score, const double weight) {
@@ -51,11 +40,9 @@ double ActionsArrays::get_score_or_default_value(const reasoner::move& move) {
 }
 
 void ActionsArrays::apply_decay_factor() {
-    if constexpr (!ONLY_STATES) {
-        for (uint i = 0; i < ActionsArrays::size1; ++i) {
-            arr1[i].weight *= DECAY_FACTOR;
-            arr1[i].sum *= DECAY_FACTOR;
-        }
+    for (uint i = 0; i < ActionsArrays::size1; ++i) {
+        arr1[i].weight *= DECAY_FACTOR;
+        arr1[i].sum *= DECAY_FACTOR;
     }
     for (uint i = 0; i < ActionsArrays::size2; ++i) {
         arr2[i].weight *= DECAY_FACTOR;
