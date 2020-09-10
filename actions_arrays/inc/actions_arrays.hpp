@@ -11,7 +11,7 @@ private:
         double sum;
         double weight;
     };
-    static constexpr uint size1 = reasoner::BOARD_SIZE * reasoner::NUMBER_OF_MODIFIERS;
+    static constexpr uint size1 = ONLY_STATES ? 1 : reasoner::BOARD_SIZE * reasoner::NUMBER_OF_MODIFIERS;
     static constexpr uint size2 = reasoner::BOARD_SIZE * reasoner::AUTOMATON_SIZE;
     score arr1[ActionsArrays::size1];
     score arr2[ActionsArrays::size2];
