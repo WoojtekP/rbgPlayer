@@ -40,9 +40,11 @@ double ActionsArrays::get_score_or_default_value(const reasoner::move& move) {
 }
 
 void ActionsArrays::apply_decay_factor() {
-    for (uint i = 0; i < ActionsArrays::size1; ++i) {
-        arr1[i].weight *= DECAY_FACTOR;
-        arr1[i].sum *= DECAY_FACTOR;
+    if constexpr (!ONLY_STATES) {
+        for (uint i = 0; i < ActionsArrays::size1; ++i) {
+            arr1[i].weight *= DECAY_FACTOR;
+            arr1[i].sum *= DECAY_FACTOR;
+        }
     }
     for (uint i = 0; i < ActionsArrays::size2; ++i) {
         arr2[i].weight *= DECAY_FACTOR;
