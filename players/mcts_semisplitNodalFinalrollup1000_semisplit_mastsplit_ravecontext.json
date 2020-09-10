@@ -12,7 +12,7 @@
             "semilength" : 0,
             "is_nodal" : true,
             "greedy_choice" : true,
-            "rollup_threshold" : 250
+            "rollup_threshold" : 1000
         }
     },
     "heuristics" : [
