@@ -11,8 +11,8 @@ private:
         double sum;
         double weight;
     };
-    static constexpr uint size1 = ONLY_STATES ? 1 : reasoner::BOARD_SIZE * reasoner::NUMBER_OF_MODIFIERS;
-    static constexpr uint size2 = reasoner::BOARD_SIZE * reasoner::AUTOMATON_SIZE;
+    static constexpr uint size1 = ONLY_STATES ? 1 : (reasoner::BOARD_SIZE + 1) * reasoner::NUMBER_OF_MODIFIERS;
+    static constexpr uint size2 = (reasoner::BOARD_SIZE + 1) * reasoner::AUTOMATON_SIZE;
     score arr1[ActionsArrays::size1];
     score arr2[ActionsArrays::size2];
     void insert_or_update(const reasoner::move_representation&, const double, const double);
@@ -24,7 +24,7 @@ public:
         if constexpr (!ONLY_STATES) {
             insert_or_update(semimove.mr, score, weight);
         }
-        auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
+        auto index = semimove.cell * reasoner::AUTOMATON_SIZE + semimove.state;
         arr2[index].weight += weight;
         arr2[index].sum += score;
         return 0;
@@ -33,7 +33,7 @@ public:
 
     template <typename T>
     double get_score_or_default_value(const T& semimove) {
-        const auto index = (semimove.cell - 1) * reasoner::AUTOMATON_SIZE + semimove.state;
+        const auto index = semimove.cell * reasoner::AUTOMATON_SIZE + semimove.state;
         if constexpr (ONLY_STATES) {
             return arr2[index].sum / arr2[index].weight;
         }
