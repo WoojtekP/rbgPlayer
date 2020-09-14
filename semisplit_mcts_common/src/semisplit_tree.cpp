@@ -521,7 +521,7 @@ reasoner::move SemisplitTree::get_move_from_saved_path_with_random_suffix(std::v
         #endif
         static std::vector<reasoner::semimove> move_suffix;
         move_suffix.clear();
-        assert(random_walk_to_nodal(state, move_suffix));
+        random_walk_to_nodal(state, move_suffix);
         assert(!move_suffix.empty());
         for (const auto& semimove : move_suffix) {
             move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
