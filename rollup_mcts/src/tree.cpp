@@ -27,7 +27,7 @@ void Tree::choose_children_for_rolling_up(const uint node_index, const uint node
                     children_indices.push_back(i);
                 }
                 else {
-                    double min_score = static_cast<double>(children[fst_child].total_score) / children[fst_child].sim_count;;
+                    double min_score = static_cast<double>(children[fst_child].total_score) / children[fst_child].sim_count;
                     double max_score = min_score;
                     for (auto i = fst_child + 1; i < lst_child; ++i) {
                         double score = static_cast<double>(children[i].total_score) / children[i].sim_count;

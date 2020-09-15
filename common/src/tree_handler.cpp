@@ -8,14 +8,14 @@
 #include "constants.hpp"
 
 
-namespace{
-int get_player_index(const std::string& name){
-    for(int i = 0; i < reasoner::NUMBER_OF_PLAYERS - 1; ++i)
-        if(reasoner::variable_to_string(i) == name)
+namespace {
+int get_player_index(const std::string& name) {
+    for (int i = 0; i < reasoner::NUMBER_OF_PLAYERS - 1; ++i)
+        if (reasoner::variable_to_string(i) == name)
             return i;
     throw std::invalid_argument("player \'" + name + "\' not found!");
 }
-}
+}  // namespace
 
 tree_handler::tree_handler(const reasoner::game_state& initial_state,
                            concurrent_queue<client_response>& responses_to_server)
@@ -29,12 +29,12 @@ tree_handler::~tree_handler(void) {
     delete t;
 }
 
-void tree_handler::handle_status(void){
+void tree_handler::handle_status(void) {
     auto status = t->get_status(own_player_index);
     responses_to_server.emplace_back(client_response{status});
 }
 
-void tree_handler::handle_move_request(void){
+void tree_handler::handle_move_request(void) {
     const auto& chosen_move = t->choose_best_move();
     responses_to_server.emplace_back(client_response{chosen_move});
     std::cout << "[PLAYER] Performing move on the basis of "
@@ -43,14 +43,14 @@ void tree_handler::handle_move_request(void){
     handle_move_indication(chosen_move);
 }
 
-void tree_handler::handle_move_indication(const reasoner::move& m){
+void tree_handler::handle_move_indication(const reasoner::move& m) {
     simulations_count = 0;
     states_count = 0;
     t->reparent_along_move(m);
     handle_status();
 }
 
-void tree_handler::handle_reset_request(const reasoner::game_state& initial_state){
+void tree_handler::handle_reset_request(const reasoner::game_state& initial_state) {
     std::cout << "[PLAYER] Reset Request!" << std::endl;
     delete t;
     t = new Tree(initial_state);

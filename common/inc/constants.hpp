@@ -1,8 +1,9 @@
 #ifndef CONSTANTS
 #define CONSTANTS
 
-#include"types.hpp"
-#include"config.hpp"
+#include "types.hpp"
+#include "config.hpp"
+
 
 constexpr int KEEPER = 0;
 constexpr double EXPECTED_MAX_SCORE = 100.0;

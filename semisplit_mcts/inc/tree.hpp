@@ -15,12 +15,12 @@ private:
     #endif
     void choose_best_rolledup_move(std::vector<uint>&, const uint = 0);
 public:
-    Tree(void)=delete;
-    Tree(const Tree&)=delete;
-    Tree(Tree&&)=default;
-    Tree& operator=(const Tree&)=delete;
-    Tree& operator=(Tree&&)=default;
-    ~Tree(void)=default;
+    Tree(void) = delete;
+    Tree(const Tree&) = delete;
+    Tree(Tree&&) = default;
+    Tree& operator=(const Tree&) = delete;
+    Tree& operator=(Tree&&) = default;
+    ~Tree(void) = default;
     Tree(const reasoner::game_state&);
     reasoner::move choose_best_move();
 };

@@ -3,6 +3,7 @@
 
 #include <random>
 
+
 struct RBGRandomGenerator {
 public:
     static RBGRandomGenerator& get_instance();
@@ -10,8 +11,8 @@ public:
     #if MAST > 0
     double random_real_number();
     #endif
-    RBGRandomGenerator(RBGRandomGenerator const&)=delete;
-    void operator=(RBGRandomGenerator const&)=delete;
+    RBGRandomGenerator(RBGRandomGenerator const&) = delete;
+    void operator=(RBGRandomGenerator const&) = delete;
 private:
     RBGRandomGenerator();
     std::mt19937 random_generator;

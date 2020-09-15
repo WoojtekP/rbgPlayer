@@ -1,7 +1,8 @@
 #ifndef MCTSTREE
 #define MCTSTREE
 
-#include <random>
+#include <utility>
+#include <tuple>
 #include <vector>
 
 #include "reasoner.hpp"
@@ -20,7 +21,7 @@ protected:
     reasoner::resettable_bitarray_stack cache;
     std::vector<node> nodes;
     std::vector<child> children;
-    std::vector<std::pair<uint,int>> children_stack;
+    std::vector<std::pair<uint, int>> children_stack;
     MoveChooser<simulation_move_type> move_chooser;
     #if RAVE > 0
     RaveTree moves_tree[reasoner::NUMBER_OF_PLAYERS - 1];
@@ -43,12 +44,12 @@ protected:
     void root_at_index(const uint);
     uint fix_tree(std::vector<node>&, std::vector<child>&, const uint);
 public:
-    MctsTree(void)=delete;
-    MctsTree(const MctsTree&)=delete;
-    MctsTree(MctsTree&&)=default;
-    MctsTree& operator=(const MctsTree&)=delete;
-    MctsTree& operator=(MctsTree&&)=default;
-    ~MctsTree(void)=default;
+    MctsTree(void) = delete;
+    MctsTree(const MctsTree&) = delete;
+    MctsTree(MctsTree&&) = default;
+    MctsTree& operator=(const MctsTree&) = delete;
+    MctsTree& operator=(MctsTree&&) = default;
+    ~MctsTree(void) = default;
     MctsTree(const reasoner::game_state&);
 };
 

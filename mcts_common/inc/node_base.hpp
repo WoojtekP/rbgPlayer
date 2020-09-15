@@ -1,6 +1,8 @@
 #ifndef NODEBASE
 #define NODEBASE
 
+#include <utility>
+
 #include "reasoner.hpp"
 #include "types.hpp"
 

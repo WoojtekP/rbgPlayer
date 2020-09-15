@@ -1,10 +1,11 @@
 #ifndef CLIENT_RESPONSE
 #define CLIENT_RESPONSE
 
-#include"reasoner.hpp"
-#include"types.hpp"
+#include <variant>
 
-#include<variant>
+#include "reasoner.hpp"
+#include "types.hpp"
+
 
 struct client_response{
     std::variant<reasoner::move, game_status_indication> content;

@@ -1,46 +1,46 @@
-#include<chrono>
-#include<optional>
-#include<thread>
+#include <chrono>
+#include <optional>
+#include <thread>
 
-#include"transport_worker.hpp"
-#include"concurrent_queue.hpp"
-#include"client_response.hpp"
-#include"tree_indication.hpp"
-#include"constants.hpp"
-#include"remote_moves_receiver.hpp"
-#include"own_moves_sender.hpp"
+#include "transport_worker.hpp"
+#include "concurrent_queue.hpp"
+#include "client_response.hpp"
+#include "tree_indication.hpp"
+#include "constants.hpp"
+#include "remote_moves_receiver.hpp"
+#include "own_moves_sender.hpp"
 
 
-namespace{
-game_status_indication get_game_status(concurrent_queue<client_response>& responses_from_tree){
+namespace {
+game_status_indication get_game_status(concurrent_queue<client_response>& responses_from_tree) {
     auto response = responses_from_tree.pop_front();
     assert(std::holds_alternative<game_status_indication>(response.content));
     return std::get<game_status_indication>(response.content);
 }
 
-reasoner::move get_move_from_player(concurrent_queue<client_response>& responses_from_tree){
+reasoner::move get_move_from_player(concurrent_queue<client_response>& responses_from_tree) {
     auto response = responses_from_tree.pop_front();
     assert(std::holds_alternative<reasoner::move>(response.content));
     return std::get<reasoner::move>(response.content);
 }
 
 void forward_move_from_player_to_server(own_moves_sender& oms,
-                                        concurrent_queue<client_response>& responses_from_tree){
+                                        concurrent_queue<client_response>& responses_from_tree) {
     auto m = get_move_from_player(responses_from_tree);
     oms.send_move(m);
 }
 
 void forward_move_from_server_to_player(remote_moves_receiver& rmr,
-                                        concurrent_queue<tree_indication>& tree_indications){
+                                        concurrent_queue<tree_indication>& tree_indications) {
     auto m = rmr.receive_move();
     tree_indications.emplace_back(tree_indication{m});
 }
 
-bool is_move_already_available(concurrent_queue<client_response>& responses_from_tree){
+bool is_move_already_available(concurrent_queue<client_response>& responses_from_tree) {
     return responses_from_tree.size() > 0;
 }
 
-uint trunctated_subtraction(uint a, uint b){
+uint trunctated_subtraction(uint a, uint b) {
     return b > a ? 0 : a-b;
 }
 
@@ -67,15 +67,15 @@ void handle_own_turn(remote_moves_receiver& rmr,
     }
     forward_move_from_player_to_server(oms, responses_from_tree);
 }
-}
+}  // namespace
 
 void run_transport_worker(remote_moves_receiver& rmr,
                           own_moves_sender& oms,
                           concurrent_queue<tree_indication>& tree_indications,
                           concurrent_queue<client_response>& responses_from_tree) {
-    while(true) {
+    while (true) {
         game_status_indication status = get_game_status(responses_from_tree);
-        switch(status) {
+        switch (status) {
             case own_turn:
                 handle_own_turn(rmr, oms, tree_indications, responses_from_tree);
                 break;

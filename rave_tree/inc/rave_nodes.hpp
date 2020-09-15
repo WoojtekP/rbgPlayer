@@ -6,9 +6,8 @@
 
 
 namespace rave_tree {
-
 struct state_turn {
-    state_turn()=default;
+    state_turn() = default;
     state_turn(const int state, const int turn) : state(state), turn(turn) {}
     int state = -1;
     int turn = -1;
@@ -27,7 +26,7 @@ enum node_status : char {
 };
 
 struct cell_node {
-    cell_node()=default;
+    cell_node() = default;
     union {
         struct {
             int value;
@@ -37,7 +36,7 @@ struct cell_node {
     };
     int fst = -1;
     int lst = -1;
-    short int size = 0;
+    int16_t size = 0;
     node_status status = node_status::empty;
 };
 
@@ -50,7 +49,6 @@ struct index_node {
     int cell[reasoner::BOARD_SIZE];
     int turn = -1;
 };
-
-}
+}  // namespace rave_tree
 
 #endif

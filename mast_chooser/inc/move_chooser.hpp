@@ -1,8 +1,9 @@
 #ifndef MOVECHOOSER
 #define MOVECHOOSER
 
-#include <deque>
+#include <algorithm>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "constants.hpp"
@@ -29,12 +30,12 @@ private:
     #endif
 
 public:
-    MoveChooser(const MoveChooser&)=delete;
-    MoveChooser(MoveChooser&&)=default;
-    MoveChooser& operator=(const MoveChooser&)=delete;
-    MoveChooser& operator=(MoveChooser&&)=default;
-    ~MoveChooser(void)=default;
-    MoveChooser(void)=default;
+    MoveChooser(void) = default;
+    MoveChooser(const MoveChooser&) = delete;
+    MoveChooser(MoveChooser&&) = default;
+    MoveChooser& operator=(const MoveChooser&) = delete;
+    MoveChooser& operator=(MoveChooser&&) = default;
+    ~MoveChooser(void) = default;
 
     const std::vector<std::pair<T, int>>& get_path() const {
         return path;

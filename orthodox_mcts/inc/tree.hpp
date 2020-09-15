@@ -17,12 +17,12 @@ private:
     uint create_node(reasoner::game_state&);
     void create_children(const uint, reasoner::game_state&);
 public:
-    Tree(void)=delete;
-    Tree(const Tree&)=delete;
-    Tree(Tree&&)=default;
-    Tree& operator=(const Tree&)=delete;
-    Tree& operator=(Tree&&)=default;
-    ~Tree(void)=default;
+    Tree(void) = delete;
+    Tree(const Tree&) = delete;
+    Tree(Tree&&) = default;
+    Tree& operator=(const Tree&) = delete;
+    Tree& operator=(Tree&&) = default;
+    ~Tree(void) = default;
     Tree(const reasoner::game_state&);
     uint perform_simulation();
     void reparent_along_move(const reasoner::move&);

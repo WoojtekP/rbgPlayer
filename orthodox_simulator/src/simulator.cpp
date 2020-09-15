@@ -25,21 +25,21 @@ uint play(reasoner::game_state& state,
         #else
             state.get_all_moves(cache, moves);
         #endif
-        if(moves.empty()) {
+        if (moves.empty()) {
             break;
         }
         uint chosen_move = move_chooser.get_random_move(moves, state.get_current_player());
         #if RAVE > 0
         move_chooser.save_move(moves[chosen_move], state.get_current_player());
         #elif MAST > 0
-        if constexpr (not TREE_ONLY) {
+        if constexpr (!TREE_ONLY) {
             move_chooser.save_move(moves[chosen_move], state.get_current_player());
         }
         #endif
         state.apply_move(moves[chosen_move]);
         ++state_count;
         while (state.get_current_player() == KEEPER) {
-            if (not state.apply_any_move(cache)) {
+            if (!state.apply_any_move(cache)) {
                 break;
             }
         }

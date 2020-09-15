@@ -1,11 +1,12 @@
 #ifndef TYPES
 #define TYPES
 
+#include <array>
 #include <tuple>
 #include <vector>
-#include <array>
 
 #include "reasoner.hpp"
+
 
 typedef unsigned int uint;
 typedef double priority;

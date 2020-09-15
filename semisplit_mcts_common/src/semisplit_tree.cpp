@@ -18,7 +18,7 @@ namespace {
         return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
     }
 #endif
-}
+}  // namespace
 
 #if STATS
 void SemisplitTree::print_node_stats(const semisplit_child& child) {
