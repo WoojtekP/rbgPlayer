@@ -77,18 +77,14 @@ uint Tree::perform_simulation() {
         const auto child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         state.apply_move(children[child_index].move);
         complete_turn(state);
-        // MSZ: Added to stack and rave tree
         children_stack.emplace_back(child_index, current_player);
         #if RAVE > 0
         moves_tree[current_player - 1].insert_or_update(children[child_index].move);
         #endif
-        // MSZ: What about this move for mast update?
         auto new_node_index = create_node(state);
         ++state_count;
         state_count += play(state, move_chooser, cache, results);
         children[child_index].index = new_node_index;
-        //children[child_index].sim_count = 1;
-        //children[child_index].total_score += results[current_player - 1];
     }
     #if RAVE > 0
     [[maybe_unused]] reasoner::move_representation mr;
@@ -118,7 +114,6 @@ uint Tree::perform_simulation() {
         #endif
         #if RAVE > 0
         ++depth[player-1];
-        // assert(moves_tree[player - 1].find(children[child_index].move) >= depth[player-1]);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             if (moves_tree[player - 1].find(children[i].move) > depth[player-1]) {

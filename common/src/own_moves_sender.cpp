@@ -24,7 +24,7 @@ void own_moves_sender::write_all(const std::string& t){
     const char* str = t.data();
     while(len>0){
         int n = write(socket_descriptor, str, len);
-        assert(n>=1); // why not?
+        assert(n>=1);
         str += n;
         len -= n;
     }

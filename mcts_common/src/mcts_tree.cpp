@@ -53,25 +53,6 @@ uint MctsTree::get_unvisited_child_index(std::vector<child>& children, const nod
     }
     #endif
     assert(children[lst - 1].index == 0);
-    
-    // MSZ: If we want to try Rave instead of random
-    /*
-    #if RAVE > 0
-    double max_priority = 0.0;
-    uint chosen_child = lower;
-    for (uint i = lower; i < lst; i++) {
-        double priority = 1.0;
-        if (children[i].amaf.count > 0)
-          priority = children[i].amaf.score / EXPECTED_MAX_SCORE / children[i].amaf.count;
-        if (priority > max_priority) {
-            max_priority = priority;
-            chosen_child = i;
-        }
-    }
-    if (chosen_child != lower) {
-        std::swap(children[chosen_child], children[lower]);
-    }
-    #endif*/
     RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
     uint chosen_child = lower + rand_gen.uniform_choice(lst - lower);
     if (chosen_child != lower) {
