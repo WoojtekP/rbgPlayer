@@ -12,7 +12,7 @@
     },
     "heuristics" : [
         {
-            "name" : "RAVE",
+            "name" : "TGRAVE",
             "parameters" : {
                 "equivalence_parameter" : 250,
                 "ref" : 50

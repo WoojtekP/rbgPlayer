@@ -26,21 +26,21 @@ available_players = set([
     "orthodox_orthodox",
     "orthodox_orthodox_mast",
     "orthodox_orthodox_mastsplit",
-    "orthodox_orthodox_rave",
-    "orthodox_orthodox_mast_rave",
+    "orthodox_orthodox_tgrave",
+    "orthodox_orthodox_mast_tgrave",
     "orthodox_semisplit",
     "orthodox_semisplit_mastsplit",
-    "orthodox_semisplit_mastsplit_rave",
+    "orthodox_semisplit_mastsplit_tgrave",
     "semisplit_semisplit",
     "semisplit_semisplit_mast",
     "semisplit_semisplit_mastsplit",
     "semisplit_semisplit_mastcontext",
-    "semisplit_semisplit_rave",
+    "semisplit_semisplit_tgrave",
     "semisplit_semisplit_ravecontext",
     "semisplit_semisplit_ravemix",
-    "semisplit_semisplit_mast_rave",
+    "semisplit_semisplit_mast_tgrave",
     "semisplit_semisplit_mast_ravecontext",
-    "semisplit_semisplit_mastsplit_rave",
+    "semisplit_semisplit_mastsplit_tgrave",
     "semisplit_semisplit_mastsplit_ravecontext",
     "semisplit_semisplit_mastcontext_ravecontext",
     "semisplit_orthodox",
@@ -162,6 +162,9 @@ def parse_config_file(file_name):
                 constants["int"][k.upper()] = v.__str__()
         if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
             constants["uint"]["ROLLUP_THRESHOLD"] = "0"
+        for heuristic in config["heuristics"]:
+            if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
+                constants["uint"]["REF"] = "0"
         return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
@@ -217,7 +220,7 @@ def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_
         "RELEASE="+str(release_mode),
         "STATS="+str(stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics)),
-        "RAVE="+str(int("RAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics) + 3 * int("RAVEMIX" in heuristics))]
+        "RAVE="+str(int("TGRAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics) + 3 * int("RAVEMIX" in heuristics))]
     print("   subprocess.run:", *run_list)
     subprocess.run(run_list)
 
