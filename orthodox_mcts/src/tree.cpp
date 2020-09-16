@@ -100,9 +100,14 @@ uint Tree::perform_simulation() {
             }
         }
     }
+    int depth[reasoner::NUMBER_OF_PLAYERS - 1] = {0};
     #endif
-    [[maybe_unused]] const uint path_len = children_stack.size() + move_chooser.get_path().size();  // TODO calculate only nodal-depth
-    [[maybe_unused]] int depth[reasoner::NUMBER_OF_PLAYERS-1] = {0};
+    #if MAST > 0
+    uint path_len = children_stack.size();
+    if constexpr (!TREE_ONLY) {
+        path_len += move_chooser.get_path().size();
+    }
+    #endif
     node_index = 0;
     for (const auto [child_index, player] : children_stack) {
         assert(children[child_index].index != 0);
@@ -113,10 +118,10 @@ uint Tree::perform_simulation() {
         move_chooser.update_move(children[child_index].move, results, player, path_len);
         #endif
         #if RAVE > 0
-        ++depth[player-1];
+        ++depth[player - 1];
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (moves_tree[player - 1].find(children[i].move) > depth[player-1]) {
+            if (moves_tree[player - 1].find(children[i].move) > depth[player - 1]) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }
