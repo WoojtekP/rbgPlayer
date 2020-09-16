@@ -10,7 +10,7 @@
 
 class Tree final : public SemisplitTree {
 private:
-    void choose_children_for_rolling_up(const uint, const uint, std::vector<uint>&);
+    void choose_children_for_rolling_up(const uint, std::vector<uint>&);
     void roll_up(const uint, std::vector<uint>&);
 public:
     Tree(void) = delete;

@@ -11,7 +11,7 @@
 
 Tree::Tree(const reasoner::game_state& initial_state) : SemisplitTree(initial_state) {}
 
-void Tree::choose_children_for_rolling_up(const uint node_index, const uint node_sim_count, std::vector<uint>& children_indices) {
+void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uint>& children_indices) {
     children_indices.clear();
     const auto [fst, lst] = nodes[node_index].children_range;
     for (auto i = fst; i < lst; ++i) {
@@ -19,7 +19,7 @@ void Tree::choose_children_for_rolling_up(const uint node_index, const uint node
         if (index > 0 && !nodes[index].is_nodal && is_node_fully_expanded(index)) {
             const auto [fst_child, lst_child] = nodes[index].children_range;
             const auto child_count = lst_child - fst_child;
-            if (node_sim_count >= child_count * MIN_SIMULATIONS_FACTOR) {
+            if (children[i].sim_count >= child_count * MIN_SIMULATIONS_FACTOR) {
                 if constexpr (MIN_SCORE_DIFF == 0.0) {
                     children_indices.push_back(i);
                 }
@@ -85,13 +85,12 @@ uint Tree::perform_simulation() {
     int size = children_stack.size();
     for (int i = size - 2; i >= 0; --i) {
         const auto node_index = children[children_stack[i].first].index;
-        const auto node_sim_count = children[children_stack[i].first].sim_count;
-        choose_children_for_rolling_up(node_index, node_sim_count, children_indices);
+        choose_children_for_rolling_up(node_index, children_indices);
         if (!children_indices.empty()) {
             roll_up(node_index, children_indices);
         }
     }
-    choose_children_for_rolling_up(0, root_sim_count, children_indices);
+    choose_children_for_rolling_up(0, children_indices);
     if (!children_indices.empty()) {
         roll_up(0, children_indices);
     }
