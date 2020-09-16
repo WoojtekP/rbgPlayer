@@ -20,10 +20,8 @@
             "parameters" : {
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,
-                "mast_equivalence_parameter" : 10,
                 "weight_scaling" : false,
-                "tree_only" : false,
-                "only_states" : true
+                "tree_only" : false
             }
         },
         {

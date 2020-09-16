@@ -3,7 +3,6 @@
 
 #include <random>
 
-
 struct RBGRandomGenerator {
 public:
     static RBGRandomGenerator& get_instance();

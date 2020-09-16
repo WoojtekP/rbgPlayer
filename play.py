@@ -35,6 +35,7 @@ available_players = set([
     "semisplit_semisplit_mast",
     "semisplit_semisplit_mastsplit",
     "semisplit_semisplit_mastcontext",
+    "semisplit_semisplit_mastmix",
     "semisplit_semisplit_tgrave",
     "semisplit_semisplit_ravecontext",
     "semisplit_semisplit_ravemix",
@@ -43,10 +44,12 @@ available_players = set([
     "semisplit_semisplit_mastsplit_tgrave",
     "semisplit_semisplit_mastsplit_ravecontext",
     "semisplit_semisplit_mastcontext_ravecontext",
+    "semisplit_semisplit_mastmix_ravecontext",
     "semisplit_orthodox",
     "semisplit_orthodox_mastsplit",
     "rollup_semisplit",
     "rollup_semisplit_mastcontext",
+    "rollup_semisplit_mastmix",
     "rollup_orthodox"])
 
 
@@ -219,7 +222,7 @@ def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_
         "DEBUG="+str(debug_mode),
         "RELEASE="+str(release_mode),
         "STATS="+str(stats),
-        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics)),
+        "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics or "MASTMIX" in heuristics)),
         "RAVE="+str(int("TGRAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics) + 3 * int("RAVEMIX" in heuristics))]
     print("   subprocess.run:", *run_list)
     subprocess.run(run_list)

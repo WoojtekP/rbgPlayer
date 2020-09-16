@@ -16,20 +16,14 @@
     },
     "heuristics" : [
         {
-            "name" : "MASTCONTEXT",
+            "name" : "MASTMIX",
             "parameters" : {
                 "epsilon" : 0.4,
                 "decay_factor" : 0.2,
-                "mast_equivalence_parameter" : 0,
                 "weight_scaling" : false,
                 "tree_only" : false,
+                "mast_equivalence_parameter" : 10,
                 "only_states" : true
-            }
-        },
-        {
-            "name" : "RAVECONTEXT",
-            "parameters" : {
-                "equivalence_parameter" : 250
             }
         }
     ]
