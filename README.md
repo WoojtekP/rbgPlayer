@@ -1,2 +1,10 @@
 # rbgPlayer
-Regular Boardgames Player
+GGP player based on Regular Boardgames.
+
+## Preparation
+Use `make prepare` command. One also needs to prepare rbggamemanager.
+
+## Usage
+1. Run rbggamanager
+2. Create your own config files or choose existing ones from `players` directory.
+2. Run players using `play.py` script. Use `python3 play.py -h` for description of positional and optional arguments.
