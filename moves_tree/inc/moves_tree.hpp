@@ -44,7 +44,7 @@ public:
     template <typename T>
     int insert_or_update(const T& semimove, const score_type score, const score_type weight, const int context = 0) {
         auto i_node = get_index_node_by_move_representation(semimove.mr, context);
-        auto c_node = get_cell_node(i_node, semimove.cell - 1);
+        auto c_node = get_cell_node(i_node, semimove.cell);
         update_score_at_cell_node(c_node, semimove.state, score, weight);
         return i_node;
     }
@@ -58,7 +58,7 @@ public:
         if (i_node == -1) {
             return {};
         }
-        const auto c_node = index_nodes[i_node].cell[semimove.cell - 1];
+        const auto c_node = index_nodes[i_node].cell[semimove.cell];
         if (c_node == -1) {
             return {};
         }

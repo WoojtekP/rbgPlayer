@@ -55,11 +55,11 @@ struct cell_node {
 
 struct index_node {
     index_node() {
-        for (int i = 0; i < reasoner::BOARD_SIZE; ++i) {
+        for (int i = 0; i < reasoner::BOARD_SIZE + 1; ++i) {
             cell[i] = -1;
         }
     }
-    int cell[reasoner::BOARD_SIZE];
+    int cell[reasoner::BOARD_SIZE + 1];
     score total_score;
 };
 }  // namespace moves_tree
