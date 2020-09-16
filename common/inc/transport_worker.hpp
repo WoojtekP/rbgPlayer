@@ -4,7 +4,7 @@
 #include "types.hpp"
 
 
-template<typename T>
+template <typename T>
 class concurrent_queue;
 class client_response;
 class tree_indication;

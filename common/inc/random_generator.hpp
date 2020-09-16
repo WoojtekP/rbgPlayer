@@ -16,7 +16,7 @@ private:
     RBGRandomGenerator();
     std::mt19937 random_generator;
     #if MAST > 0
-    std::uniform_real_distribution<> dist{0.0, 1.0};
+    std::uniform_real_distribution<> dist {0.0, 1.0};
     #endif
 };
 

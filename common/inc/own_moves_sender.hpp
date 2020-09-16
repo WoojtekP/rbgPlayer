@@ -8,7 +8,7 @@ namespace reasoner {
 class move;
 }
 
-class own_moves_sender{
+class own_moves_sender {
     int socket_descriptor;
     void send_text(const std::string&);
     void write_all(const std::string&);

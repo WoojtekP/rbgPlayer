@@ -7,7 +7,7 @@
 #include "types.hpp"
 
 
-struct client_response{
+struct client_response {
     std::variant<reasoner::move, game_status_indication> content;
 };
 

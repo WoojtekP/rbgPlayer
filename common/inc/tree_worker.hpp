@@ -4,7 +4,7 @@
 #include <string>
 
 
-template<typename T>
+template <typename T>
 class concurrent_queue;
 class simulation_request;
 class tree_indication;

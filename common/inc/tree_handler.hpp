@@ -7,7 +7,7 @@
 #include "types.hpp"
 
 
-template<typename T>
+template <typename T>
 class concurrent_queue;
 class simulation_request;
 class simulation_response;
@@ -18,7 +18,7 @@ namespace reasoner {
 class game_state;
 }
 
-class tree_handler{
+class tree_handler {
     Tree* t;
     const int own_player_index;
     uint simulations_count = 0;
