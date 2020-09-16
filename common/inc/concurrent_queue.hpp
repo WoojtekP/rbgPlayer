@@ -1,7 +1,7 @@
 #ifndef CONCURRENT_QUEUE
 #define CONCURRENT_QUEUE
 
-// based on: https://github.com/Pixinn/misc/concurrent_deque
+// based on: https://github.com/Pixinn/misc/blob/master/threading/include/TDequeConcurrent.h
 
 #include <condition_variable>
 #include <mutex>
