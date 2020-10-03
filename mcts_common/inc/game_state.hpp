@@ -37,18 +37,17 @@ public:
         reasoner::game_state::get_all_moves(cache, moves);
     }
 #if defined(SEMISPLIT_TREE) || defined(SEMISPLIT_SIMULATOR)
-    revert_information apply_semimove_with_revert(const reasoner::semimove& m) {
+    reasoner::revert_information apply_semimove_with_revert(const reasoner::semimove& m) {
         for (auto& state : states) {
             state.apply_semimove_with_revert(m);
         }
-        return reasoner::game_state::apply_semimove_with_revert();
+        return reasoner::game_state::apply_semimove_with_revert(m);
     }
-    
     void apply_semimove(const reasoner::semimove& m) {
         for (auto& state : states) {
             state.apply_semimove(m);
         }
-        reasoner::game_state::apply_semimove();
+        reasoner::game_state::apply_semimove(m);
     }
     void get_all_semimoves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::semimove>& moves, unsigned int move_length_limit) {
         for (auto& state : states) {
@@ -66,7 +65,7 @@ public:
 public:
     GameState(void) = delete;
     GameState(const GameState&) = default;
-    GameState(GameState&& ) = default;
+    GameState(GameState&&) = default;
     GameState& operator=(const GameState&) = default;
     GameState& operator=(GameState&&) = default;
     ~GameState(void) = default;
