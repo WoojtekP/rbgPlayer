@@ -25,13 +25,12 @@ protected:
     void choose_best_greedy_move(std::vector<uint>&);
     reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:
-    SemisplitTree(void) = delete;
+    SemisplitTree(void);
     SemisplitTree(const SemisplitTree&) = delete;
     SemisplitTree(SemisplitTree&&) = default;
     SemisplitTree& operator=(const SemisplitTree&) = delete;
     SemisplitTree& operator=(SemisplitTree&&) = default;
     ~SemisplitTree(void) = default;
-    SemisplitTree(const reasoner::game_state&);
     uint perform_simulation();
     void reparent_along_move(const reasoner::move&);
     game_status_indication get_status(const int);

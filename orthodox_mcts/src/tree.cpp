@@ -12,7 +12,7 @@
 #include "constants.hpp"
 
 
-Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
+Tree::Tree() {
     complete_turn(root_state);
     create_node(root_state);
     create_children(0, root_state);

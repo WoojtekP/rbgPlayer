@@ -10,9 +10,6 @@ class simulation_request;
 class tree_indication;
 class client_response;
 
-namespace reasoner {
-class game_state;
-}
 
 void run_tree_worker(concurrent_queue<client_response>&, concurrent_queue<tree_indication>&);
 

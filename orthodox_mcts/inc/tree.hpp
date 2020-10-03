@@ -18,13 +18,12 @@ private:
     uint create_node(GameState&);
     void create_children(const uint, GameState&);
 public:
-    Tree(void) = delete;
+    Tree();
     Tree(const Tree&) = delete;
     Tree(Tree&&) = default;
     Tree& operator=(const Tree&) = delete;
     Tree& operator=(Tree&&) = default;
     ~Tree(void) = default;
-    Tree(const reasoner::game_state&);
     uint perform_simulation();
     void reparent_along_move(const reasoner::move&);
     reasoner::move choose_best_move();

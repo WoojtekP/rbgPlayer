@@ -9,8 +9,6 @@
 #include "constants.hpp"
 
 
-Tree::Tree(const reasoner::game_state& initial_state) : SemisplitTree(initial_state) {}
-
 void Tree::choose_children_for_rolling_up(const uint node_index, std::vector<uint>& children_indices) {
     children_indices.clear();
     const auto [fst, lst] = nodes[node_index].children_range;

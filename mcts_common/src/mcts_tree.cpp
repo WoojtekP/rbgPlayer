@@ -6,7 +6,7 @@
 #include "move_chooser.hpp"
 
 
-MctsTree::MctsTree(const reasoner::game_state& initial_state) : root_state(initial_state) {
+MctsTree::MctsTree() {
     nodes.reserve(4 * MEBIBYTE / sizeof(node));
     children.reserve(4 * MEBIBYTE / sizeof(child));
 }

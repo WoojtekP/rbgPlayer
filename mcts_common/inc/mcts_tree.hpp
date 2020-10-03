@@ -45,13 +45,12 @@ protected:
     void root_at_index(const uint);
     uint fix_tree(std::vector<node>&, std::vector<child>&, const uint);
 public:
-    MctsTree(void) = delete;
+    MctsTree(void);
     MctsTree(const MctsTree&) = delete;
     MctsTree(MctsTree&&) = default;
     MctsTree& operator=(const MctsTree&) = delete;
     MctsTree& operator=(MctsTree&&) = default;
     ~MctsTree(void) = default;
-    MctsTree(const reasoner::game_state&);
 };
 
 #endif

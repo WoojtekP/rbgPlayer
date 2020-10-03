@@ -17,9 +17,8 @@ int get_player_index(const std::string& name) {
 }
 }  // namespace
 
-tree_handler::tree_handler(const reasoner::game_state& initial_state,
-                           concurrent_queue<client_response>& responses_to_server)
-  : t(new Tree(initial_state))
+tree_handler::tree_handler(concurrent_queue<client_response>& responses_to_server)
+  : t(new Tree)
   , own_player_index(get_player_index(NAME))
   , responses_to_server(responses_to_server) {
     handle_status();
@@ -50,10 +49,10 @@ void tree_handler::handle_move_indication(const reasoner::move& m) {
     handle_status();
 }
 
-void tree_handler::handle_reset_request(const reasoner::game_state& initial_state) {
+void tree_handler::handle_reset_request() {
     std::cout << "[PLAYER] Reset Request!" << std::endl;
     delete t;
-    t = new Tree(initial_state);
+    t = new Tree;
     simulations_count = 0;
     states_count = 0;
     handle_status();

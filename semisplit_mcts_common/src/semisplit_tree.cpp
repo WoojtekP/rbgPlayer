@@ -41,7 +41,7 @@ void SemisplitTree::print_move(const reasoner::move_representation& mr) {
 }
 #endif
 
-SemisplitTree::SemisplitTree(const reasoner::game_state& initial_state) : MctsTree(initial_state) {
+SemisplitTree::SemisplitTree() {
     complete_turn(root_state);
     const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
     create_node(root_state, status);

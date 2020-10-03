@@ -11,8 +11,7 @@
 
 void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
                      concurrent_queue<tree_indication>& tree_indications) {
-    reasoner::game_state initial_state;
-    tree_handler th(initial_state, responses_to_server);
+    tree_handler th(responses_to_server);
     while (true) {
         auto status = th.get_game_status();
         if (status == own_turn) {
@@ -45,7 +44,7 @@ void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
         std::visit(overloaded {
             [&th](const reasoner::move& m) { th.handle_move_indication(m); },
             [&th](const move_request&) { th.handle_move_request(); },
-            [&th, &initial_state](const reset_tree&) { th.handle_reset_request(initial_state); },
+            [&th](const reset_tree&) { th.handle_reset_request(); },
             [](auto) { assert(false); }
         }, indication.content);
     }

@@ -10,12 +10,12 @@ typedef reasoner::game_state GameState;
 
 #else
 
-#include <vector>
+#include <array>
 
 
 class GameState final : public reasoner::game_state {
 private:
-    std::vector<reasoner::game_state> states;
+    std::array<reasoner::game_state, REASONING_OVERHEAD - 1> states;
 
 public:
     bool apply_any_move(reasoner::resettable_bitarray_stack& cache) {
@@ -63,24 +63,12 @@ public:
     }
 #endif
 public:
-    GameState(void) = delete;
+    GameState(void) = default;
     GameState(const GameState&) = default;
     GameState(GameState&&) = default;
     GameState& operator=(const GameState&) = default;
     GameState& operator=(GameState&&) = default;
     ~GameState(void) = default;
-
-    GameState(const reasoner::game_state& initial_state)
-        : reasoner::game_state(initial_state)
-        , states(REASONING_OVERHEAD - 1, initial_state) {}
-    GameState& operator=(const reasoner::game_state& initial_state) {
-        assert(states.size() == REASONING_OVERHEAD - 1);
-        for (auto& state : states) {
-            state = initial_state;
-        }
-        reasoner::game_state::operator=(initial_state);
-        return *this;
-    }
 };
 
 #endif

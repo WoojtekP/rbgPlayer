@@ -20,8 +20,6 @@ void Tree::print_rolledup_move(const std::vector<uint>& children_indices) {
 }
 #endif
 
-Tree::Tree(const reasoner::game_state& initial_state) : SemisplitTree(initial_state) {}
-
 void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const uint node_index) {
     static std::vector<uint> move_path;
     static uint max_sim = 0;
