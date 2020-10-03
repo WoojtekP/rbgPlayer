@@ -1,5 +1,6 @@
 #include <random>
 
+#include "game_state.hpp"
 #include "simulator.hpp"
 #include "reasoner.hpp"
 #include "random_generator.hpp"
@@ -8,7 +9,7 @@
 
 #include <iostream>
 
-uint play(reasoner::game_state& state,
+uint play(GameState& state,
           MoveChooser<simulation_move_type>& move_chooser,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {

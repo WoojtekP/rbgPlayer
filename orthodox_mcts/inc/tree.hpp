@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "game_state.hpp"
 #include "reasoner.hpp"
 #include "types.hpp"
 #include "mcts_tree.hpp"
@@ -14,8 +15,8 @@
 
 class Tree final : public MctsTree {
 private:
-    uint create_node(reasoner::game_state&);
-    void create_children(const uint, reasoner::game_state&);
+    uint create_node(GameState&);
+    void create_children(const uint, GameState&);
 public:
     Tree(void) = delete;
     Tree(const Tree&) = delete;

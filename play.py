@@ -95,7 +95,7 @@ class Cd:
         os.chdir(self.saved_path)
 
 class PlayerConfig:
-    def __init__(self, program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, player_port):
+    def __init__(self, program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, reasoning_overhead, player_port):
         self.player_full_name = player_full_name
         self.tree_strategy = tree_strategy
         self.simulation_strategy = simulation_strategy
@@ -103,6 +103,7 @@ class PlayerConfig:
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
         self.player_name = player_name
+        self.reasoning_overhead = reasoning_overhead
         self.simulations_per_move = program_args.simulations_per_move
         self.simulations_limit = program_args.simulations_per_move > 0
         self.states_per_move = program_args.states_per_move
@@ -120,6 +121,7 @@ class PlayerConfig:
             config_file.write("\n")
             config_file.write("#define {}_TREE\n".format(self.tree_strategy.upper()))
             config_file.write("#define {}_SIMULATOR\n".format(self.simulation_strategy.upper()))
+            config_file.write("#define REASONING_OVERHEAD {}\n".format(self.reasoning_overhead))
             config_file.write("\n")
             config_file.write("#include \"types.hpp\"\n")
             config_file.write("#include <string>\n")
@@ -152,8 +154,7 @@ def parse_config_file(file_name):
         player_full_name = get_player_full_name(config);
         print("player name", player_full_name)
         constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
-        for k, v in chain(config["general"].items(),
-                          config["algorithm"]["parameters"].items(),
+        for k, v in chain(config["algorithm"]["parameters"].items(),
                           *(heuristic["parameters"].items() for heuristic in config["heuristics"])):
             if isinstance(v, bool):
                 constants["bool"][k.upper()] = v.__str__().lower()
@@ -163,12 +164,13 @@ def parse_config_file(file_name):
                 constants["uint"][k.upper()] = v.__str__()
             else:
                 constants["int"][k.upper()] = v.__str__()
+        constants["uint"]["BUFFER_TIME"] = config["general"]["buffer_time"].__str__()
         if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
             constants["uint"]["ROLLUP_THRESHOLD"] = "0"
         for heuristic in config["heuristics"]:
             if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
                 constants["uint"]["REF"] = "0"
-        return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
+        return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], config["general"]["reasoning_overhead"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -300,11 +302,11 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_full_name, constants, tree_strategy, simulation_strategy, heuristics = parse_config_file(program_args.player_config)
+player_full_name, constants, tree_strategy, simulation_strategy, reasoning_overhead, heuristics = parse_config_file(program_args.player_config)
 
 assert(player_full_name in available_players)
 
-player_config = PlayerConfig(program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, player_port)
+player_config = PlayerConfig(program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, reasoning_overhead, player_port)
 player_config.print_config_file("config.hpp")
 
 is_semisplit = (tree_strategy in ["semisplit", "rollup"]) or (simulation_strategy == "semisplit")

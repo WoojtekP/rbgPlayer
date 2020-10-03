@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include "game_state.hpp"
 #include "tree.hpp"
 #include "node.hpp"
 #include "simulator.hpp"
@@ -17,7 +18,7 @@ Tree::Tree(const reasoner::game_state& initial_state) : MctsTree(initial_state) 
     create_children(0, root_state);
 }
 
-uint Tree::create_node(reasoner::game_state& state) {
+uint Tree::create_node(GameState& state) {
     if (state.get_current_player() == KEEPER) {
         nodes.emplace_back(0, 0);
     }
@@ -27,7 +28,7 @@ uint Tree::create_node(reasoner::game_state& state) {
     return nodes.size() - 1;
 }
 
-void Tree::create_children(const uint node_index, reasoner::game_state& state) {
+void Tree::create_children(const uint node_index, GameState& state) {
     nodes[node_index].children_range.first = children.size();
     #ifdef SEMISPLIT_SIMULATOR
         static std::vector<reasoner::semimove> semimoves;
@@ -47,7 +48,7 @@ void Tree::create_children(const uint node_index, reasoner::game_state& state) {
 
 uint Tree::perform_simulation() {
     static simulation_result results;
-    static reasoner::game_state state = root_state;
+    static GameState state = root_state;
     uint state_count = 0;
     uint node_index = 0;
     uint node_sim_count = root_sim_count;

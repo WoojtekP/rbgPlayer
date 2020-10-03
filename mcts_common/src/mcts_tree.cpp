@@ -1,4 +1,5 @@
 #include "mcts_tree.hpp"
+#include "game_state.hpp"
 #include "node.hpp"
 #include "constants.hpp"
 #include "random_generator.hpp"
@@ -27,11 +28,11 @@ bool MctsTree::is_node_fully_expanded(const uint node_index) {
     return result;
 }
 
-void MctsTree::complete_turn(reasoner::game_state& state) {
+void MctsTree::complete_turn(GameState& state) {
     while (state.get_current_player() == KEEPER && state.apply_any_move(cache));
 }
 
-void MctsTree::get_scores_from_state(reasoner::game_state& state, simulation_result& results) {
+void MctsTree::get_scores_from_state(GameState& state, simulation_result& results) {
     for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
         results[i - 1] = state.get_player_score(i);
     }

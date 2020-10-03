@@ -3,6 +3,7 @@
 #include <iomanip>
 #endif
 
+#include "game_state.hpp"
 #include "semisplit_tree.hpp"
 #include "semisplit_node.hpp"
 #include "simulator.hpp"
@@ -47,7 +48,7 @@ SemisplitTree::SemisplitTree(const reasoner::game_state& initial_state) : MctsTr
     create_children(0, root_state);
 }
 
-uint SemisplitTree::create_node(reasoner::game_state& state, const node_status status) {
+uint SemisplitTree::create_node(GameState& state, const node_status status) {
     if (status == node_status::terminal || state.get_current_player() == KEEPER) {
         assert(state.is_nodal());
         nodes.emplace_back(0, 0, true, node_status::terminal);
@@ -58,7 +59,7 @@ uint SemisplitTree::create_node(reasoner::game_state& state, const node_status s
     return nodes.size() - 1;
 }
 
-void SemisplitTree::create_children(const uint node_index, reasoner::game_state& state) {
+void SemisplitTree::create_children(const uint node_index, GameState& state) {
     static std::vector<reasoner::semimove> semimoves;
     state.get_all_semimoves(cache, semimoves, SEMILENGTH);
     if (semimoves.empty() || nodes[node_index].status == node_status::terminal) {
@@ -76,7 +77,7 @@ void SemisplitTree::create_children(const uint node_index, reasoner::game_state&
     }
 }
 
-bool SemisplitTree::has_nodal_successor(reasoner::game_state& state, uint semidepth) {
+bool SemisplitTree::has_nodal_successor(GameState& state, uint semidepth) {
     if (state.get_current_player() == KEEPER) {
         return false;
     }
@@ -97,7 +98,7 @@ bool SemisplitTree::has_nodal_successor(reasoner::game_state& state, uint semide
     return false;
 }
 
-bool SemisplitTree::save_path_to_nodal_state(reasoner::game_state& state, std::vector<reasoner::semimove>& path, uint semidepth) {
+bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reasoner::semimove>& path, uint semidepth) {
     if (state.is_nodal()) {
         move_chooser.reset_context();
         return true;
@@ -122,7 +123,7 @@ bool SemisplitTree::save_path_to_nodal_state(reasoner::game_state& state, std::v
     return false;
 }
 
-bool SemisplitTree::random_walk_to_nodal(reasoner::game_state& state, std::vector<reasoner::semimove>& path, uint semidepth) {
+bool SemisplitTree::random_walk_to_nodal(GameState& state, std::vector<reasoner::semimove>& path, uint semidepth) {
     if (state.is_nodal()) {
         return true;
     }
@@ -144,7 +145,7 @@ bool SemisplitTree::random_walk_to_nodal(reasoner::game_state& state, std::vecto
 
 uint SemisplitTree::perform_simulation() {
     static simulation_result results;
-    static reasoner::game_state state = root_state;
+    static GameState state = root_state;
     static std::vector<reasoner::semimove> path;
     children_stack.clear();
     move_chooser.clear_path();
@@ -511,7 +512,7 @@ void SemisplitTree::choose_best_greedy_move(std::vector<uint>& children_indices)
 }
 
 reasoner::move SemisplitTree::get_move_from_saved_path_with_random_suffix(std::vector<uint>& children_indices) {
-    static reasoner::game_state state;
+    static GameState state;
     state = root_state;
     reasoner::move move;
     for (const auto child_index : children_indices) {

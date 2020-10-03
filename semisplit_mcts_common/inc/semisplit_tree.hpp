@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "game_state.hpp"
 #include "mcts_tree.hpp"
 #include "semisplit_node.hpp"
 #include "reasoner.hpp"
@@ -16,11 +17,11 @@ protected:
     void print_actions(const reasoner::move_representation&);
     void print_move(const reasoner::move_representation&);
     #endif
-    uint create_node(reasoner::game_state&, const node_status = node_status::unknown);
-    void create_children(const uint, reasoner::game_state&);
-    bool has_nodal_successor(reasoner::game_state&, uint = 0);
-    bool save_path_to_nodal_state(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
-    bool random_walk_to_nodal(reasoner::game_state&, std::vector<reasoner::semimove>&, uint = 0);
+    uint create_node(GameState&, const node_status = node_status::unknown);
+    void create_children(const uint, GameState&);
+    bool has_nodal_successor(GameState&, uint = 0);
+    bool save_path_to_nodal_state(GameState&, std::vector<reasoner::semimove>&, uint = 0);
+    bool random_walk_to_nodal(GameState&, std::vector<reasoner::semimove>&, uint = 0);
     void choose_best_greedy_move(std::vector<uint>&);
     reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:

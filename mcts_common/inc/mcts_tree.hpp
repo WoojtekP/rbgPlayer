@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 
+#include "game_state.hpp"
 #include "reasoner.hpp"
 #include "types.hpp"
 #include "node.hpp"
@@ -17,7 +18,7 @@
 
 class MctsTree {
 protected:
-    reasoner::game_state root_state;
+    GameState root_state;
     reasoner::resettable_bitarray_stack cache;
     std::vector<node> nodes;
     std::vector<child> children;
@@ -35,8 +36,8 @@ protected:
     #endif
 
     bool is_node_fully_expanded(const uint);
-    void complete_turn(reasoner::game_state&);
-    void get_scores_from_state(reasoner::game_state&, simulation_result&);
+    void complete_turn(GameState&);
+    void get_scores_from_state(GameState&, simulation_result&);
     uint get_unvisited_child_index(std::vector<child>&, const node&, const uint, const int);
     void get_amaf_scores(std::vector<std::tuple<amaf_score, uint, bool>>&, uint, uint);
     uint get_best_uct_child_index(const uint, const uint);

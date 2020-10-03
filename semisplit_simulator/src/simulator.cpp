@@ -1,3 +1,4 @@
+#include "game_state.hpp"
 #include "simulator.hpp"
 #include "reasoner.hpp"
 #include "constants.hpp"
@@ -8,7 +9,7 @@
 namespace {
 std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
 
-bool apply_random_move_exhaustive(reasoner::game_state& state,
+bool apply_random_move_exhaustive(GameState& state,
                                   MoveChooser<simulation_move_type>& move_chooser,
                                   reasoner::resettable_bitarray_stack& cache,
                                   uint semidepth) {
@@ -45,7 +46,7 @@ bool apply_random_move_exhaustive(reasoner::game_state& state,
 }
 }  // namespace
 
-uint play(reasoner::game_state& state,
+uint play(GameState& state,
           MoveChooser<simulation_move_type>& move_chooser,
           reasoner::resettable_bitarray_stack& cache,
           simulation_result& results) {
