@@ -212,9 +212,9 @@ def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_
     assert(player_full_name in available_players)
     with Cd(gen_directory(player_id)):
         if is_semisplit:
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            subprocess.run(["../../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
         else:
-            subprocess.run(["../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            subprocess.run(["../../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
     run_list = [

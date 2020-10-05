@@ -2,7 +2,7 @@
 GGP player based on Regular Boardgames.
 
 ## Preparation
-Use `make prepare` command. One also needs to prepare rbggamemanager.
+One needs to prepare rbggamemanager and rbg2cpp (in the same directory as rbgPlayer).
 
 ## Usage
 1. Run rbggamanager
