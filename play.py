@@ -13,15 +13,11 @@ from threading import Thread
 from argparse import RawTextHelpFormatter
 from itertools import chain
 
-def gen_directory(player_id):
-    return "gen_"+str(player_id)
-def gen_inc_directory(player_id):
-    return gen_directory(player_id)+"/inc"
-def gen_src_directory(player_id):
-    return gen_directory(player_id)+"/src"
+
 game_name = "game"
-def game_path(player_id):
-    return gen_directory(player_id)+"/"+game_name+".rbg"
+script_dir = sys.path[0]
+compiler_dir = os.path.realpath(script_dir + "/../rbg2cpp/bin/rbg2cpp")
+build_dir = "build/"
 available_players = set([
     "orthodox_orthodox",
     "orthodox_orthodox_mast",
@@ -52,6 +48,17 @@ available_players = set([
     "rollup_semisplit_mastmix",
     "rollup_orthodox"])
 
+def gen_directory(player_id):
+    return build_dir+"gen_"+str(player_id)
+
+def gen_inc_directory(player_id):
+    return gen_directory(player_id)+"/inc"
+
+def gen_src_directory(player_id):
+    return gen_directory(player_id)+"/src"
+
+def game_path(player_id):
+    return gen_directory(player_id)+"/"+game_name+".rbg"
 
 class BufferedSocket:
     def __init__(self, s):
@@ -113,7 +120,7 @@ class PlayerConfig:
             print("at most one type of limit is allowed", sys.stderr)
             exit(1)
     def runnable_list(self):
-        return (["valgrind"] if self.debug_mode else []) + ["bin_"+str(self.port_to_connect)+"/"+self.player_full_name]
+        return (["valgrind"] if self.debug_mode else []) + [build_dir + "bin_"+str(self.port_to_connect)+"/"+self.player_full_name]
     def print_config_file(self, name):
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
@@ -211,10 +218,11 @@ def receive_player_name(server_socket, game):
 def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_mode, release_mode, stats):
     assert(player_full_name in available_players)
     with Cd(gen_directory(player_id)):
+        compiler_run_list = [compiler_dir, "-o", "reasoner", "../../"+game_path(player_id)]
         if is_semisplit:
-            subprocess.run(["../../rbg2cpp/bin/rbg2cpp", "-fcustom-split", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
-        else:
-            subprocess.run(["../../rbg2cpp/bin/rbg2cpp", "-o", "reasoner", "../"+game_path(player_id)]) # assume description is correct
+            compiler_run_list.insert(1, "-fcustom-split")
+        print("   subprocess.run:", *compiler_run_list)
+        subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
     run_list = [
@@ -275,6 +283,10 @@ def cleanup_process(player_process):
     print("Killing player process...")
     player_process.terminate()
 
+
+os.chdir(script_dir)
+if not os.path.exists(build_dir):
+    os.makedirs(build_dir)
 parser = argparse.ArgumentParser(description='Setup and start rbg player.', formatter_class=RawTextHelpFormatter)
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')

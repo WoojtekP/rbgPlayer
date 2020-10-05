@@ -1,9 +1,6 @@
 # Directories
 /.vscode
-/obj*
-/dep*
-/gen*
-/bin*
+/build
 
 # Prerequisites
 *.d

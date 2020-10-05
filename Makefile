@@ -10,10 +10,11 @@ TARGET := rbgPlayer
 COMPILER := rbg2cpp
 SRC_DIR := src
 INC_DIR := inc
-OBJ_DIR := obj_$(PLAYER_ID)
-BIN_DIR := bin_$(PLAYER_ID)
-DEP_DIR := dep_$(PLAYER_ID)
-GEN_DIR := gen_$(PLAYER_ID)
+BUILD := build
+OBJ_DIR := $(BUILD)/obj_$(PLAYER_ID)
+BIN_DIR := $(BUILD)/bin_$(PLAYER_ID)
+DEP_DIR := $(BUILD)/dep_$(PLAYER_ID)
+GEN_DIR := $(BUILD)/gen_$(PLAYER_ID)
 COMMON := common
 # MCTS
 MCTS_COMMON := mcts_common
@@ -178,9 +179,9 @@ prepare:
 	cd ../rbg2cpp; make $(COMPILER); cd ../rbgPlayer
 
 clean:
-	rm -rf obj*
-	rm -rf dep*
-	rm -rf gen*
+	rm -rf $(BUILD)/obj*
+	rm -rf $(BUILD)/dep*
+	rm -rf $(BUILD)/gen*
 
 distclean: clean
-	rm -rf bin*
+	rm -rf $(BUILD)/bin*
