@@ -7,8 +7,6 @@ RAVE := 0
 
 PLAYER_ID := 99999
 TARGET := rbgPlayer
-COMPILER_DIR := rbg2cpp
-COMPILER_BIN_DIR := bin
 COMPILER := rbg2cpp
 SRC_DIR := src
 INC_DIR := inc
@@ -177,7 +175,7 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 prepare:
-	cd $(COMPILER_DIR); make $(COMPILER); cd ..
+	cd ../rbg2cpp; make $(COMPILER); cd ../rbgPlayer
 
 clean:
 	rm -rf obj*
