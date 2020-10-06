@@ -18,15 +18,11 @@ game_status_indication get_game_status(concurrent_queue<client_response>& respon
     return std::get<game_status_indication>(response.content);
 }
 
-reasoner::move get_move_from_player(concurrent_queue<client_response>& responses_from_tree) {
-    auto response = responses_from_tree.pop_front();
-    assert(std::holds_alternative<reasoner::move>(response.content));
-    return std::get<reasoner::move>(response.content);
-}
-
 void forward_move_from_player_to_server(own_moves_sender& oms,
                                         concurrent_queue<client_response>& responses_from_tree) {
-    auto m = get_move_from_player(responses_from_tree);
+    auto response = responses_from_tree.pop_front();
+    assert(std::holds_alternative<reasoner::move>(response.content));
+    auto m = std::get<reasoner::move>(response.content);
     oms.send_move(m);
 }
 
@@ -34,10 +30,6 @@ void forward_move_from_server_to_player(remote_moves_receiver& rmr,
                                         concurrent_queue<tree_indication>& tree_indications) {
     auto m = rmr.receive_move();
     tree_indications.emplace_back(tree_indication{m});
-}
-
-bool is_move_already_available(concurrent_queue<client_response>& responses_from_tree) {
-    return responses_from_tree.size() > 0;
 }
 
 uint trunctated_subtraction(uint a, uint b) {
@@ -56,12 +48,7 @@ void handle_own_turn(remote_moves_receiver& rmr,
                      concurrent_queue<tree_indication>& tree_indications,
                      concurrent_queue<client_response>& responses_from_tree) {
     uint miliseconds_left = rmr.receive_miliseconds_limit();
-    if constexpr (SIMULATIONS_LIMIT || STATES_LIMIT) {
-        while (!is_move_already_available(responses_from_tree)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(MILISECONDS_TIME_GRANULATION));
-        }
-    }
-    else {
+    if constexpr (!SIMULATIONS_LIMIT && !STATES_LIMIT) {
         tree_indications.emplace_back(tree_indication{simulation_request{}});
         wait_for_move(miliseconds_left, tree_indications);
     }
