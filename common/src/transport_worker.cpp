@@ -40,7 +40,6 @@ void wait_for_move(uint milisecond_to_wait,
                    concurrent_queue<tree_indication>& tree_indications) {
     uint reduced_time = trunctated_subtraction(milisecond_to_wait, BUFFER_TIME);
     std::this_thread::sleep_for(std::chrono::milliseconds(reduced_time));
-    tree_indications.emplace_back(tree_indication{move_request{}});
 }
 
 void handle_own_turn(remote_moves_receiver& rmr,
@@ -52,6 +51,7 @@ void handle_own_turn(remote_moves_receiver& rmr,
     if constexpr (!SIMULATIONS_LIMIT && !STATES_LIMIT) {
         wait_for_move(miliseconds_left, tree_indications);
     }
+    tree_indications.emplace_back(tree_indication{move_request{}});
     forward_move_from_player_to_server(oms, responses_from_tree);
 }
 }  // namespace
@@ -67,6 +67,9 @@ void run_transport_worker(remote_moves_receiver& rmr,
                 handle_own_turn(rmr, oms, tree_indications, responses_from_tree);
                 break;
             case opponent_turn:
+                if constexpr (SIMULATE_DURING_OPP_TURN) {
+                    tree_indications.emplace_back(tree_indication{simulation_request{}});
+                }
                 forward_move_from_server_to_player(rmr, tree_indications);
                 break;
             case end_game:

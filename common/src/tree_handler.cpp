@@ -59,14 +59,12 @@ void tree_handler::handle_simulation_request() {
             perform_simulation();
             ++sim_count;
         }
-        handle_move_request();
     }
     else if constexpr (STATES_LIMIT) {
         uint state_count = 0;
         while (state_count < STATES_PER_MOVE) {
             state_count += perform_simulation();
         }
-        handle_move_request();
     }
     else {
         while (tree_indications.empty()) {

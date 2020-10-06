@@ -172,6 +172,7 @@ def parse_config_file(file_name):
             else:
                 constants["int"][k.upper()] = v.__str__()
         constants["uint"]["BUFFER_TIME"] = config["general"]["buffer_time"].__str__()
+        constants["bool"]["SIMULATE_DURING_OPP_TURN"] = config["general"]["simulate_during_opp_turn"].__str__().lower()
         if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
             constants["uint"]["ROLLUP_THRESHOLD"] = "0"
         for heuristic in config["heuristics"]:
