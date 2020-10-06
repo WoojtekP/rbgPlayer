@@ -48,8 +48,8 @@ void handle_own_turn(remote_moves_receiver& rmr,
                      concurrent_queue<tree_indication>& tree_indications,
                      concurrent_queue<client_response>& responses_from_tree) {
     uint miliseconds_left = rmr.receive_miliseconds_limit();
+    tree_indications.emplace_back(tree_indication{simulation_request{}});
     if constexpr (!SIMULATIONS_LIMIT && !STATES_LIMIT) {
-        tree_indications.emplace_back(tree_indication{simulation_request{}});
         wait_for_move(miliseconds_left, tree_indications);
     }
     forward_move_from_player_to_server(oms, responses_from_tree);

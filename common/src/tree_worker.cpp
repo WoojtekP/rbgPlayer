@@ -11,39 +11,13 @@
 
 void run_tree_worker(concurrent_queue<client_response>& responses_to_server,
                      concurrent_queue<tree_indication>& tree_indications) {
-    tree_handler th(responses_to_server);
+    tree_handler th(responses_to_server, tree_indications);
     while (true) {
-        auto status = th.get_game_status();
-        if (status == own_turn) {
-            if constexpr (SIMULATIONS_LIMIT) {
-                uint sim_count = 0;
-                while (sim_count < SIMULATIONS_PER_MOVE) {
-                    th.perform_simulation();
-                    ++sim_count;
-                }
-                th.handle_move_request();
-                continue;
-            }
-            else if constexpr (STATES_LIMIT) {
-                uint state_count = 0;
-                while (state_count < STATES_PER_MOVE) {
-                    state_count += th.perform_simulation();
-                }
-                th.handle_move_request();
-                continue;
-            }
-            else {
-                const auto response = tree_indications.pop_front();
-                assert(std::holds_alternative<simulation_request>(response.content));
-                while (tree_indications.empty()) {
-                    th.perform_simulation();
-                }
-            }
-        }
         const auto indication = tree_indications.pop_front();
         std::visit(overloaded {
             [&th](const reasoner::move& m) { th.handle_move_indication(m); },
             [&th](const move_request&) { th.handle_move_request(); },
+            [&th](const simulation_request&) { th.handle_simulation_request(); },
             [&th](const reset_tree&) { th.handle_reset_request(); },
             [](auto) { assert(false); }
         }, indication.content);

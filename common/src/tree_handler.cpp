@@ -1,6 +1,7 @@
 #include <exception>
 #include <iostream>
 
+#include "tree_indication.hpp"
 #include "tree_handler.hpp"
 #include "tree.hpp"
 #include "concurrent_queue.hpp"
@@ -17,10 +18,12 @@ int get_player_index(const std::string& name) {
 }
 }  // namespace
 
-tree_handler::tree_handler(concurrent_queue<client_response>& responses_to_server)
+tree_handler::tree_handler(concurrent_queue<client_response>& responses_to_server,
+                           const concurrent_queue<tree_indication>& tree_indications)
   : t(new Tree)
   , own_player_index(get_player_index(NAME))
-  , responses_to_server(responses_to_server) {
+  , responses_to_server(responses_to_server)
+  , tree_indications(tree_indications) {
     handle_status();
 }
 
@@ -47,6 +50,29 @@ void tree_handler::handle_move_indication(const reasoner::move& m) {
     states_count = 0;
     t->reparent_along_move(m);
     handle_status();
+}
+
+void tree_handler::handle_simulation_request() {
+    if constexpr (SIMULATIONS_LIMIT) {
+        uint sim_count = 0;
+        while (sim_count < SIMULATIONS_PER_MOVE) {
+            perform_simulation();
+            ++sim_count;
+        }
+        handle_move_request();
+    }
+    else if constexpr (STATES_LIMIT) {
+        uint state_count = 0;
+        while (state_count < STATES_PER_MOVE) {
+            state_count += perform_simulation();
+        }
+        handle_move_request();
+    }
+    else {
+        while (tree_indications.empty()) {
+            perform_simulation();
+        }
+    }
 }
 
 void tree_handler::handle_reset_request() {

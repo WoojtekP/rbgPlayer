@@ -42,7 +42,7 @@ public:
         return collection.size();
     }
 
-    bool empty() {
+    bool empty() const {
         return collection.empty();
     }
 

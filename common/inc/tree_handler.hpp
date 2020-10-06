@@ -13,6 +13,7 @@ class simulation_request;
 class simulation_response;
 class client_response;
 class move_indication;
+struct tree_indication;
 
 
 class tree_handler {
@@ -21,6 +22,7 @@ class tree_handler {
     uint simulations_count = 0;
     uint states_count = 0;
     concurrent_queue<client_response>& responses_to_server;
+    const concurrent_queue<tree_indication>& tree_indications;
     void handle_status(void);
 public:
     tree_handler(void) = delete;
@@ -28,10 +30,11 @@ public:
     tree_handler(tree_handler&&) = delete;
     tree_handler& operator=(const tree_handler&) = delete;
     tree_handler& operator=(tree_handler&&) = delete;
-    tree_handler(concurrent_queue<client_response>&);
+    tree_handler(concurrent_queue<client_response>&, const concurrent_queue<tree_indication>&);
     ~tree_handler(void);
     void handle_move_request(void);
     void handle_move_indication(const reasoner::move&);
+    void handle_simulation_request();
     void handle_reset_request();
     uint perform_simulation();
     game_status_indication get_game_status();
