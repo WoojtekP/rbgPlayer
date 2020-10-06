@@ -89,10 +89,10 @@ $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MAST,orthodox_orthodox_mast,\
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MASTSPLIT,orthodox_orthodox_mastsplit,\
 			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_RAVE,orthodox_orthodox_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_TGRAVE,orthodox_orthodox_tgrave,\
 			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(UNIFORM_CHOOSER) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MAST_RAVE,orthodox_orthodox_mast_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MAST_TGRAVE,orthodox_orthodox_mast_tgrave,\
 			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(MAST_ORTHODOX) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_SEMISPLIT,orthodox_semisplit,\
@@ -101,7 +101,7 @@ $(eval $(call PLAYER_KIND_RULES,ORTHODOX_SEMISPLIT,orthodox_semisplit,\
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_SEMISPLIT_MASTSPLIT,orthodox_semisplit_mastsplit,\
 			$(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,ORTHODOX_SEMISPLIT_MASTSPLIT_RAVE,orthodox_semisplit_mastsplit_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,ORTHODOX_SEMISPLIT_MASTSPLIT_TGRAVE,orthodox_semisplit_mastsplit_tgrave,\
 			$(ORTHODOX_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 # SEMISPLIT-TREE PLAYERS
@@ -120,7 +120,7 @@ $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTCONTEXT,semisplit_semisp
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTMIX,semisplit_semisplit_mastmix,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_MIX) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_RAVE,semisplit_semisplit_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_TGRAVE,semisplit_semisplit_tgrave,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(UNIFORM_CHOOSER) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_RAVECONTEXT,semisplit_semisplit_ravecontext,\
@@ -129,13 +129,13 @@ $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_RAVECONTEXT,semisplit_semisp
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_RAVEMIX,semisplit_semisplit_ravemix,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(UNIFORM_CHOOSER) $(RAVE_MIX) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST_RAVE,semisplit_semisplit_mast_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST_TGRAVE,semisplit_semisplit_mast_tgrave,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_ORTHODOX) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST_RAVECONTEXT,semisplit_semisplit_mast_ravecontext,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_ORTHODOX) $(RAVE_CONTEXT) $(COMMON) $(GEN_DIR)))
 
-$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTSPLIT_RAVE,semisplit_semisplit_mastsplit_tgrave,\
+$(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTSPLIT_TGRAVE,semisplit_semisplit_mastsplit_tgrave,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTSPLIT_RAVECONTEXT,semisplit_semisplit_mastsplit_ravecontext,\
