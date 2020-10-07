@@ -36,8 +36,7 @@ uint trunctated_subtraction(uint a, uint b) {
     return b > a ? 0 : a-b;
 }
 
-void wait_for_move(uint milisecond_to_wait,
-                   concurrent_queue<tree_indication>& tree_indications) {
+void wait_for_move(uint milisecond_to_wait) {
     uint reduced_time = trunctated_subtraction(milisecond_to_wait, BUFFER_TIME);
     std::this_thread::sleep_for(std::chrono::milliseconds(reduced_time));
 }
@@ -49,7 +48,7 @@ void handle_own_turn(remote_moves_receiver& rmr,
     uint miliseconds_left = rmr.receive_miliseconds_limit();
     tree_indications.emplace_back(tree_indication{simulation_request{}});
     if constexpr (!SIMULATIONS_LIMIT && !STATES_LIMIT) {
-        wait_for_move(miliseconds_left, tree_indications);
+        wait_for_move(miliseconds_left);
     }
     tree_indications.emplace_back(tree_indication{move_request{}});
     forward_move_from_player_to_server(oms, responses_from_tree);
