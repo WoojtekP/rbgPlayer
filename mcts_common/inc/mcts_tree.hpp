@@ -22,7 +22,7 @@ protected:
     reasoner::resettable_bitarray_stack cache;
     std::vector<node> nodes;
     std::vector<child> children;
-    std::vector<std::pair<uint, int>> children_stack;
+    std::vector<std::tuple<uint, uint, int>> children_stack;
     MoveChooser<simulation_move_type> move_chooser;
     #if RAVE > 0
     RaveTree moves_tree[reasoner::NUMBER_OF_PLAYERS - 1];

@@ -3,6 +3,8 @@
 #include <iomanip>
 #endif
 
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "game_state.hpp"
 #include "semisplit_tree.hpp"
 #include "semisplit_node.hpp"
@@ -163,7 +165,7 @@ uint SemisplitTree::perform_simulation() {
         state.apply_semimove(children[child_index].semimove);
         move_chooser.switch_context(children[child_index].semimove, current_player);
         complete_turn(state);
-        children_stack.emplace_back(child_index, current_player);
+        children_stack.emplace_back(node_index, child_index, current_player);
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
@@ -207,7 +209,7 @@ uint SemisplitTree::perform_simulation() {
                 state.apply_semimove(children[child_index].semimove);
                 move_chooser.switch_context(children[child_index].semimove, current_player);
                 complete_turn(state);
-                children_stack.emplace_back(child_index, current_player);
+                children_stack.emplace_back(node_index, child_index, current_player);
                 node_index = children[child_index].index;
                 node_sim_count = children[child_index].sim_count;
                 assert(node_index > 0);
@@ -229,7 +231,7 @@ uint SemisplitTree::perform_simulation() {
             move_chooser.switch_context(children[child_index].semimove, current_player);
         }
         complete_turn(state);
-        children_stack.emplace_back(child_index, current_player);
+        children_stack.emplace_back(node_index, child_index, current_player);
         ++state_count;
         auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
         auto new_node_index = create_node(state, status);
@@ -256,7 +258,7 @@ uint SemisplitTree::perform_simulation() {
                         if (j != fst) {
                             std::swap(children[j], children[fst]);
                         }
-                        children_stack.emplace_back(fst, current_player);
+                        children_stack.emplace_back(new_node_index, fst, current_player);
                         break;
                     }
                 }
@@ -297,15 +299,6 @@ uint SemisplitTree::perform_simulation() {
     terminal:
     #if RAVE > 0
     int context = 0;
-    for (const auto [child_index, player] : children_stack) {
-        #if RAVE == 3
-        moves_tree_base[player - 1].insert_or_update(children[child_index].semimove);
-        #endif
-        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
-        #if RAVE >= 2
-        context = end_of_context(children[child_index].semimove) ? 0 : new_context;
-        #endif
-    }
     if constexpr (!IS_NODAL) {
         for (const auto& semimove : path) {
             #if RAVE == 3
@@ -328,7 +321,6 @@ uint SemisplitTree::perform_simulation() {
         #endif
     }
     assert(context == 0);
-    int depth[reasoner::NUMBER_OF_PLAYERS - 1] = {0};
     #endif
     #if MAST > 0
     uint path_len = children_stack.size();
@@ -336,8 +328,7 @@ uint SemisplitTree::perform_simulation() {
         path_len += move_chooser.get_path().size();
     }
     #endif
-    node_index = 0;
-    for (const auto [child_index, player] : children_stack) {
+    for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
         assert(nodes[children[child_index].index].status != node_status::unknown);
@@ -347,24 +338,26 @@ uint SemisplitTree::perform_simulation() {
         move_chooser.update_move(children[child_index].semimove, results, player, path_len);
         #endif
         #if RAVE > 0
-        ++depth[player - 1];
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             #if RAVE == 3
-            if (moves_tree_base[player - 1].find(children[i].semimove) > depth[player - 1]) {
+            if (moves_tree_base[player - 1].find(children[i].semimove)) {
                 children[i].amaf.score_base += results[player - 1];
                 ++children[i].amaf.count_base;
             }
             #endif
-            if (moves_tree[player - 1].find(children[i].semimove, context) > depth[player - 1]) {
+            if (moves_tree[player - 1].find(children[i].semimove, context)) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }
         }
-        #if RAVE >= 2
-        context = end_of_context(children[child_index].semimove) ? 0 : moves_tree[player - 1].get_context(children[child_index].semimove.mr, context);
+        #if RAVE == 3
+        moves_tree_base[player - 1].insert_or_update(children[child_index].semimove);
         #endif
-        node_index = children[child_index].index;
+        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
+        #if RAVE >= 2
+        context = end_of_context(children[child_index].semimove) ? 0 : new_context;
+        #endif
         #endif
     }
     ++root_sim_count;

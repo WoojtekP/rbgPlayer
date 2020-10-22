@@ -12,9 +12,8 @@ class RaveTree {
 private:
     std::vector<rave_tree::cell_node> cell_nodes;
     std::vector<rave_tree::index_node> index_nodes = {{}};
-    std::vector<rave_tree::state_turn> states_turns;
+    std::vector<int> states;
     std::vector<int> index_nodes_indices;
-    int turn = 1;
 
     int get_index_node(const int, const int);
     int get_cell_node(const int, const int);
@@ -54,7 +53,7 @@ public:
     int insert_or_update(const reasoner::move_representation&, const int = 0);
 
     template <typename T>
-    int find(const T& semimove, const int context = 0) {
+    bool find(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation_if_exists(semimove.mr, context);
         if (i_node == -1) {
             return -1;
@@ -64,16 +63,13 @@ public:
             return -1;
         }
         const auto& cell_node = cell_nodes[c_node];
-        const auto end_it = states_turns.begin() + cell_node.lst;
-        const auto it = std::find(states_turns.begin() + cell_node.fst, end_it, semimove.state);
-        if (it == end_it) {
-            return -1;
-        }
-        return it->turn;
+        const auto end_it = states.begin() + cell_node.lst;
+        const auto it = std::find(states.begin() + cell_node.fst, end_it, semimove.state);
+        return it != end_it;
     }
 
-    int find(const reasoner::move&, const int = 0);
-    int find(const reasoner::move_representation&, const int);
+    bool find(const reasoner::move&, const int = 0);
+    bool find(const reasoner::move_representation&, const int);
     void reset();
     int get_context(const reasoner::move_representation&, const int = 0);
 };

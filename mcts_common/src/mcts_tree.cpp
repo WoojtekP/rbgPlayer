@@ -64,11 +64,11 @@ uint MctsTree::get_unvisited_child_index(std::vector<child>& children, const nod
 
 #if RAVE
 void MctsTree::get_amaf_scores(std::vector<std::tuple<amaf_score, uint, bool>>& amaf_scores, uint node_pos, uint found_counter) {
-    if (node_pos > 0 && children[children_stack[node_pos - 1].first].sim_count <= REF) {
+    if (node_pos > 0 && children[std::get<1>(children_stack[node_pos - 1])].sim_count <= REF) {
         get_amaf_scores(amaf_scores, node_pos - 1, found_counter);
         return;
     }
-    const uint node_index = (node_pos == 0) ? 0 : children[children_stack[node_pos - 1].first].index;
+    const uint node_index = (node_pos == 0) ? 0 : children[std::get<1>(children_stack[node_pos - 1])].index;
     const auto [fst, lst] = nodes[node_index].children_range;
     for (uint i = fst; i < lst; ++i) {
         for (auto& [score, index, found] : amaf_scores) {

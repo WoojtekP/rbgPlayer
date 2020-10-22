@@ -5,6 +5,8 @@
 
 #include <type_traits>
 
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "game_state.hpp"
 #include "tree.hpp"
 #include "node.hpp"
@@ -58,10 +60,7 @@ uint Tree::perform_simulation() {
         const auto current_player = state.get_current_player();
         state.apply_move(children[child_index].move);
         complete_turn(state);
-        children_stack.emplace_back(child_index, current_player);
-        #if RAVE > 0
-        moves_tree[current_player - 1].insert_or_update(children[child_index].move);
-        #endif
+        children_stack.emplace_back(node_index, child_index, current_player);
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
@@ -78,10 +77,7 @@ uint Tree::perform_simulation() {
         const auto child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         state.apply_move(children[child_index].move);
         complete_turn(state);
-        children_stack.emplace_back(child_index, current_player);
-        #if RAVE > 0
-        moves_tree[current_player - 1].insert_or_update(children[child_index].move);
-        #endif
+        children_stack.emplace_back(node_index, child_index, current_player);
         auto new_node_index = create_node(state);
         ++state_count;
         state_count += play(state, move_chooser, cache, results);
@@ -101,7 +97,6 @@ uint Tree::perform_simulation() {
             }
         }
     }
-    int depth[reasoner::NUMBER_OF_PLAYERS - 1] = {0};
     #endif
     #if MAST > 0
     uint path_len = children_stack.size();
@@ -109,8 +104,7 @@ uint Tree::perform_simulation() {
         path_len += move_chooser.get_path().size();
     }
     #endif
-    node_index = 0;
-    for (const auto [child_index, player] : children_stack) {
+    for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
         ++children[child_index].sim_count;
@@ -119,15 +113,14 @@ uint Tree::perform_simulation() {
         move_chooser.update_move(children[child_index].move, results, player, path_len);
         #endif
         #if RAVE > 0
-        ++depth[player - 1];
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (moves_tree[player - 1].find(children[i].move) > depth[player - 1]) {
+            if (moves_tree[player - 1].find(children[i].move)) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }
         }
-        node_index = children[child_index].index;
+        moves_tree[player - 1].insert_or_update(children[child_index].move);
         #endif
     }
     ++root_sim_count;

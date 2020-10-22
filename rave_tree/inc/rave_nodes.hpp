@@ -6,19 +6,6 @@
 
 
 namespace rave_tree {
-struct state_turn {
-    state_turn() = default;
-    state_turn(const int state, const int turn) : state(state), turn(turn) {}
-    int state = -1;
-    int turn = -1;
-    bool operator<(const int rhs) {
-        return state < rhs;
-    }
-    bool operator==(const int& rhs) const {
-        return state == rhs;
-    }
-};
-
 enum node_status : char {
     empty,
     one_index,
@@ -47,7 +34,7 @@ struct index_node {
         }
     }
     int cell[reasoner::BOARD_SIZE];
-    int turn = -1;
+    bool exists = false;
 };
 }  // namespace rave_tree
 
