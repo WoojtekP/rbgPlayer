@@ -7,11 +7,10 @@
 #include "reasoner.hpp"
 
 
+class MovesContainer {
 struct move_hash {
     std::size_t operator()(const reasoner::move& move) const noexcept;
 };
-
-class MovesContainer {
 private:
     std::unordered_map<reasoner::move, std::pair<double, double>, move_hash> map;
 public:

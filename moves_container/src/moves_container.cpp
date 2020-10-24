@@ -7,7 +7,7 @@
 #include "constants.hpp"
 
 
-std::size_t move_hash::operator()(const reasoner::move& move) const noexcept {
+std::size_t MovesContainer::move_hash::operator()(const reasoner::move& move) const noexcept {
     std::size_t seed = 0;
     for (const auto& action : move.mr) {
         boost::hash_combine(seed, action.index);

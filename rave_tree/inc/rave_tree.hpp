@@ -7,11 +7,10 @@
 #include "reasoner.hpp"
 
 
+class RaveTree {
 struct move_hash {
     std::size_t operator()(const reasoner::move& move) const noexcept;
 };
-
-class RaveTree {
 private:
     std::unordered_set<reasoner::move, move_hash> moves;
 public:
