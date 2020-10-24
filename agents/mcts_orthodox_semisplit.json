@@ -10,8 +10,7 @@
         "simulation_strategy" : "semisplit",
         "parameters" : {
             "exploration_constant" : 0.4,
-            "max_semidepth" : 50,
-            "semilength" : 0
+            "max_semidepth" : 50
         }
     },
     "heuristics" : []

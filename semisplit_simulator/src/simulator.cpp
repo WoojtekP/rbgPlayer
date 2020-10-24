@@ -13,7 +13,7 @@ bool apply_random_move_exhaustive(GameState& state,
                                   MoveChooser<simulation_move_type>& move_chooser,
                                   reasoner::resettable_bitarray_stack& cache,
                                   uint semidepth) {
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
     while (!legal_semimoves[semidepth].empty()) {
         const auto current_player = state.get_current_player();
         const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);

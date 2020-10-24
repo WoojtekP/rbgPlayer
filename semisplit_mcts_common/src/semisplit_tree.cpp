@@ -63,7 +63,7 @@ uint SemisplitTree::create_node(GameState& state, const node_status status) {
 
 void SemisplitTree::create_children(const uint node_index, GameState& state) {
     static std::vector<reasoner::semimove> semimoves;
-    state.get_all_semimoves(cache, semimoves, SEMILENGTH);
+    state.get_all_semimoves(cache, semimoves, 0);
     if (semimoves.empty() || nodes[node_index].status == node_status::terminal) {
         assert(state.is_nodal());
         nodes[node_index].status = node_status::terminal;
@@ -83,7 +83,7 @@ bool SemisplitTree::has_nodal_successor(GameState& state, uint semidepth) {
     if (state.get_current_player() == KEEPER) {
         return false;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
     while (!legal_semimoves[semidepth].empty()) {
         auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth].back());
         if (state.is_nodal()) {
@@ -105,7 +105,7 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reaso
         move_chooser.reset_context();
         return true;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
     while (!legal_semimoves[semidepth].empty()) {
         const auto current_player = state.get_current_player();
         const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);
@@ -129,7 +129,7 @@ bool SemisplitTree::random_walk_to_nodal(GameState& state, std::vector<reasoner:
     if (state.is_nodal()) {
         return true;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], SEMILENGTH);
+    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
     while (!legal_semimoves[semidepth].empty()) {
         const auto chosen_semimove = RBGRandomGenerator::get_instance().uniform_choice(legal_semimoves[semidepth].size());
         auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
