@@ -82,7 +82,7 @@ uint Tree::perform_simulation() {
     static std::vector<uint> children_indices;
     int size = children_stack.size();
     for (int i = size - 2; i >= 0; --i) {
-        const auto node_index = children[children_stack[i].first].index;
+        const auto node_index = children[std::get<1>(children_stack[i])].index;
         choose_children_for_rolling_up(node_index, children_indices);
         if (!children_indices.empty()) {
             roll_up(node_index, children_indices);
