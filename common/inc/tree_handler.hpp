@@ -3,6 +3,10 @@
 
 #include <string>
 
+#if STATS
+#include <chrono>
+#endif
+
 #include "tree.hpp"
 #include "types.hpp"
 
@@ -21,6 +25,9 @@ class tree_handler {
     const int own_player_index;
     uint simulations_count = 0;
     uint states_count = 0;
+    #if STATS
+    long int longest_simulation = 0;
+    #endif
     concurrent_queue<client_response>& responses_to_server;
     const concurrent_queue<tree_indication>& tree_indications;
     void handle_status(void);

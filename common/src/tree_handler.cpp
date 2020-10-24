@@ -1,5 +1,8 @@
 #include <exception>
 #include <iostream>
+#if STATS
+#include <chrono>
+#endif
 
 #include "tree_indication.hpp"
 #include "tree_handler.hpp"
@@ -71,6 +74,10 @@ void tree_handler::handle_simulation_request() {
             perform_simulation();
         }
     }
+    #if STATS
+    std::cout << "longest simulation: " << longest_simulation << " ms" << std::endl;
+    longest_simulation = 0;
+    #endif
 }
 
 void tree_handler::handle_reset_request() {
@@ -84,7 +91,15 @@ void tree_handler::handle_reset_request() {
 
 uint tree_handler::perform_simulation() {
     simulations_count++;
+    #if STATS
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    #endif
     uint states = t->perform_simulation();
+    #if STATS
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    const auto time_diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+    longest_simulation = std::max(longest_simulation, time_diff);
+    #endif
     states_count += states;
     return states;
 }
