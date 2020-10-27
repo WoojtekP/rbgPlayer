@@ -10,8 +10,9 @@
 std::size_t MovesContainer::move_hash::operator()(const reasoner::move& move) const noexcept {
     std::size_t seed = 0;
     for (const auto& action : move.mr) {
-        boost::hash_combine(seed, action.index);
-        boost::hash_combine(seed, action.cell);
+        //boost::hash_combine(seed, action.index);
+        //boost::hash_combine(seed, action.cell);
+        seed = (seed * 13 + action.index) * 17 + action.cell;
     }
     return seed;
 }
