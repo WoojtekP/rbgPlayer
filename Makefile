@@ -23,15 +23,15 @@ ORTHODOX_MCTS := orthodox_mcts $(MCTS_COMMON)
 SEMISPLIT_MCTS := semisplit_mcts $(SEMISPLIT_MCTS_COMMON)
 ROLLUP_MCTS := rollup_mcts $(SEMISPLIT_MCTS_COMMON)
 # MAST
-MOVES_TREE := moves_tree
+MOVES_MAP := moves_hashtable
 ACTIONS_ARRAYS := actions_arrays
 MAST_CHOOSER := mast_chooser
-MAST_ORTHODOX := moves_container $(MAST_CHOOSER) $(MOVES_TREE)
+MAST_ORTHODOX := moves_container $(MAST_CHOOSER) $(MOVES_MAP)
 MAST_SPLIT := moves_container_split $(MAST_CHOOSER) $(ACTIONS_ARRAYS)
-MAST_MIX := moves_container_mix $(MAST_CHOOSER) $(MOVES_TREE) $(ACTIONS_ARRAYS)
+MAST_MIX := moves_container_mix $(MAST_CHOOSER) $(MOVES_MAP) $(ACTIONS_ARRAYS)
 MAST_CONTEXT := $(MAST_ORTHODOX)
 # RAVE
-TGRAVE := rave_tree
+TGRAVE := moves_set moves_hashtable
 RAVE_CONTEXT := $(TGRAVE)
 RAVE_MIX := $(TGRAVE)
 # SIMULATORS

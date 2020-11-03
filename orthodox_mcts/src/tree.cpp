@@ -87,12 +87,12 @@ uint Tree::perform_simulation() {
     [[maybe_unused]] reasoner::move_representation mr;
     for (const auto& [move, player] : move_chooser.get_path()) {
         if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
-            moves_tree[player - 1].insert_or_update(move);
+            moves_tree[player - 1].insert(move);
         }
         else {
             mr.insert(mr.end(), move.mr.begin(), move.mr.end());
             if (!move.mr.empty() && reasoner::is_switch(move.mr.back().index)) {
-                moves_tree[player - 1].insert_or_update(mr);
+                moves_tree[player - 1].insert(mr);
                 mr.clear();
             }
         }
@@ -120,7 +120,7 @@ uint Tree::perform_simulation() {
                 ++children[i].amaf.count;
             }
         }
-        moves_tree[player - 1].insert_or_update(children[child_index].move);
+        moves_tree[player - 1].insert(children[child_index].move);
         #endif
     }
     ++root_sim_count;
