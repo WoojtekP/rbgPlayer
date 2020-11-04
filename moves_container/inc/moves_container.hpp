@@ -3,11 +3,12 @@
 
 #include <unordered_map>
 
+#include "hashmap_entry.hpp"
 #include "moves_hashtable.hpp"
 #include "reasoner.hpp"
 
 
-class MovesContainer : public MovesHashtable {
+class MovesContainer : public MovesHashtable<HashmapEntry> {
 private:
     // std::unordered_map<reasoner::move, std::pair<double, double>, move_hash> map;
 public:

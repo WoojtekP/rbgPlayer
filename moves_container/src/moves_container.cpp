@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "constants.hpp"
-#include "hash_entry.hpp"
+#include "hashmap_entry.hpp"
 #include "reasoner.hpp"
 
 

@@ -3,7 +3,7 @@
 #include <unordered_set>
 
 #include "constants.hpp"
-#include "hash_entry.hpp"
+#include "hashset_entry.hpp"
 #include "reasoner.hpp"
 
 

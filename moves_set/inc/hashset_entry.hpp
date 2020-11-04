@@ -3,11 +3,12 @@
 
 #include "reasoner.hpp"
 
-struct Entry {
+
+struct HashsetEntry {
     reasoner::move mv;
     uint next = 0;
-    Entry() = default;
-    Entry(const reasoner::move _mv)
+    HashsetEntry() = default;
+    HashsetEntry(const reasoner::move _mv)
         : mv(_mv)
         , next(0) {}
 };
