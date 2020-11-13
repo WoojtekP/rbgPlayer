@@ -9,7 +9,7 @@
 
 MovesContainer::MovesContainer() : MovesHashtable(HASHMAP_INITIAL_LEVEL) {}
 
-int MovesContainer::insert_or_update(const reasoner::move& move, const uint score, const uint, const int) {
+int MovesContainer::insert_or_update(const reasoner::move& move, const uint score, const int) {
     uint hashindex = hash(move) % capacity;
     uint index = hashtable[hashindex];
     [[maybe_unused]] bool found = false;

@@ -322,12 +322,6 @@ uint SemisplitTree::perform_simulation() {
     }
     assert(context == 0);
     #endif
-    #if MAST > 0
-    uint path_len = children_stack.size();
-    if constexpr (!TREE_ONLY) {
-        path_len += move_chooser.get_path().size();
-    }
-    #endif
     for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
@@ -335,7 +329,7 @@ uint SemisplitTree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].semimove, results, player, path_len);
+        move_chooser.update_move(children[child_index].semimove, results, player);
         #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[node_index].children_range;
@@ -364,11 +358,11 @@ uint SemisplitTree::perform_simulation() {
     #if MAST > 0
     if constexpr (!IS_NODAL && !TREE_ONLY) {
         for (const auto& semimove : path) {
-            move_chooser.update_move(semimove, results, current_player, path_len);
+            move_chooser.update_move(semimove, results, current_player);
         }
     }
     if constexpr (!TREE_ONLY) {
-        move_chooser.update_all_moves(results, path_len);
+        move_chooser.update_all_moves(results);
     }
     move_chooser.reset_context();
     #endif

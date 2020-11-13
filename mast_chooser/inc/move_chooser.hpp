@@ -126,17 +126,17 @@ public:
     }
 
     template <typename M>
-    void update_move(const M& move, const simulation_result& results, const int player, const uint depth) {
+    void update_move(const M& move, const simulation_result& results, const int player) {
         assert(player != KEEPER);
-        [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], depth, context);
+        [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], context);
         #if MAST == 2
         context = end_of_context(move) ? 0 : new_context;
         #endif
     }
 
-    void update_all_moves(const simulation_result& results, const uint depth) {
+    void update_all_moves(const simulation_result& results) {
         for (const auto& [move, player] : path) {
-            update_move(move, results, player, depth);
+            update_move(move, results, player);
         }
         #if MAST == 2
         assert(context == 0);

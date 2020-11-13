@@ -98,19 +98,13 @@ uint Tree::perform_simulation() {
         }
     }
     #endif
-    #if MAST > 0
-    uint path_len = children_stack.size();
-    if constexpr (!TREE_ONLY) {
-        path_len += move_chooser.get_path().size();
-    }
-    #endif
     for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
         assert(player != KEEPER);
         ++children[child_index].sim_count;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].move, results, player, path_len);
+        move_chooser.update_move(children[child_index].move, results, player);
         #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[node_index].children_range;
@@ -126,7 +120,7 @@ uint Tree::perform_simulation() {
     ++root_sim_count;
     #if MAST > 0
     if constexpr (!TREE_ONLY) {
-        move_chooser.update_all_moves(results, path_len);
+        move_chooser.update_all_moves(results);
     }
     #endif
     #if RAVE > 0
