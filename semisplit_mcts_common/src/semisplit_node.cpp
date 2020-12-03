@@ -19,13 +19,13 @@ bool semisplit_node::is_terminal() const {
     return result;
 }
 
-semisplit_child::semisplit_child(const reasoner::semimove& semimove)
-    : semimove(semimove) {}
+semisplit_child::semisplit_child(const reasoner::action_representation action)
+    : action(action) {}
 
-const reasoner::move_representation& semisplit_child::get_actions() const {
-    return semimove.get_actions();
+const reasoner::action_representation semisplit_child::get_action() const {
+    return action;
 }
 
-const reasoner::semimove& semisplit_child::get_edge() const {
-    return semimove;
+const reasoner::action_representation semisplit_child::get_edge() const {
+    return action;
 }

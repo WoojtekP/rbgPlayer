@@ -221,7 +221,7 @@ def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_
     with Cd(gen_directory(player_id)):
         compiler_run_list = [compiler_dir, "-o", "reasoner", "../../"+game_path(player_id)]
         if is_semisplit:
-            compiler_run_list.insert(1, "-fcustom-split")
+            compiler_run_list.insert(1, "-fsemisplit")
         print("   subprocess.run:", *compiler_run_list)
         subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")

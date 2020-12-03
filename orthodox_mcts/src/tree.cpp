@@ -32,19 +32,11 @@ uint Tree::create_node(GameState& state) {
 
 void Tree::create_children(const uint node_index, GameState& state) {
     nodes[node_index].children_range.first = children.size();
-    #ifdef SEMISPLIT_SIMULATOR
-        static std::vector<reasoner::semimove> semimoves;
-        state.get_all_semimoves(cache, semimoves, 1000);
-        for (const auto& semimove : semimoves) {
-            children.emplace_back(semimove.mr);
-        }
-    #else
-        static std::vector<reasoner::move> moves;
-        state.get_all_moves(cache, moves);
-        for (const auto& move : moves) {
-            children.emplace_back(move);
-        }
-    #endif
+    static std::vector<reasoner::move> moves;
+    state.get_all_moves(cache, moves);
+    for (const auto& move : moves) {
+        children.emplace_back(move);
+    }
     nodes[node_index].children_range.second = children.size();
 }
 

@@ -20,8 +20,8 @@ protected:
     uint create_node(GameState&, const node_status = node_status::unknown);
     void create_children(const uint, GameState&);
     bool has_nodal_successor(GameState&, uint = 0);
-    bool save_path_to_nodal_state(GameState&, std::vector<reasoner::semimove>&, uint = 0);
-    bool random_walk_to_nodal(GameState&, std::vector<reasoner::semimove>&, uint = 0);
+    bool save_path_to_nodal_state(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
+    bool random_walk_to_nodal(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
     void choose_best_greedy_move(std::vector<uint>&);
     reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:

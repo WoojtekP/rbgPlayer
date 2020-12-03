@@ -14,11 +14,11 @@
 
 
 namespace {
-    std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
+    std::vector<reasoner::action_representation> legal_actions[MAX_SEMIDEPTH];
 
 #if RAVE >= 2
-    bool end_of_context(const reasoner::semimove& semimove) {
-        return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
+    bool end_of_context(const reasoner::action_representation action) {
+        return reasoner::is_switch(action.index);
     }
 #endif
 }  // namespace
@@ -27,7 +27,7 @@ namespace {
 void SemisplitTree::print_node_stats(const semisplit_child& child) {
     std::cout << "sim " << std::setw(4) << child.sim_count;
     std::cout << "   avg " << std::setw(6) << std::setprecision(2) << static_cast<double>(child.total_score) / child.sim_count << "   ";
-    std::cout << "(" << std::setw(3) << child.semimove.cell << " " << std::setw(3) << child.semimove.state << ") ";
+    std::cout << "(" << std::setw(3) << child.action.cell << " " << std::setw(3) << child.action.state << ") ";
 }
 
 void SemisplitTree::print_actions(const reasoner::move_representation& mr) {
@@ -62,9 +62,9 @@ uint SemisplitTree::create_node(GameState& state, const node_status status) {
 }
 
 void SemisplitTree::create_children(const uint node_index, GameState& state) {
-    static std::vector<reasoner::semimove> semimoves;
-    state.get_all_semimoves(cache, semimoves, 0);
-    if (semimoves.empty() || nodes[node_index].status == node_status::terminal) {
+    static std::vector<reasoner::action_representation> actions;
+    state.get_all_actions(cache, actions);
+    if (actions.empty() || nodes[node_index].status == node_status::terminal) {
         assert(state.is_nodal());
         nodes[node_index].status = node_status::terminal;
         nodes[node_index].children_range = {0, 0};
@@ -72,8 +72,8 @@ void SemisplitTree::create_children(const uint node_index, GameState& state) {
     else {
         assert(state.get_current_player() != KEEPER);
         nodes[node_index].children_range.first = children.size();
-        for (const auto& semimove : semimoves) {
-            children.emplace_back(semimove);
+        for (const auto& action : actions) {
+            children.emplace_back(action);
         }
         nodes[node_index].children_range.second = children.size();
     }
@@ -83,9 +83,9 @@ bool SemisplitTree::has_nodal_successor(GameState& state, uint semidepth) {
     if (state.get_current_player() == KEEPER) {
         return false;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
-    while (!legal_semimoves[semidepth].empty()) {
-        auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth].back());
+    state.get_all_actions(cache, legal_actions[semidepth]);
+    while (!legal_actions[semidepth].empty()) {
+        auto ri = state.apply_action_with_revert(legal_actions[semidepth].back());
         if (state.is_nodal()) {
             state.revert(ri);
             return true;
@@ -94,30 +94,30 @@ bool SemisplitTree::has_nodal_successor(GameState& state, uint semidepth) {
             state.revert(ri);
             return true;
         }
-        legal_semimoves[semidepth].pop_back();
+        legal_actions[semidepth].pop_back();
         state.revert(ri);
     }
     return false;
 }
 
-bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reasoner::semimove>& path, uint semidepth) {
+bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reasoner::action_representation>& path, uint semidepth) {
     if (state.is_nodal()) {
         move_chooser.reset_context();
         return true;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
-    while (!legal_semimoves[semidepth].empty()) {
+    state.get_all_actions(cache, legal_actions[semidepth]);
+    while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);
-        const auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
-        move_chooser.switch_context(legal_semimoves[semidepth][chosen_semimove], current_player);
-        path.emplace_back(legal_semimoves[semidepth][chosen_semimove]);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player);
+        const auto ri = state.apply_action_with_revert(legal_actions[semidepth][chosen_action]);
+        move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
+        path.emplace_back(legal_actions[semidepth][chosen_action]);
         if (save_path_to_nodal_state(state, path, semidepth + 1)) {
             state.revert(ri);
             return true;
         }
-        legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
-        legal_semimoves[semidepth].pop_back();
+        legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
+        legal_actions[semidepth].pop_back();
         path.pop_back();
         state.revert(ri);
         move_chooser.revert_context();
@@ -125,20 +125,20 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reaso
     return false;
 }
 
-bool SemisplitTree::random_walk_to_nodal(GameState& state, std::vector<reasoner::semimove>& path, uint semidepth) {
+bool SemisplitTree::random_walk_to_nodal(GameState& state, std::vector<reasoner::action_representation>& path, uint semidepth) {
     if (state.is_nodal()) {
         return true;
     }
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
-    while (!legal_semimoves[semidepth].empty()) {
-        const auto chosen_semimove = RBGRandomGenerator::get_instance().uniform_choice(legal_semimoves[semidepth].size());
-        auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
-        path.push_back(legal_semimoves[semidepth][chosen_semimove]);
+    state.get_all_actions(cache, legal_actions[semidepth]);
+    while (!legal_actions[semidepth].empty()) {
+        const auto chosen_action = RBGRandomGenerator::get_instance().uniform_choice(legal_actions[semidepth].size());
+        auto ri = state.apply_action_with_revert(legal_actions[semidepth][chosen_action]);
+        path.push_back(legal_actions[semidepth][chosen_action]);
         if (random_walk_to_nodal(state, path, semidepth+1)) {
             return true;
         }
-        legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
-        legal_semimoves[semidepth].pop_back();
+        legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
+        legal_actions[semidepth].pop_back();
         state.revert(ri);
         path.pop_back();
     }
@@ -148,7 +148,7 @@ bool SemisplitTree::random_walk_to_nodal(GameState& state, std::vector<reasoner:
 uint SemisplitTree::perform_simulation() {
     static simulation_result results;
     static GameState state = root_state;
-    static std::vector<reasoner::semimove> path;
+    static std::vector<reasoner::action_representation> path;
     children_stack.clear();
     move_chooser.clear_path();
     path.clear();
@@ -162,8 +162,8 @@ uint SemisplitTree::perform_simulation() {
         const auto child_index = get_best_uct_child_index(node_index, node_sim_count);
         assert(child_index >= nodes[node_index].children_range.first);
         assert(child_index < nodes[node_index].children_range.second);
-        state.apply_semimove(children[child_index].semimove);
-        move_chooser.switch_context(children[child_index].semimove, current_player);
+        state.apply_action(children[child_index].action);
+        move_chooser.switch_context(children[child_index].action, current_player);
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
         node_index = children[child_index].index;
@@ -183,8 +183,8 @@ uint SemisplitTree::perform_simulation() {
     else {
         current_player = state.get_current_player();
         auto child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
-        auto ri = state.apply_semimove_with_revert(children[child_index].semimove);
-        move_chooser.switch_context(children[child_index].semimove, current_player);
+        auto ri = state.apply_action_with_revert(children[child_index].action);
+        move_chooser.switch_context(children[child_index].action, current_player);
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
             assert(path.empty());
@@ -206,8 +206,8 @@ uint SemisplitTree::perform_simulation() {
             assert(fst < lst);
             while (is_node_fully_expanded(node_index)) {
                 child_index = get_best_uct_child_index(node_index, node_sim_count);
-                state.apply_semimove(children[child_index].semimove);
-                move_chooser.switch_context(children[child_index].semimove, current_player);
+                state.apply_action(children[child_index].action);
+                move_chooser.switch_context(children[child_index].action, current_player);
                 complete_turn(state);
                 children_stack.emplace_back(node_index, child_index, current_player);
                 node_index = children[child_index].index;
@@ -227,8 +227,8 @@ uint SemisplitTree::perform_simulation() {
                 }
             }
             child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
-            ri = state.apply_semimove_with_revert(children[child_index].semimove);
-            move_chooser.switch_context(children[child_index].semimove, current_player);
+            ri = state.apply_action_with_revert(children[child_index].action);
+            move_chooser.switch_context(children[child_index].action, current_player);
         }
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
@@ -239,14 +239,14 @@ uint SemisplitTree::perform_simulation() {
         if constexpr (IS_NODAL) {
             const uint size = path.size();
             for (uint i = 0; i < size; ++i) {
-                const auto& semimove = path[i];
+                const auto& action = path[i];
                 if (!nodes[new_node_index].is_expanded()) {
                     create_children(new_node_index, state);
                 }
                 auto [fst, lst] = nodes[new_node_index].children_range;
                 for (auto j = fst; j < lst; ++j) {
-                    if (children[j].semimove == semimove) {
-                        state.apply_semimove(semimove);
+                    if (children[j].action == action) {
+                        state.apply_action(action);
                         if (i + 1 == size) {
                             complete_turn(state);
                             new_node_index = create_node(state, node_status::unknown);
@@ -265,8 +265,8 @@ uint SemisplitTree::perform_simulation() {
             }
         }
         else {
-            for (const auto semimove : path) {
-                state.apply_semimove(semimove);
+            for (const auto action : path) {
+                state.apply_action(action);
             }
             complete_turn(state);
         }
@@ -300,11 +300,11 @@ uint SemisplitTree::perform_simulation() {
     #if RAVE > 0
     int context = 0;
     if constexpr (!IS_NODAL) {
-        for (const auto& semimove : path) {
+        for (const auto& action : path) {
             #if RAVE == 3
-            moves_tree_base[current_player - 1].insert_or_update(semimove);
+            moves_tree_base[current_player - 1].insert_or_update(action);
             #endif
-            [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(semimove, context);
+            [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(action, context);
             #if RAVE >= 2
             context = new_context;
             #endif
@@ -329,36 +329,36 @@ uint SemisplitTree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if MAST > 0
-        move_chooser.update_move(children[child_index].semimove, results, player);
+        move_chooser.update_move(children[child_index].action, results, player);
         #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             #if RAVE == 3
-            if (moves_tree_base[player - 1].find(children[i].semimove)) {
+            if (moves_tree_base[player - 1].find(children[i].action)) {
                 children[i].amaf.score_base += results[player - 1];
                 ++children[i].amaf.count_base;
             }
             #endif
-            if (moves_tree[player - 1].find(children[i].semimove, context)) {
+            if (moves_tree[player - 1].find(children[i].action, context)) {
                 children[i].amaf.score += results[player - 1];
                 ++children[i].amaf.count;
             }
         }
         #if RAVE == 3
-        moves_tree_base[player - 1].insert_or_update(children[child_index].semimove);
+        moves_tree_base[player - 1].insert_or_update(children[child_index].action);
         #endif
-        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].semimove, context);
+        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].action, context);
         #if RAVE >= 2
-        context = end_of_context(children[child_index].semimove) ? 0 : new_context;
+        context = end_of_context(children[child_index].action) ? 0 : new_context;
         #endif
         #endif
     }
     ++root_sim_count;
     #if MAST > 0
     if constexpr (!IS_NODAL && !TREE_ONLY) {
-        for (const auto& semimove : path) {
-            move_chooser.update_move(semimove, results, current_player);
+        for (const auto& action : path) {
+            move_chooser.update_move(action, results, current_player);
         }
     }
     if constexpr (!TREE_ONLY) {
@@ -400,25 +400,16 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
             break;
         }
         while (fst < lst) {
-            if (children[fst].get_actions().empty()) {
+            if (children[fst].action.index >= 0) {
                 stack.emplace_back(root_index, fst, root_sim_count);
                 root_index = children[fst].index;
                 root_sim_count = children[fst].sim_count;
                 break;
             }
-            bool matched = true;
-            uint j = 0;
-            for (const auto& action : children[fst].get_actions()) {
-                if (!(action == mr[i + j])) {
-                    matched = false;
-                    break;
-                }
-                ++j;
-            }
-            if (matched) {
+            else if (children[fst].action == mr[i]) {
                 root_index = children[fst].index;
                 root_sim_count = children[fst].sim_count;
-                i += j;
+                ++i;
                 stack.clear();
                 break;
             }
@@ -503,20 +494,24 @@ reasoner::move SemisplitTree::get_move_from_saved_path_with_random_suffix(std::v
     state = root_state;
     reasoner::move move;
     for (const auto child_index : children_indices) {
-        const auto& semimove = children[child_index].semimove;
-        move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
-        state.apply_semimove(semimove);
+        const auto& action = children[child_index].action;
+        if (action.index >= 0) {
+            move.mr.emplace_back(action);
+        }
+        state.apply_action(action);
     }
     if (!state.is_nodal()) {
         #if STATS
         std::cout << "random continuation..." << std::endl << std::endl;
         #endif
-        static std::vector<reasoner::semimove> move_suffix;
+        static std::vector<reasoner::action_representation> move_suffix;
         move_suffix.clear();
         random_walk_to_nodal(state, move_suffix);
         assert(!move_suffix.empty());
-        for (const auto& semimove : move_suffix) {
-            move.mr.insert(move.mr.end(), semimove.mr.begin(), semimove.mr.end());
+        for (const auto action : move_suffix) {
+            if (action.index > 0) {
+                move.mr.push_back(action);
+            }
         }
     }
     return move;

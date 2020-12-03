@@ -7,23 +7,23 @@
 
 
 namespace {
-std::vector<reasoner::semimove> legal_semimoves[MAX_SEMIDEPTH];
+std::vector<reasoner::action_representation> legal_actions[MAX_SEMIDEPTH];
 
 bool apply_random_move_exhaustive(GameState& state,
                                   MoveChooser<simulation_move_type>& move_chooser,
                                   reasoner::resettable_bitarray_stack& cache,
                                   uint semidepth) {
-    state.get_all_semimoves(cache, legal_semimoves[semidepth], 0);
-    while (!legal_semimoves[semidepth].empty()) {
+    state.get_all_actions(cache, legal_actions[semidepth]);
+    while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_semimove = move_chooser.get_random_move(legal_semimoves[semidepth], current_player);
-        const auto ri = state.apply_semimove_with_revert(legal_semimoves[semidepth][chosen_semimove]);
-        move_chooser.switch_context(legal_semimoves[semidepth][chosen_semimove], current_player);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player);
+        const auto ri = state.apply_action_with_revert(legal_actions[semidepth][chosen_action]);
+        move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         #if RAVE > 0
-        move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player);
+        move_chooser.save_move(legal_actions[semidepth][chosen_action], current_player);
         #elif MAST > 0
         if constexpr (!TREE_ONLY) {
-            move_chooser.save_move(legal_semimoves[semidepth][chosen_semimove], current_player);
+            move_chooser.save_move(legal_actions[semidepth][chosen_action], current_player);
         }
         #endif
         if (state.is_nodal())
@@ -32,8 +32,8 @@ bool apply_random_move_exhaustive(GameState& state,
             return true;
         state.revert(ri);
         move_chooser.revert_context();
-        legal_semimoves[semidepth][chosen_semimove] = legal_semimoves[semidepth].back();
-        legal_semimoves[semidepth].pop_back();
+        legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
+        legal_actions[semidepth].pop_back();
         #if RAVE > 0
         move_chooser.revert_move();
         #elif MAST > 0

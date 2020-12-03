@@ -37,23 +37,29 @@ public:
         reasoner::game_state::get_all_moves(cache, moves);
     }
 #if defined(SEMISPLIT_TREE) || defined(SEMISPLIT_SIMULATOR)
-    reasoner::revert_information apply_semimove_with_revert(const reasoner::semimove& m) {
+    reasoner::revert_information apply_action_with_revert(const reasoner::action_representation action) {
         for (auto& state : states) {
-            state.apply_semimove_with_revert(m);
+            state.apply_action_with_revert(action);
         }
-        return reasoner::game_state::apply_semimove_with_revert(m);
+        return reasoner::game_state::apply_action_with_revert(action);
     }
-    void apply_semimove(const reasoner::semimove& m) {
+    void apply_action(const reasoner::action_representation action) {
         for (auto& state : states) {
-            state.apply_semimove(m);
+            state.apply_action(action);
         }
-        reasoner::game_state::apply_semimove(m);
+        reasoner::game_state::apply_action(action);
     }
-    void get_all_semimoves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::semimove>& moves, unsigned int move_length_limit) {
+    void fast_apply_action(const reasoner::action_representation action) {
         for (auto& state : states) {
-            state.get_all_semimoves(cache, moves, move_length_limit);
+            state.fast_apply_action(action);
         }
-        reasoner::game_state::get_all_semimoves(cache, moves, move_length_limit);
+        reasoner::game_state::fast_apply_action(action);
+    }
+    void get_all_actions(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::action_representation>& actions) {
+        for (auto& state : states) {
+            state.get_all_actions(cache, actions);
+        }
+        reasoner::game_state::get_all_actions(cache, actions);
     }
     void revert(const reasoner::revert_information& ri) {
         for (auto& state : states) {

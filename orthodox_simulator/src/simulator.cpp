@@ -16,16 +16,7 @@ uint play(GameState& state,
     static std::vector<reasoner::move> moves;
     uint state_count = 0;
     while (true) {
-        #ifdef SEMISPLIT_TREE
-        static std::vector<reasoner::semimove> semimoves;
-        state.get_all_semimoves(cache, semimoves, 1000);
-        moves.clear();
-        for (const auto& semimove : semimoves) {
-            moves.emplace_back(semimove.mr);
-        }
-        #else
-            state.get_all_moves(cache, moves);
-        #endif
+        state.get_all_moves(cache, moves);
         if (moves.empty()) {
             break;
         }

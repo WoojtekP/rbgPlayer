@@ -26,16 +26,16 @@ struct semisplit_node : node_base {
 };
 
 struct semisplit_child : child_base {
-    reasoner::semimove semimove;
+    reasoner::action_representation action;
     semisplit_child(void) = delete;
     semisplit_child(const semisplit_child&) = default;
     semisplit_child(semisplit_child&&) = default;
     semisplit_child& operator=(const semisplit_child&) = default;
     semisplit_child& operator=(semisplit_child&&) = default;
     ~semisplit_child(void) = default;
-    semisplit_child(const reasoner::semimove&);
-    const reasoner::move_representation& get_actions() const;
-    const reasoner::semimove& get_edge() const;
+    semisplit_child(const reasoner::action_representation);
+    const reasoner::action_representation get_action() const;
+    const reasoner::action_representation get_edge() const;
 };
 
 #endif
