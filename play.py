@@ -48,6 +48,11 @@ available_players = set([
     "rollup_semisplit_mastmix",
     "rollup_orthodox"])
 
+split_strategies = {
+    "ModPlus"           : "--add_dots_in_alternatives true --disable_adding_dots_in_shifttables false",
+    "noShifttablesDots" : "--add_dots_in_alternatives true --disable_adding_dots_in_shifttables true"
+}
+
 def gen_directory(player_id):
     return build_dir+"gen_"+str(player_id)
 
@@ -132,6 +137,13 @@ class ConfigData:
             self.debug = int(program_args.debug)
             self.release = int(program_args.release)
             self.stats = int(program_args.stats)
+            if "split_strategy" in config["algorithm"]:
+                self.split_strategy = config["algorithm"]["split_strategy"]
+                if self.split_strategy not in split_strategies.keys():
+                    print("split strategy:", self.split_strategy, "is not available")
+                    exit(1)
+            else:
+                self.split_strategy = None
 
 class PlayerConfig:
     def __init__(self, program_args, config_data, player_name, player_port):
@@ -219,6 +231,14 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
+def apply_split_strategy(split_strategy, player_id):
+    if split_strategy is not None:
+        print("Using split strategy:", split_strategy)
+        splitter_run_list = ["../rbggamemanager/build/print", game_path(player_id)] + split_strategies[split_strategy].split()
+        result = subprocess.run(splitter_run_list, stdout=subprocess.PIPE)
+        with open(game_path(player_id), 'w') as out:
+            out.write(result.stdout.decode("utf-8") + "\n")
+
 def compile_player(config_data, player_id):
     assert(config_data.player_strategy in available_players)
     with Cd(gen_directory(player_id)):
@@ -228,7 +248,6 @@ def compile_player(config_data, player_id):
         if config_data.simulation_strategy == "semisplit" or config_data.tree_strategy in ["semisplit", "rollup"]:
             getters.append("a")
         compiler_run_list = [compiler_dir, "-getters", ''.join(getters), "-o", "reasoner", "../../"+game_path(player_id)]
-        print("   subprocess.run:", *compiler_run_list)
         subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
@@ -242,7 +261,6 @@ def compile_player(config_data, player_id):
         "STATS="+str(config_data.stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics or "MASTMIX" in heuristics)),
         "RAVE="+str(int("TGRAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics) + 3 * int("RAVEMIX" in heuristics))]
-    print("   subprocess.run:", *run_list)
     subprocess.run(run_list)
 
 def connect_to_server(server_address, server_port):
@@ -317,7 +335,7 @@ print("Server claims to give",preparation_seconds,"for preparation")
 start_time = time.time()
 
 game = write_game_to_file(server_socket, player_port)
-print("Game rules written to:",game_path(player_port))
+print("Received game rules")
 
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
@@ -325,6 +343,9 @@ print("Received player name:",player_name)
 config_data = ConfigData(program_args)
 player_config = PlayerConfig(program_args, config_data, player_name, player_port)
 player_config.print_config_file("config.hpp")
+
+apply_split_strategy(config_data.split_strategy, player_port)
+print("Game rules written to:", game_path(player_port))
 
 compile_player(config_data, player_port)
 print("Player compiled!")

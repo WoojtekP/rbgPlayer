@@ -8,6 +8,7 @@
         "name" : "MCTS",
         "tree_strategy" : "orthodox",
         "simulation_strategy" : "semisplit",
+        "split_strategy" : "ModPlus",
         "parameters" : {
             "exploration_constant" : 0.4,
             "max_semidepth" : 50
