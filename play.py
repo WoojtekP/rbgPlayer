@@ -101,34 +101,62 @@ class Cd:
     def __exit__(self, etype, value, traceback):
         os.chdir(self.saved_path)
 
+class ConfigData:
+    def __init__(self, program_args):
+        with open(program_args.player_config_file) as config_file:
+            config = json.load(config_file)
+            constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
+            for k, v in chain(config["algorithm"]["parameters"].items(),
+                            *(heuristic["parameters"].items() for heuristic in config["heuristics"])):
+                if isinstance(v, bool):
+                    constants["bool"][k.upper()] = v.__str__().lower()
+                elif isinstance(v, float):
+                    constants["double"][k.upper()] = v.__str__()
+                elif v >= 0:
+                    constants["uint"][k.upper()] = v.__str__()
+                else:
+                    constants["int"][k.upper()] = v.__str__()
+            constants["uint"]["BUFFER_TIME"] = config["general"]["buffer_time"].__str__()
+            constants["bool"]["SIMULATE_DURING_OPP_TURN"] = config["general"]["simulate_during_opp_turn"].__str__().lower()
+            if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
+                constants["uint"]["ROLLUP_THRESHOLD"] = "0"
+            for heuristic in config["heuristics"]:
+                if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
+                    constants["uint"]["REF"] = "0"
+            self.player_strategy = get_player_strategy(config)
+            self.constants = constants
+            self.tree_strategy = config["algorithm"]["tree_strategy"].lower()
+            self.simulation_strategy = config["algorithm"]["simulation_strategy"].lower()
+            self.reasoning_overhead = config["general"]["reasoning_overhead"]
+            self.heuristics = [heuristic["name"].upper() for heuristic in config["heuristics"]]
+            self.debug = int(program_args.debug)
+            self.release = int(program_args.release)
+            self.stats = int(program_args.stats)
+
 class PlayerConfig:
-    def __init__(self, program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, reasoning_overhead, player_port):
-        self.player_full_name = player_full_name
-        self.tree_strategy = tree_strategy
-        self.simulation_strategy = simulation_strategy
-        self.config_constants = constants
+    def __init__(self, program_args, config_data, player_name, player_port):
+        self.config_data =  config_data
         self.address_to_connect = "127.0.0.1"
         self.port_to_connect = player_port
         self.player_name = player_name
-        self.reasoning_overhead = reasoning_overhead
         self.simulations_per_move = program_args.simulations_per_move
         self.simulations_limit = program_args.simulations_per_move > 0
         self.states_per_move = program_args.states_per_move
         self.states_limit = program_args.states_per_move > 0
-        self.debug_mode = program_args.debug
+        self.debug = program_args.debug
         if self.simulations_limit and self.states_limit:
             print("at most one type of limit is allowed", sys.stderr)
             exit(1)
     def runnable_list(self):
-        return (["valgrind"] if self.debug_mode else []) + [build_dir + "bin_"+str(self.port_to_connect)+"/"+self.player_full_name]
+        return (["valgrind"] if self.debug else []) + [build_dir + "bin_"+str(self.port_to_connect)+"/"+self.config_data.player_strategy]
     def print_config_file(self, name):
         with open(gen_inc_directory(self.port_to_connect)+"/"+name,"w") as config_file:
             config_file.write("#ifndef CONFIG\n")
             config_file.write("#define CONFIG\n")
             config_file.write("\n")
-            config_file.write("#define {}_TREE\n".format(self.tree_strategy.upper()))
-            config_file.write("#define {}_SIMULATOR\n".format(self.simulation_strategy.upper()))
-            config_file.write("#define REASONING_OVERHEAD {}\n".format(self.reasoning_overhead))
+            config_file.write("#define {}_TREE\n".format(self.config_data.tree_strategy.upper()))
+            config_file.write("#define {}_SIMULATOR\n".format(self.config_data.simulation_strategy.upper()))
+            config_file.write("#define REASONING_OVERHEAD {}\n".format(self.config_data.reasoning_overhead))
             config_file.write("\n")
             config_file.write("#include \"types.hpp\"\n")
             config_file.write("#include <string>\n")
@@ -141,7 +169,7 @@ class PlayerConfig:
             config_file.write("constexpr uint SIMULATIONS_PER_MOVE = {};\n".format(str(self.simulations_per_move)))
             config_file.write("constexpr uint STATES_PER_MOVE = {};\n".format(str(self.states_per_move)))
             config_file.write("\n")
-            for t, variables in self.config_constants.items():
+            for t, variables in self.config_data.constants.items():
                 for name, val in variables.items():
                     config_file.write("constexpr {} {} = {};\n".format(t, name, val))
             config_file.write("\n")
@@ -150,35 +178,10 @@ class PlayerConfig:
 def get_player_kind(config):
     return config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
 
-def get_player_full_name(config):
+def get_player_strategy(config):
     heuristics = [heuristic["name"].lower() for heuristic in config["heuristics"]]
     heuristics.sort()
     return get_player_kind(config) + ("" if not heuristics else "_" + "_".join(heuristics))
-
-def parse_config_file(file_name):
-    with open(file_name) as config_file:
-        config = json.load(config_file)
-        player_full_name = get_player_full_name(config);
-        print("player name", player_full_name)
-        constants = { x : dict() for x in ["bool", "double", "int", "uint"] }
-        for k, v in chain(config["algorithm"]["parameters"].items(),
-                          *(heuristic["parameters"].items() for heuristic in config["heuristics"])):
-            if isinstance(v, bool):
-                constants["bool"][k.upper()] = v.__str__().lower()
-            elif isinstance(v, float):
-                constants["double"][k.upper()] = v.__str__()
-            elif v >= 0:
-                constants["uint"][k.upper()] = v.__str__()
-            else:
-                constants["int"][k.upper()] = v.__str__()
-        constants["uint"]["BUFFER_TIME"] = config["general"]["buffer_time"].__str__()
-        constants["bool"]["SIMULATE_DURING_OPP_TURN"] = config["general"]["simulate_during_opp_turn"].__str__().lower()
-        if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
-            constants["uint"]["ROLLUP_THRESHOLD"] = "0"
-        for heuristic in config["heuristics"]:
-            if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
-                constants["uint"]["REF"] = "0"
-        return player_full_name, constants, config["algorithm"]["tree_strategy"], config["algorithm"]["simulation_strategy"], config["general"]["reasoning_overhead"], [heuristic["name"].upper() for heuristic in config["heuristics"]]
 
 def get_game_section(game, section):
     game_sections = game.split("#")
@@ -216,23 +219,24 @@ def receive_player_name(server_socket, game):
     player_number = int(str(server_socket.receive_message(), "utf-8"))
     return extract_player_name(game, player_number)
 
-def compile_player(player_full_name, is_semisplit, player_id, heuristics, debug_mode, release_mode, stats):
-    assert(player_full_name in available_players)
+def compile_player(config_data, player_id):
+    assert(config_data.player_strategy in available_players)
     with Cd(gen_directory(player_id)):
         compiler_run_list = [compiler_dir, "-o", "reasoner", "../../"+game_path(player_id)]
-        if is_semisplit:
+        if (config_data.tree_strategy in ["semisplit", "rollup"]) or (config_data.simulation_strategy == "semisplit"):
             compiler_run_list.insert(1, "-fsemisplit")
         print("   subprocess.run:", *compiler_run_list)
         subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")
+    heuristics = config_data.heuristics
     run_list = [
         "make",
-        player_full_name,
+        config_data.player_strategy,
         "PLAYER_ID="+str(player_id),
-        "DEBUG="+str(debug_mode),
-        "RELEASE="+str(release_mode),
-        "STATS="+str(stats),
+        "DEBUG="+str(config_data.debug),
+        "RELEASE="+str(config_data.release),
+        "STATS="+str(config_data.stats),
         "MAST="+str(int("MAST" in heuristics or "MASTSPLIT" in heuristics) + 2 * int("MASTCONTEXT" in heuristics or "MASTMIX" in heuristics)),
         "RAVE="+str(int("TGRAVE" in heuristics) + 2 * int("RAVECONTEXT" in heuristics) + 3 * int("RAVEMIX" in heuristics))]
     print("   subprocess.run:", *run_list)
@@ -291,7 +295,7 @@ if not os.path.exists(build_dir):
 parser = argparse.ArgumentParser(description='Setup and start rbg player.', formatter_class=RawTextHelpFormatter)
 parser.add_argument('server_address', metavar='server-address', type=str, help='ip address of game manager')
 parser.add_argument('server_port', metavar='server-port', type=int, help='port number of game manager')
-parser.add_argument('player_config', metavar='player-config', type=str, help='path to file with player configuration')
+parser.add_argument('player_config_file', metavar='player-config', type=str, help='name of file with player configuration')
 parser.add_argument('--simulations-limit', dest='simulations_per_move', type=int, default=-1, help='simulations limit for player\'s turn')
 parser.add_argument('--states-limit', dest='states_per_move', type=int, default=-1, help='states limit for player\'s turn')
 parser.add_argument('--debug', action='store_true', default=False, help='run using valgrind')
@@ -315,15 +319,11 @@ print("Game rules written to:",game_path(player_port))
 player_name = receive_player_name(server_socket, game)
 print("Received player name:",player_name)
 
-player_full_name, constants, tree_strategy, simulation_strategy, reasoning_overhead, heuristics = parse_config_file(program_args.player_config)
-
-assert(player_full_name in available_players)
-
-player_config = PlayerConfig(program_args, player_full_name, tree_strategy, simulation_strategy, constants, player_name, reasoning_overhead, player_port)
+config_data = ConfigData(program_args)
+player_config = PlayerConfig(program_args, config_data, player_name, player_port)
 player_config.print_config_file("config.hpp")
 
-is_semisplit = (tree_strategy in ["semisplit", "rollup"]) or (simulation_strategy == "semisplit")
-compile_player(player_full_name, is_semisplit, player_port, heuristics, int(program_args.debug), int(program_args.release), int(program_args.stats))
+compile_player(config_data, player_port)
 print("Player compiled!")
 
 player_socket, player_process = start_and_connect_player("localhost", player_config, listener_queue, listener_thread)
