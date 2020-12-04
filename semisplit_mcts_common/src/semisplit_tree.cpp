@@ -1,4 +1,5 @@
 #if STATS
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #endif
@@ -25,21 +26,14 @@ namespace {
 
 #if STATS
 void SemisplitTree::print_node_stats(const semisplit_child& child) {
-    std::cout << "sim " << std::setw(4) << child.sim_count;
+    std::cout << "sim " << std::setw(6) << child.sim_count;
     std::cout << "   avg " << std::setw(6) << std::setprecision(2) << static_cast<double>(child.total_score) / child.sim_count << "   ";
-    std::cout << "(" << std::setw(3) << child.action.cell << " " << std::setw(3) << child.action.state << ") ";
 }
 
-void SemisplitTree::print_actions(const reasoner::move_representation& mr) {
-    for (const auto& action : mr) {
-        std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
-    }
-}
-
-void SemisplitTree::print_move(const reasoner::move_representation& mr) {
-    std::cout << "[";
-    print_actions(mr);
-    std::cout << "]" << std::endl;
+void SemisplitTree::print_action(const reasoner::action_representation action) {
+    static constexpr uint cell_width = std::floor(std::log10(reasoner::BOARD_SIZE)) + 1;
+    static constexpr uint index_width = std::floor(std::log10(std::max(reasoner::AUTOMATON_SIZE, reasoner::NUMBER_OF_MODIFIERS))) + 2;
+    std::cout << std::setw(cell_width) << action.cell << " " << std::setw(index_width) << action.index << " ";
 }
 #endif
 
@@ -477,10 +471,11 @@ void SemisplitTree::choose_best_greedy_move(std::vector<uint>& children_indices)
         std::cout << "moves at level " << level << std::endl;
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            char prefix = (i == best_child) ? '*' : ' ';
-            std::cout << prefix << " ";
+            std::cout << ((i == best_child) ? "* " : "  ");
             print_node_stats(children[i]);
-            print_move(children[i].get_actions());
+            std::cout << "(";
+            print_action(children[i].action);
+            std::cout << ")" << std::endl;
         }
         std::cout << std::endl;
         ++level;

@@ -3,9 +3,6 @@
 
 #include <string>
 
-#if STATS
-#include <chrono>
-#endif
 
 #include "tree.hpp"
 #include "types.hpp"

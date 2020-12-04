@@ -14,7 +14,7 @@
 void Tree::print_rolledup_move(const std::vector<uint>& children_indices) {
     std::cout << "[";
     for (const auto child_index : children_indices) {
-        print_actions(children[child_index].semimove.get_actions());
+        print_action(children[child_index].action);
     }
     std::cout << "]" << std::endl;
 }

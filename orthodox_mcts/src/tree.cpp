@@ -1,4 +1,5 @@
 #if STATS
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #endif
@@ -13,6 +14,20 @@
 #include "simulator.hpp"
 #include "constants.hpp"
 
+
+#if STATS
+namespace {
+void print_move(const reasoner::move_representation& mr) {
+    static constexpr uint cell_width = std::floor(std::log10(reasoner::BOARD_SIZE)) + 1;
+    static constexpr uint index_width = std::floor(std::log10(reasoner::NUMBER_OF_MODIFIERS)) + 1;
+    std::cout << "[";
+    for (const auto action : mr) {
+        std::cout << std::setw(cell_width) << action.cell << " " << std::setw(index_width) << action.index << " ";
+    }
+    std::cout << "]";
+}
+}  // namespace
+#endif
 
 Tree::Tree() {
     complete_turn(root_state);
@@ -173,13 +188,10 @@ reasoner::move Tree::choose_best_move() {
     std::cout << std::fixed << std::setprecision(2);
     const auto [fst, lst] = nodes.front().children_range;
     for (auto i = fst; i < lst; ++i) {
-        char prefix = (i == best_child) ? '*' : ' ';
-        std::cout << prefix << " sim " << std::setw(4) << children[i].sim_count;
-        std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   [";
-        for (const auto action : children[i].get_actions()) {
-            std::cout << std::setw(3) << action.cell << " " << std::setw(3) << action.index << " ";
-        }
-        std::cout << "]";
+        std::cout << ((i == best_child) ? "* " : "  ");
+        std::cout << "sim " << std::setw(6) << children[i].sim_count;
+        std::cout << "   avg " << std::setw(6) << static_cast<double>(children[i].total_score) / children[i].sim_count << "   ";
+        print_move(children[i].get_actions());
         #if RAVE > 0
         std::cout << " amaf_avg " << (static_cast<double>(children[i].amaf.score) / children[i].amaf.count) << " amaf_count " << children[i].amaf.count;
         if (children[i].amaf.count > 0) {
