@@ -137,7 +137,7 @@ class ConfigData:
             self.debug = int(program_args.debug)
             self.release = int(program_args.release)
             self.stats = int(program_args.stats)
-            if "split_strategy" in config["algorithm"]:
+            if "split_strategy" in config["algorithm"] and config["algorithm"]["split_strategy"] != "":
                 self.split_strategy = config["algorithm"]["split_strategy"]
                 if self.split_strategy not in split_strategies.keys():
                     print("split strategy:", self.split_strategy, "is not available")
