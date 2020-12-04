@@ -222,9 +222,12 @@ def receive_player_name(server_socket, game):
 def compile_player(config_data, player_id):
     assert(config_data.player_strategy in available_players)
     with Cd(gen_directory(player_id)):
-        compiler_run_list = [compiler_dir, "-o", "reasoner", "../../"+game_path(player_id)]
-        if (config_data.tree_strategy in ["semisplit", "rollup"]) or (config_data.simulation_strategy == "semisplit"):
-            compiler_run_list.insert(1, "-fsemisplit")
+        getters = list()
+        if config_data.simulation_strategy == "orthodox" or config_data.tree_strategy == "orthodox":
+            getters.append("m")
+        if config_data.simulation_strategy == "semisplit" or config_data.tree_strategy in ["semisplit", "rollup"]:
+            getters.append("a")
+        compiler_run_list = [compiler_dir, "-getters", ''.join(getters), "-o", "reasoner", "../../"+game_path(player_id)]
         print("   subprocess.run:", *compiler_run_list)
         subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
