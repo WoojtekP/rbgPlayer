@@ -56,7 +56,7 @@ int MovesContainer::insert_or_update(const reasoner::move& move, const uint scor
 }
 
 double MovesContainer::get_score_or_default_value(const reasoner::move& move, const int) {
-    uint hashindex = move_hash()(move) % capacity;
+    uint hashindex = hash(move) % capacity;
     uint index = hashtable[hashindex];
     while (index != 0) {
         if (buckets[index].mv == move) {
