@@ -1,5 +1,5 @@
-#ifndef MOVECHOOSER
-#define MOVECHOOSER
+#ifndef MASTCHOOSER
+#define MASTCHOOSER
 
 #include <algorithm>
 #include <random>
@@ -15,27 +15,20 @@
 
 
 template <typename T>
-class MoveChooser {
-private:
+class MastChooser {
+protected:
     std::vector<std::pair<T, int>> path;
     std::vector<uint> indices;
     MovesContainer moves[reasoner::NUMBER_OF_PLAYERS - 1];
     int context = 0;
-    #if MAST == 2
-    std::vector<int> context_stack;
-
-    bool end_of_context(const reasoner::semimove& semimove) const {
-        return !semimove.mr.empty() && reasoner::is_switch(semimove.mr.back().index);
-    }
-    #endif
 
 public:
-    MoveChooser(void) = default;
-    MoveChooser(const MoveChooser&) = delete;
-    MoveChooser(MoveChooser&&) = default;
-    MoveChooser& operator=(const MoveChooser&) = delete;
-    MoveChooser& operator=(MoveChooser&&) = default;
-    ~MoveChooser(void) = default;
+    MastChooser(void) = default;
+    MastChooser(const MastChooser&) = delete;
+    MastChooser(MastChooser&&) = default;
+    MastChooser& operator=(const MastChooser&) = delete;
+    MastChooser& operator=(MastChooser&&) = default;
+    ~MastChooser(void) = default;
 
     const std::vector<std::pair<T, int>>& get_path() const {
         return path;
@@ -120,60 +113,10 @@ public:
         path.pop_back();
     }
 
-    void clear_path() {
-        path.clear();
-        reset_context();
-    }
-
-    template <typename M>
-    void update_move(const M& move, const simulation_result& results, const int player) {
-        assert(player != KEEPER);
-        [[maybe_unused]] auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], context);
-        #if MAST == 2
-        context = end_of_context(move) ? 0 : new_context;
-        #endif
-    }
-
-    void update_all_moves(const simulation_result& results) {
-        for (const auto& [move, player] : path) {
-            update_move(move, results, player);
-        }
-        #if MAST == 2
-        assert(context == 0);
-        #endif
-    }
-
     void complete_turn() {
         for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
             moves[i - 1].apply_decay_factor();
         }
-    }
-
-    template <typename M>
-    void switch_context([[maybe_unused]] const M& move, [[maybe_unused]] const int current_player) {
-        #if MAST == 2
-        if (end_of_context(move)) {
-            reset_context();
-        }
-        else {
-            context_stack.push_back(context);
-            context = moves[current_player - 1].get_context(move.mr, context);
-        }
-        #endif
-    }
-
-    void revert_context() {
-        #if MAST == 2
-        context = context_stack.back();
-        context_stack.pop_back();
-        #endif
-    }
-
-    void reset_context() {
-        #if MAST == 2
-        context = 0;
-        context_stack.clear();
-        #endif
     }
 };
 

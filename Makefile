@@ -25,9 +25,9 @@ ROLLUP_MCTS := rollup_mcts $(SEMISPLIT_MCTS_COMMON)
 # MAST
 MOVES_MAP := moves_hashtable
 ACTIONS_ARRAYS := actions_arrays
-MAST_CHOOSER := mast_chooser
-MAST_ORTHODOX := moves_container $(MAST_CHOOSER) $(MOVES_MAP)
-MAST_SPLIT := moves_container_split $(MAST_CHOOSER) $(ACTIONS_ARRAYS)
+MAST_CHOOSER := mast_orthodox mast_common
+MAST_ORTHODOX := moves_container mast_orthodox mast_common $(MOVES_MAP)
+MAST_SPLIT := moves_container_split mast_orthodox mast_common $(ACTIONS_ARRAYS)
 MAST_MIX := moves_container_mix $(MAST_CHOOSER) $(MOVES_MAP) $(ACTIONS_ARRAYS)
 MAST_CONTEXT := $(MAST_ORTHODOX)
 # RAVE
@@ -109,7 +109,7 @@ $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT,semisplit_semisplit,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(UNIFORM_CHOOSER) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST,semisplit_semisplit_mast,\
-			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_ORTHODOX) $(COMMON) $(GEN_DIR)))
+			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTSPLIT,semisplit_semisplit_mastsplit,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
