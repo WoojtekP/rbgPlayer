@@ -3,18 +3,25 @@
 
 #include "reasoner.hpp"
 
+struct score {
+    double sum = 0;
+    double weight = 0;
+    score() = default;
+    score(const double _sum, const double _weight) : sum(_sum), weight(_weight) {}
+    inline double get_score() const {
+        return sum / weight;
+    }
+};
 
 struct HashmapEntry {
     reasoner::move mv;
     uint next = 0;
-    double scores = 0.0;
-    double weight = 0.0;
+    score total_score;
     HashmapEntry() = default;
-    HashmapEntry(const reasoner::move _mv, double _scores, double _weight)
+    HashmapEntry(const reasoner::move _mv, double _sum, double _weight)
         : mv(_mv)
         , next(0)
-        , scores(_scores)
-        , weight(_weight) {}
+        , total_score(_sum, _weight) {}
 };
 
 #endif

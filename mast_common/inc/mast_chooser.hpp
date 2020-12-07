@@ -39,12 +39,12 @@ public:
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         if (rand_gen.random_real_number() >= EPSILON) {
-            double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front(), context);
+            double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front(), context).get_score();
             indices.resize(1);
             indices[0] = 0;
             const uint size = legal_moves.size();
             for (uint i = 1; i < size; ++i) {
-                double score = moves[current_player - 1].get_score_or_default_value(legal_moves[i], context);
+                double score = moves[current_player - 1].get_score_or_default_value(legal_moves[i], context).get_score();
                 if (score > best_score) {
                     best_score = score;
                     indices.resize(1);
@@ -83,7 +83,7 @@ public:
             double best_score = 0.0;
             for (uint i = lower; i < lst; ++i) {
                 assert(children[i].index == 0);
-                double score = moves[current_player - 1].get_score_or_default_value(children[i].get_edge(), context);
+                double score = moves[current_player - 1].get_score_or_default_value(children[i].get_edge(), context).get_score();
                 if (score > best_score) {
                     best_score = score;
                     indices.resize(1);

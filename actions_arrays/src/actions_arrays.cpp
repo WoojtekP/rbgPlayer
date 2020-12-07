@@ -28,21 +28,22 @@ int ActionsArrays::insert_or_update(const reasoner::move& move, const double sco
     return 0;
 }
 
-double ActionsArrays::get_score_or_default_value(const reasoner::action_representation action, const int) {
+score ActionsArrays::get_score_or_default_value(const reasoner::action_representation action, const int) {
+    static const score default_score(EXPECTED_MAX_SCORE, 1.0);
     const auto index = action_to_index(action);
-    return arr[index].weight == 0 ? EXPECTED_MAX_SCORE : arr[index].sum / arr[index].weight;
+    return arr[index].weight == 0 ? default_score : arr[index];
 }
 
-double ActionsArrays::get_score_or_default_value(const reasoner::move& move, const int) {
+score ActionsArrays::get_score_or_default_value(const reasoner::move& move, const int) {
     double sum = 0;
     for (const auto& action : move.mr) {
         auto index = action_to_index(action);
         if (arr[index].weight == 0) {
-            return EXPECTED_MAX_SCORE;
+            return {EXPECTED_MAX_SCORE, 1.0};
         }
         sum += arr[index].sum / arr[index].weight;
     }
-    return sum / move.mr.size();
+    return {sum, static_cast<double>(move.mr.size())};
 }
 
 void ActionsArrays::apply_decay_factor() {

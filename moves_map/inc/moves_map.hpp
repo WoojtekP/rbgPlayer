@@ -18,7 +18,7 @@ public:
     void operator=(const MovesMap&&) = delete;
 
     int insert_or_update(const reasoner::move& move, const uint score, const int);
-    double get_score_or_default_value(const reasoner::move& move, const int);
+    score get_score_or_default_value(const reasoner::move& move, const int);
     void apply_decay_factor();
 };
 
