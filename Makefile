@@ -23,7 +23,7 @@ ORTHODOX_MCTS := orthodox_mcts $(MCTS_COMMON)
 SEMISPLIT_MCTS := semisplit_mcts $(SEMISPLIT_MCTS_COMMON)
 ROLLUP_MCTS := rollup_mcts $(SEMISPLIT_MCTS_COMMON)
 # MAST
-MOVES_MAP := moves_hashtable
+MOVES_MAP := moves_map moves_hashtable
 ACTIONS_ARRAYS := actions_arrays
 MAST_CHOOSER := mast_orthodox mast_common
 MAST_ORTHODOX := moves_container mast_orthodox mast_common $(MOVES_MAP)

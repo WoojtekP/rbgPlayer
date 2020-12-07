@@ -7,9 +7,9 @@
 #include "reasoner.hpp"
 
 
-MovesContainer::MovesContainer() : MovesHashtable(HASHMAP_INITIAL_LEVEL) {}
+MovesMap::MovesMap() : MovesHashtable(HASHMAP_INITIAL_LEVEL) {}
 
-int MovesContainer::insert_or_update(const reasoner::move& move, const uint score, const int) {
+int MovesMap::insert_or_update(const reasoner::move& move, const uint score, const int) {
     uint hashindex = hash(move) % capacity;
     uint index = hashtable[hashindex];
     [[maybe_unused]] bool found = false;
@@ -55,7 +55,7 @@ int MovesContainer::insert_or_update(const reasoner::move& move, const uint scor
     return 0;
 }
 
-double MovesContainer::get_score_or_default_value(const reasoner::move& move, const int) {
+double MovesMap::get_score_or_default_value(const reasoner::move& move, const int) {
     uint hashindex = hash(move) % capacity;
     uint index = hashtable[hashindex];
     while (index != 0) {
@@ -67,7 +67,7 @@ double MovesContainer::get_score_or_default_value(const reasoner::move& move, co
     return EXPECTED_MAX_SCORE;
 }
 
-void MovesContainer::apply_decay_factor() {
+void MovesMap::apply_decay_factor() {
     for (uint i = 1; i < buckets.size(); i++) {
         buckets[i].scores *= DECAY_FACTOR;
         buckets[i].weight *= DECAY_FACTOR;

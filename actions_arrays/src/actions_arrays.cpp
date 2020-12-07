@@ -12,28 +12,28 @@ uint ActionsArrays::action_to_index(const reasoner::action_representation action
     return (action.cell - 1) * (reasoner::NUMBER_OF_MODIFIERS + reasoner::AUTOMATON_SIZE) + reasoner::AUTOMATON_SIZE + action.index - 1;
 }
 
-int ActionsArrays::insert_or_update(const reasoner::action_representation action, const double score, const double weight) {
+int ActionsArrays::insert_or_update(const reasoner::action_representation action, const double score, const int) {
     auto index = action_to_index(action);
-    arr[index].weight += weight;
+    arr[index].weight += 1.0;
     arr[index].sum += score;
     return 0;
 }
 
-int ActionsArrays::insert_or_update(const reasoner::move& move, const double score, const double weight) {
+int ActionsArrays::insert_or_update(const reasoner::move& move, const double score, const int) {
     for (const auto& action : move.mr) {
         auto index = action_to_index(action);
-        arr[index].weight += weight;
+        arr[index].weight += 1.0;
         arr[index].sum += score;
     }
     return 0;
 }
 
-double ActionsArrays::get_score_or_default_value(const reasoner::action_representation action) {
+double ActionsArrays::get_score_or_default_value(const reasoner::action_representation action, const int) {
     const auto index = action_to_index(action);
     return arr[index].weight == 0 ? EXPECTED_MAX_SCORE : arr[index].sum / arr[index].weight;
 }
 
-double ActionsArrays::get_score_or_default_value(const reasoner::move& move) {
+double ActionsArrays::get_score_or_default_value(const reasoner::move& move, const int) {
     double sum = 0;
     for (const auto& action : move.mr) {
         auto index = action_to_index(action);
