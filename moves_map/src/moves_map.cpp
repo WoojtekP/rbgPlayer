@@ -9,25 +9,25 @@
 
 MovesMap::MovesMap() : MovesHashtable(HASHMAP_INITIAL_LEVEL) {}
 
-int MovesMap::insert_or_update(const reasoner::move& move, const uint score, const int) {
-    uint hashindex = hash(move) % capacity;
+int MovesMap::insert_or_update(const reasoner::move& move, const uint score, const int context) {
+    uint hashindex = hash(move, context) % capacity;
     uint index = hashtable[hashindex];
     [[maybe_unused]] bool found = false;
     if (index == 0) {
         hashtable[hashindex] = buckets.size();
-        buckets.emplace_back(move, score, 1.0);
+        buckets.emplace_back(move, score, 1.0, context);
     }
     else {
         uint collisions = 0;
         while (true) {
-            if (buckets[index].mv == move) {
+            if (buckets[index].equals(move, context)) {
                 buckets[index].total_score.sum += score;
                 buckets[index].total_score.weight += 1.0;
                 goto return_lb;  // TODO replace with 'return 0'
             }
             if (buckets[index].next == 0) {
                 buckets[index].next = buckets.size();
-                buckets.emplace_back(move, score, 1.0);
+                buckets.emplace_back(move, score, 1.0, context);
                 break;
             }
             index = buckets[index].next;
@@ -55,11 +55,11 @@ int MovesMap::insert_or_update(const reasoner::move& move, const uint score, con
     return 0;
 }
 
-score MovesMap::get_score_or_default_value(const reasoner::move& move, const int) {
-    uint hashindex = hash(move) % capacity;
+score MovesMap::get_score_or_default_value(const reasoner::move& move, const int context = 0) {
+    uint hashindex = hash(move, context) % capacity;
     uint index = hashtable[hashindex];
     while (index != 0) {
-        if (buckets[index].mv == move) {
+        if (buckets[index].equals(move, context)) {
             return buckets[index].total_score;
         }
         index = buckets[index].next;
