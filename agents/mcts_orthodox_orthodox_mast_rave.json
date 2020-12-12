@@ -9,7 +9,7 @@
         "tree_strategy" : "orthodox",
         "simulation_strategy" : "orthodox",
         "parameters" : {
-            "exploration_constant" : 0.4
+            "exploration_constant" : 0.2
         }
     },
     "heuristics" : [
