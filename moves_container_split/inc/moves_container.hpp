@@ -1,10 +1,10 @@
 #ifndef MOVESCONTAINER
 #define MOVESCONTAINER
 
-#include "actions_arrays.hpp"
+#include "actions_map.hpp"
 
 
-typedef ActionsArrays MovesContainer;
+typedef ActionsMap MovesContainer;
 
 
 #endif

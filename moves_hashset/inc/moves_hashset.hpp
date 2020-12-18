@@ -1,5 +1,5 @@
-#ifndef MOVESSET
-#define MOVESSET
+#ifndef MOVESHASHSET
+#define MOVESHASHSET
 
 #include <unordered_set>
 
@@ -8,14 +8,14 @@
 #include "reasoner.hpp"
 
 
-class MovesSet : public MovesHashtable<HashsetEntry> {
+class MovesHashset : public MovesHashtable<HashsetEntry> {
 private:
     // std::unordered_set<reasoner::move, move_hash> set;
 public:
-    MovesSet();
-    MovesSet(const MovesSet&) = delete;
-    void operator=(const MovesSet&) = delete;
-    void operator=(const MovesSet&&) = delete;
+    MovesHashset();
+    MovesHashset(const MovesHashset&) = delete;
+    void operator=(const MovesHashset&) = delete;
+    void operator=(const MovesHashset&&) = delete;
 
     void insert(const reasoner::move& move);
     bool find(const reasoner::move& move);

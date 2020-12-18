@@ -1,4 +1,4 @@
-#include "moves_set.hpp"
+#include "moves_hashset.hpp"
 
 #include <unordered_set>
 
@@ -7,9 +7,9 @@
 #include "reasoner.hpp"
 
 
-MovesSet::MovesSet() : MovesHashtable(HASHSET_INITIAL_LEVEL) {}
+MovesHashset::MovesHashset() : MovesHashtable(HASHSET_INITIAL_LEVEL) {}
 
-void MovesSet::insert(const reasoner::move& move) {
+void MovesHashset::insert(const reasoner::move& move) {
     uint hashindex = hash(move) % capacity;
     uint index = hashtable[hashindex];
     [[maybe_unused]] bool found = false;
@@ -51,7 +51,7 @@ void MovesSet::insert(const reasoner::move& move) {
     return;
 }
 
-bool MovesSet::find(const reasoner::move& move) {
+bool MovesHashset::find(const reasoner::move& move) {
     uint hashindex = move_hash()(move) % capacity;
     uint index = hashtable[hashindex];
     while (index != 0) {
@@ -63,7 +63,7 @@ bool MovesSet::find(const reasoner::move& move) {
     return false;
 }
 
-void MovesSet::reset() {
+void MovesHashset::reset() {
     for (uint i = 0; i < capacity; i++) {
         hashtable[i] = 0;
     }

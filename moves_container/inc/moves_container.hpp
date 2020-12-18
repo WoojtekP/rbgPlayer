@@ -1,10 +1,10 @@
 #ifndef MOVESCONTAINER
 #define MOVESCONTAINER
 
-#include "moves_map.hpp"
+#include "moves_hashmap.hpp"
 
 
-typedef MovesMap MovesContainer;
+typedef MovesHashmap MovesContainer;
 
 
 #endif

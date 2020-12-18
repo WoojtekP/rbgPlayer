@@ -1,5 +1,5 @@
-#ifndef ACTIONSARRAYS
-#define ACTIONSARRAYS
+#ifndef ACTIONSMAP
+#define ACTIONSMAP
 
 #include "constants.hpp"
 #include "reasoner.hpp"
@@ -15,13 +15,13 @@ struct score {
     }
 };
 
-class ActionsArrays {
+class ActionsMap {
 private:
     static constexpr uint size = reasoner::BOARD_SIZE * (reasoner::NUMBER_OF_MODIFIERS + reasoner::AUTOMATON_SIZE);
-    score arr[ActionsArrays::size];
+    score arr[ActionsMap::size];
     uint action_to_index(const reasoner::action_representation);
 public:
-    ActionsArrays();
+    ActionsMap();
     int insert_or_update(const reasoner::action_representation, const double, const int);
     int insert_or_update(const reasoner::move&, const double, const int);
     score get_score_or_default_value(const reasoner::action_representation, const int);

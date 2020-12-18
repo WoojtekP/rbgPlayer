@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "actions_arrays.hpp"
+#include "actions_map.hpp"
 #include "constants.hpp"
 #include "moves_tree.hpp"
 
@@ -11,7 +11,7 @@
 class MovesContainer {
 private:
     MovesTree moves;
-    ActionsArrays arr;
+    ActionsMap arr;
 public:
     template <typename T>
     int insert_or_update(const T& move, const uint score, const int context = 0) {

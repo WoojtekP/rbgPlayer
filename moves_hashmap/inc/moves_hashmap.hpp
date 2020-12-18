@@ -1,5 +1,5 @@
-#ifndef MOVESMAP
-#define MOVESMAP
+#ifndef MOVESHASHMAP
+#define MOVESHASHMAP
 
 #include <unordered_map>
 
@@ -9,14 +9,14 @@
 #include "reasoner.hpp"
 
 
-class MovesMap : public MovesHashtable<HashmapEntry> {
+class MovesHashmap : public MovesHashtable<HashmapEntry> {
 private:
     // std::unordered_map<reasoner::move, std::pair<double, double>, move_hash> map;
 public:
-    MovesMap();
-    MovesMap(const MovesMap&) = delete;
-    void operator=(const MovesMap&) = delete;
-    void operator=(const MovesMap&&) = delete;
+    MovesHashmap();
+    MovesHashmap(const MovesHashmap&) = delete;
+    void operator=(const MovesHashmap&) = delete;
+    void operator=(const MovesHashmap&&) = delete;
 
     template <typename T>
     int insert_or_update(const T& move, const uint score, const int context) {
