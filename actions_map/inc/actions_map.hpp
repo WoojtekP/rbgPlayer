@@ -3,17 +3,8 @@
 
 #include "constants.hpp"
 #include "reasoner.hpp"
+#include "types.hpp"
 
-
-struct score {
-    double sum = 0;
-    double weight = 0;
-    score() = default;
-    score(const double _sum, const double _weight) : sum(_sum), weight(_weight) {}
-    inline double get_score() const {
-        return sum / weight;
-    }
-};
 
 class ActionsMap {
 private:
@@ -22,10 +13,10 @@ private:
     uint action_to_index(const reasoner::action_representation);
 public:
     ActionsMap();
-    int insert_or_update(const reasoner::action_representation, const double, const int);
-    int insert_or_update(const reasoner::move&, const double, const int);
-    score get_score_or_default_value(const reasoner::action_representation, const int);
-    score get_score_or_default_value(const reasoner::move&, const int);
+    int insert_or_update(const reasoner::action_representation, const double, const int = 0);
+    int insert_or_update(const reasoner::move&, const double, const int = 0);
+    score get_score_or_default_value(const reasoner::action_representation, const int = 0);
+    score get_score_or_default_value(const reasoner::move&, const int = 0);
     void apply_decay_factor();
 };
 

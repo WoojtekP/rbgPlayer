@@ -49,7 +49,7 @@ public:
         }
         else {
             context_stack.push_back(context);
-            context = moves[current_player - 1].get_context(move.mr, context);
+            context = moves[current_player - 1].get_context(move, context);
         }
     }
 

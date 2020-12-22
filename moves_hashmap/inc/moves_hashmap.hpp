@@ -4,27 +4,33 @@
 #include <unordered_map>
 
 #include "constants.hpp"
-#include "hashmap_entry.hpp"
 #include "moves_hashtable.hpp"
 #include "reasoner.hpp"
 
 
-class MovesHashmap : public MovesHashtable<HashmapEntry> {
-private:
+template <typename E, typename H>
+class MovesHashmap : public MovesHashtable<E, H> {
+    using MovesHashtable<E, H>::buckets;
+    using MovesHashtable<E, H>::capacity_level;
+    using MovesHashtable<E, H>::capacity;
+    using MovesHashtable<E, H>::hashtable;
+    using MovesHashtable<E, H>::hash;
+    using MovesHashtable<E, H>::grow_hashtable;
     // std::unordered_map<reasoner::move, std::pair<double, double>, move_hash> map;
 public:
-    MovesHashmap();
+    MovesHashmap() : MovesHashtable<E, H>(HASHMAP_INITIAL_LEVEL) {}
     MovesHashmap(const MovesHashmap&) = delete;
     void operator=(const MovesHashmap&) = delete;
     void operator=(const MovesHashmap&&) = delete;
 
     template <typename T>
-    int insert_or_update(const T& move, const uint score, const int context) {
+    int insert_or_update(const T& move, const uint score, const int context = 0, const double weight = 1.0) {
         uint hashindex = hash(move, context) % capacity;
         uint index = hashtable[hashindex];
         [[maybe_unused]] bool found = false;
+        uint bucket_id = 0;
         if (index == 0) {
-            hashtable[hashindex] = buckets.size();
+            bucket_id = hashtable[hashindex] = buckets.size();
             buckets.emplace_back(move, score, 1.0, context);
         }
         else {
@@ -32,12 +38,13 @@ public:
             while (true) {
                 if (buckets[index].equals(move, context)) {
                     buckets[index].total_score.sum += score;
-                    buckets[index].total_score.weight += 1.0;
-                    goto return_lb;  // TODO replace with 'return 0'
+                    buckets[index].total_score.weight += weight;
+                    bucket_id = index;
+                    goto return_lb;  // TODO replace with 'return index'
                 }
                 if (buckets[index].next == 0) {
-                    buckets[index].next = buckets.size();
-                    buckets.emplace_back(move, score, 1.0, context);
+                    bucket_id = buckets[index].next = buckets.size();
+                    buckets.emplace_back(move, score, weight, context);
                     break;
                 }
                 index = buckets[index].next;
@@ -62,11 +69,11 @@ public:
             it->second.second += static_cast<double>(score);
             if (!found) std::cout << "err not found\n";
         }*/
-        return 0;
+        return bucket_id;
     }
 
     template <typename T>
-    score get_score_or_default_value(const T& move, const int context) {
+    score get_score_or_default_value(const T& move, const int context = 0) {
         uint hashindex = hash(move, context) % capacity;
         uint index = hashtable[hashindex];
         while (index != 0) {
@@ -78,7 +85,17 @@ public:
         return {EXPECTED_MAX_SCORE, 1.0};
     }
 
-    void apply_decay_factor();
+    void apply_decay_factor() {
+        for (uint i = 1; i < buckets.size(); i++) {
+            buckets[i].total_score.sum *= DECAY_FACTOR;
+            buckets[i].total_score.weight *= DECAY_FACTOR;
+        }
+        // std::cout << "load factor " << (double)buckets.size()/capacity << "\n";
+    }
+
+    int get_context(const reasoner::action_representation action, const int context = 0) {
+        return insert_or_update(action, 0, context, 0.0);
+    }
 };
 
 #endif

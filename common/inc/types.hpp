@@ -18,4 +18,16 @@ enum game_status_indication {
     end_game
 };
 
+struct score {
+    double sum = 0;
+    double weight = 0;
+    score() = default;
+    score(const double _sum, const double _weight)
+        : sum(_sum)
+        , weight(_weight) {}
+    inline double get_score() const {
+        return sum / weight;
+    }
+};
+
 #endif

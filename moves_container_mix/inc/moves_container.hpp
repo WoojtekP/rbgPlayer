@@ -5,12 +5,14 @@
 
 #include "actions_map.hpp"
 #include "constants.hpp"
-#include "moves_tree.hpp"
+#include "moves_hashmap.hpp"
+#include "hashmap_context_entry.hpp"
+#include "move_hash_context.hpp"
 
 
 class MovesContainer {
 private:
-    MovesTree moves;
+    MovesHashmap<HashmapContextEntry, move_hash_context<HashmapContextEntry>> moves;
     ActionsMap arr;
 public:
     template <typename T>
@@ -22,15 +24,15 @@ public:
     }
 
     template <typename T>
-    double get_score_or_default_value(const T& move, const int context = 0) {
+    score get_score_or_default_value(const T& move, const int context = 0) {
         auto context_score = moves.get_score_or_default_value(move, context);
         if constexpr (MAST_EQUIVALENCE_PARAMETER == 0) {
-            return context_score.get_score();
+            return context_score;
         }
         if (context_score.weight < MAST_EQUIVALENCE_PARAMETER)
             return arr.get_score_or_default_value(move);
         else
-            return context_score.get_score();
+            return context_score;
         /*
         // Smooth mix
         double split_score = arr.get_score_or_default_value(move);
@@ -40,7 +42,7 @@ public:
     }
 
     void apply_decay_factor();
-    int get_context(const reasoner::move_representation&, const int);
+    int get_context(const reasoner::action_representation, const int);
 };
 
 #endif

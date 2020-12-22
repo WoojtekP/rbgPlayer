@@ -11,29 +11,11 @@ namespace {
 constexpr uint HASH_PRIMES[] = {23U,53U,97U,193U,389U,769U,1543U,3079U,6151U,12289U,24593U,49157U,98317U,196613U,393241U,786433U,1572869U,3145739U,6291469U,12582917U,25165843U,50331653U,100663319U,201326611U,402653189U,805306457U,1610612741U,3221225827U};
 }  // namespace
 
-template <typename T>
-struct move_hash {
-private:
-    std::size_t hash(const reasoner::move& move) const noexcept {
-        std::size_t hash = 0;
-        for (const auto& action : move.mr) {
-            hash = (hash * 13 + action.index) * 17 + action.cell;
-        }
-        return hash;
-    }
-public:
-    std::size_t operator()(const reasoner::move& move, const int) const noexcept {
-        return hash(move);
-    }
-    std::size_t operator()(const T& bucket) const noexcept {
-        return hash(bucket.move);
-    }
-};
 
-template <typename T, typename H = move_hash<T>>
+template <typename E, typename H>
 class MovesHashtable {
 protected:
-    std::vector<T> buckets;
+    std::vector<E> buckets;
     uint capacity_level;
     uint capacity;
     uint *hashtable;

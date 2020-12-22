@@ -322,9 +322,6 @@ uint SemisplitTree::perform_simulation() {
         assert(nodes[children[child_index].index].status != node_status::unknown);
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
-        #if MAST > 0
-        move_chooser.update_move(children[child_index].action, results, player);
-        #endif
         #if RAVE > 0
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
@@ -350,6 +347,9 @@ uint SemisplitTree::perform_simulation() {
     }
     ++root_sim_count;
     #if MAST > 0
+    for (const auto [node_index, child_index, player] : children_stack) {
+        move_chooser.update_move(children[child_index].action, results, player);
+    }
     if constexpr (!IS_NODAL && !TREE_ONLY) {
         for (const auto& action : path) {
             move_chooser.update_move(action, results, current_player);

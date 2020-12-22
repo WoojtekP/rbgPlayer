@@ -16,27 +16,32 @@ BIN_DIR := $(BUILD)/bin_$(PLAYER_ID)
 DEP_DIR := $(BUILD)/dep_$(PLAYER_ID)
 GEN_DIR := $(BUILD)/gen_$(PLAYER_ID)
 COMMON := common
+
 # MCTS
 MCTS_COMMON := mcts_common
 SEMISPLIT_MCTS_COMMON := semisplit_mcts_common $(MCTS_COMMON)
 ORTHODOX_MCTS := orthodox_mcts $(MCTS_COMMON)
 SEMISPLIT_MCTS := semisplit_mcts $(SEMISPLIT_MCTS_COMMON)
 ROLLUP_MCTS := rollup_mcts $(SEMISPLIT_MCTS_COMMON)
+
 # MAST
-MOVES_HASHMAP := moves_hashmap moves_hashtable
-ACTIONS_MAP := actions_map
-MAST_CHOOSER := mast_orthodox mast_common
-MAST_ORTHODOX := moves_container mast_orthodox mast_common $(MOVES_HASHMAP)
-MAST_SPLIT := moves_container_split mast_orthodox mast_common $(ACTIONS_MAP)
-MAST_MIX := moves_container_mix $(MAST_CHOOSER) $(MOVES_HASHMAP) $(ACTIONS_MAP)
-MAST_CONTEXT := $(MAST_ORTHODOX)
+MOVES_HASHMAP := moves_hashmap moves_hashtable hashtable_entries
+MOVES_HASHMAP_CONTEXT := moves_hashmap moves_hashtable hashtable_context_entries
+
+MAST_ORTHODOX := mast_common moves_container mast_orthodox $(MOVES_HASHMAP)
+MAST_SPLIT := mast_common moves_container_split mast_orthodox actions_map
+MAST_CONTEXT := mast_common moves_container_context mast_context $(MOVES_HASHMAP_CONTEXT)
+MAST_MIX := mast_common moves_container_mix mast_context actions_map $(MOVES_HASHMAP_CONTEXT)
+
 # RAVE
 TGRAVE := moves_hashset moves_hashtable
 RAVE_CONTEXT := $(TGRAVE)
 RAVE_MIX := $(TGRAVE)
+
 # SIMULATORS
 ORTHODOX_SIMULATOR := orthodox_simulator
 SEMISPLIT_SIMULATOR := semisplit_simulator
+
 # OTHERS
 UNIFORM_CHOOSER := uniform_chooser
 
@@ -130,10 +135,10 @@ $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_RAVEMIX,semisplit_semisplit_
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(UNIFORM_CHOOSER) $(RAVE_MIX) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST_TGRAVE,semisplit_semisplit_mast_tgrave,\
-			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_ORTHODOX) $(TGRAVE) $(COMMON) $(GEN_DIR)))
+			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(TGRAVE) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MAST_RAVECONTEXT,semisplit_semisplit_mast_ravecontext,\
-			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_ORTHODOX) $(RAVE_CONTEXT) $(COMMON) $(GEN_DIR)))
+			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(RAVE_CONTEXT) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,SEMISPLIT_SEMISPLIT_MASTSPLIT_TGRAVE,semisplit_semisplit_mastsplit_tgrave,\
 			$(SEMISPLIT_MCTS) $(SEMISPLIT_SIMULATOR) $(MAST_SPLIT) $(TGRAVE) $(COMMON) $(GEN_DIR)))
