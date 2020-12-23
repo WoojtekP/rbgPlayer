@@ -14,8 +14,9 @@ private:
     uint action_to_index(const reasoner::action_representation);
 public:
     ActionsSet();
-    int insert(const reasoner::action_representation, const double, const int);
-    bool find(const reasoner::action_representation, const int);
+    int insert(const reasoner::action_representation, const int = 0);
+    int insert(const reasoner::move&, const int = 0);
+    bool find(const reasoner::action_representation, const int = 0);
     void reset();
 };
 

@@ -15,7 +15,7 @@ uint ActionsMap::action_to_index(const reasoner::action_representation action) {
 }
 
 int ActionsMap::insert_or_update(const reasoner::action_representation action, const double score, const int) {
-    auto index = action_to_index(action);
+    const auto index = action_to_index(action);
     arr[index].weight += 1.0;
     arr[index].sum += score;
     return 0;
@@ -23,9 +23,7 @@ int ActionsMap::insert_or_update(const reasoner::action_representation action, c
 
 int ActionsMap::insert_or_update(const reasoner::move& move, const double score, const int) {
     for (const auto& action : move.mr) {
-        auto index = action_to_index(action);
-        arr[index].weight += 1.0;
-        arr[index].sum += score;
+        insert_or_update(action, score);
     }
     return 0;
 }
@@ -39,7 +37,7 @@ score ActionsMap::get_score_or_default_value(const reasoner::action_representati
 score ActionsMap::get_score_or_default_value(const reasoner::move& move, const int) {
     double sum = 0;
     for (const auto& action : move.mr) {
-        auto index = action_to_index(action);
+        const auto index = action_to_index(action);
         if (arr[index].weight == 0) {
             return {EXPECTED_MAX_SCORE, 1.0};
         }
