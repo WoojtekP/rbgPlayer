@@ -94,16 +94,17 @@ uint Tree::perform_simulation() {
     [[maybe_unused]] reasoner::move_representation mr;
     for (const auto& [move, player] : move_chooser.get_path()) {
         if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
-            moves_tree[player - 1].insert(move);
+            moves_set.insert(move, player - 1);
         }
         else {
             mr.insert(mr.end(), move.mr.begin(), move.mr.end());
             if (!move.mr.empty() && reasoner::is_switch(move.mr.back().index)) {
-                moves_tree[player - 1].insert(mr);
+                moves_set.insert(mr, player - 1);
                 mr.clear();
             }
         }
     }
+    assert(mr.empty());
     #endif
     for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
@@ -114,14 +115,7 @@ uint Tree::perform_simulation() {
         move_chooser.update_move(children[child_index].move, results, player);
         #endif
         #if RAVE > 0
-        const auto [fst, lst] = nodes[node_index].children_range;
-        for (auto i = fst; i < lst; ++i) {
-            if (moves_tree[player - 1].find(children[i].move)) {
-                children[i].amaf.score += results[player - 1];
-                ++children[i].amaf.count;
-            }
-        }
-        moves_tree[player - 1].insert(children[child_index].move);
+        moves_set.update_amaf_scores(node_index, child_index, player - 1, results);
         #endif
     }
     ++root_sim_count;
@@ -131,9 +125,7 @@ uint Tree::perform_simulation() {
     }
     #endif
     #if RAVE > 0
-    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-        moves_tree[i - 1].reset();
-    }
+    moves_set.reset_moves();
     #endif
     move_chooser.clear_path();
     children_stack.clear();

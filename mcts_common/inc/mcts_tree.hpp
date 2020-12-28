@@ -12,7 +12,7 @@
 #include "move_chooser.hpp"
 #include "simulator.hpp"
 #if RAVE
-#include "moves_hashset.hpp"
+#include "moves_set.hpp"
 #endif
 
 
@@ -25,10 +25,7 @@ protected:
     std::vector<std::tuple<uint, uint, int>> children_stack;
     MoveChooser<simulation_move_type> move_chooser;
     #if RAVE > 0
-    MovesHashset moves_tree[reasoner::NUMBER_OF_PLAYERS - 1];
-    #endif
-    #if RAVE == 3
-    MovesHashset moves_tree_base[reasoner::NUMBER_OF_PLAYERS - 1];
+    MovesSet moves_set;
     #endif
     uint root_sim_count = 0;
     #if STATS

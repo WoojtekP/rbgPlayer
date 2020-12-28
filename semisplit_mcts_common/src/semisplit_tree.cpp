@@ -295,21 +295,15 @@ uint SemisplitTree::perform_simulation() {
     int context = 0;
     if constexpr (!IS_NODAL) {
         for (const auto& action : path) {
-            #if RAVE == 3
-            moves_tree_base[current_player - 1].insert_or_update(action);
-            #endif
-            [[maybe_unused]] int new_context = moves_tree[current_player - 1].insert_or_update(action, context);
+            [[maybe_unused]] int new_context = moves_set.insert(action, current_player - 1, context);
             #if RAVE >= 2
             context = new_context;
             #endif
         }
     }
-    context = 0;
+    assert(context == 0);
     for (const auto& [move, player] : move_chooser.get_path()) {
-        #if RAVE == 3
-        moves_tree_base[player - 1].insert_or_update(move);
-        #endif
-        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(move, context);
+        [[maybe_unused]] int new_context = moves_set.insert(move, player - 1, context);
         #if RAVE >= 2
         context = end_of_context(move) ? 0 : new_context;
         #endif
@@ -323,26 +317,7 @@ uint SemisplitTree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if RAVE > 0
-        const auto [fst, lst] = nodes[node_index].children_range;
-        for (auto i = fst; i < lst; ++i) {
-            #if RAVE == 3
-            if (moves_tree_base[player - 1].find(children[i].action)) {
-                children[i].amaf.score_base += results[player - 1];
-                ++children[i].amaf.count_base;
-            }
-            #endif
-            if (moves_tree[player - 1].find(children[i].action, context)) {
-                children[i].amaf.score += results[player - 1];
-                ++children[i].amaf.count;
-            }
-        }
-        #if RAVE == 3
-        moves_tree_base[player - 1].insert_or_update(children[child_index].action);
-        #endif
-        [[maybe_unused]] int new_context = moves_tree[player - 1].insert_or_update(children[child_index].action, context);
-        #if RAVE >= 2
-        context = end_of_context(children[child_index].action) ? 0 : new_context;
-        #endif
+        moves_set.update_amaf_scores(node_index, child_index, player - 1, results);  // context
         #endif
     }
     ++root_sim_count;
@@ -361,12 +336,7 @@ uint SemisplitTree::perform_simulation() {
     move_chooser.reset_context();
     #endif
     #if RAVE > 0
-    for (int i = 1; i < reasoner::NUMBER_OF_PLAYERS; ++i) {
-        moves_tree[i - 1].reset();
-        #if RAVE == 3
-        moves_tree_base[i - 1].reset();
-        #endif
-    }
+    moves_set.reset_moves();
     #endif
     return state_count;
 }

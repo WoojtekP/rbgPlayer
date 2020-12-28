@@ -5,8 +5,11 @@
 #include "random_generator.hpp"
 #include "move_chooser.hpp"
 
-
-MctsTree::MctsTree() {
+MctsTree::MctsTree()
+#if RAVE
+    : moves_set(nodes, children)
+#endif
+{
     nodes.reserve(4 * MEBIBYTE / sizeof(node));
     children.reserve(4 * MEBIBYTE / sizeof(child));
 }
