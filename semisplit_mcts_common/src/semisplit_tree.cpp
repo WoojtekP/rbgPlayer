@@ -176,7 +176,7 @@ uint SemisplitTree::perform_simulation() {
     }
     else {
         current_player = state.get_current_player();
-        auto child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
+        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
         auto ri = state.apply_action_with_revert(children[child_index].action);
         move_chooser.switch_context(children[child_index].action, current_player);
         path.clear();
@@ -220,7 +220,7 @@ uint SemisplitTree::perform_simulation() {
                     goto terminal;
                 }
             }
-            child_index = get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
+            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
             ri = state.apply_action_with_revert(children[child_index].action);
             move_chooser.switch_context(children[child_index].action, current_player);
         }
