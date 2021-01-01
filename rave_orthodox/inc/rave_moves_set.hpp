@@ -21,8 +21,15 @@ public:
         , children(_children) {}
 
     template <typename M>
-    int insert(const M& move, const int player, const int context = 0) {
-        return moves_set[player].insert(move, context);
+    int insert(const M& move, const int player, const bool insert = true, const int context = 0) {
+        const auto new_context = moves_set[player].insert(move, insert, context);
+        #if RAVE >= 2
+        if (reasoner::is_switch(move.index)) {
+            return 0;
+        }
+        return move.index > 0 ? new_context : context;
+        #endif
+        return 0;
     }
 
     void update_amaf_scores(const uint node_index, const uint child_index, const int player, const simulation_result& results, const int context = 0) {

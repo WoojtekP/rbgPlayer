@@ -151,6 +151,11 @@ uint SemisplitTree::perform_simulation() {
     uint node_sim_count = root_sim_count;
     int current_player;
     state = root_state;
+    #if RAVE
+    static std::vector<int> context_stack;
+    context_stack.clear();
+    int context = 0;
+    #endif
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         current_player = state.get_current_player();
         const auto child_index = get_best_uct_child_index(node_index, node_sim_count);
@@ -160,6 +165,10 @@ uint SemisplitTree::perform_simulation() {
         move_chooser.switch_context(children[child_index].action, current_player);
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
+        #if RAVE >= 2
+        context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+        context_stack.emplace_back(context);
+        #endif
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
         assert(node_index != 0);
@@ -204,6 +213,10 @@ uint SemisplitTree::perform_simulation() {
                 move_chooser.switch_context(children[child_index].action, current_player);
                 complete_turn(state);
                 children_stack.emplace_back(node_index, child_index, current_player);
+                #if RAVE >= 2
+                context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+                context_stack.emplace_back(context);
+                #endif
                 node_index = children[child_index].index;
                 node_sim_count = children[child_index].sim_count;
                 assert(node_index > 0);
@@ -226,6 +239,10 @@ uint SemisplitTree::perform_simulation() {
         }
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
+        #if RAVE >= 2
+        context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+        context_stack.emplace_back(context);
+        #endif
         ++state_count;
         auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
         auto new_node_index = create_node(state, status);
@@ -253,6 +270,10 @@ uint SemisplitTree::perform_simulation() {
                             std::swap(children[j], children[fst]);
                         }
                         children_stack.emplace_back(new_node_index, fst, current_player);
+                        #if RAVE >= 2
+                        context = moves_set.insert(children[fst].action, current_player - 1, false, context);
+                        context_stack.emplace_back(context);
+                        #endif
                         break;
                     }
                 }
@@ -292,7 +313,6 @@ uint SemisplitTree::perform_simulation() {
     }
     terminal:
     #if RAVE > 0
-    int context = 0;
     if constexpr (!IS_NODAL) {
         for (const auto& action : path) {
             [[maybe_unused]] int new_context = moves_set.insert(action, current_player - 1, context);
@@ -317,7 +337,9 @@ uint SemisplitTree::perform_simulation() {
         children[child_index].sim_count++;
         children[child_index].total_score += results[player - 1];
         #if RAVE > 0
-        moves_set.update_amaf_scores(node_index, child_index, player - 1, results);  // context
+        assert(!context_stack.empty());
+        moves_set.update_amaf_scores(node_index, child_index, player - 1, results, context_stack.back());
+        context_stack.pop_back();
         #endif
     }
     ++root_sim_count;
@@ -336,6 +358,7 @@ uint SemisplitTree::perform_simulation() {
     move_chooser.reset_context();
     #endif
     #if RAVE > 0
+    assert(context_stack.empty());
     moves_set.reset_moves();
     #endif
     return state_count;

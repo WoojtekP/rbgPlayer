@@ -8,7 +8,7 @@ struct HashsetEntry {
     reasoner::move move;
     uint next = 0;
     HashsetEntry() = default;
-    HashsetEntry(const reasoner::move mv, const int)
+    HashsetEntry(const reasoner::move mv, const bool, const int)
         : move(mv)
         , next(0) {}
     inline bool equals(const reasoner::move& mv, const int = 0) const {
@@ -16,6 +16,9 @@ struct HashsetEntry {
     }
     int get_context() const {
         return 0;
+    }
+    operator bool() const {
+        return true;
     }
 };
 

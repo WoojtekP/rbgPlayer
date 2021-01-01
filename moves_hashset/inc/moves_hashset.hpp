@@ -24,14 +24,14 @@ public:
     void operator=(const MovesHashset&&) = delete;
 
     template <typename T>
-    int insert(const T& move, const int context = 0) {
+    int insert(const T& move, const bool inserted = true, const int context = 0) {
         uint hashindex = hash(move, context) % capacity;
         uint index = hashtable[hashindex];
         [[maybe_unused]] bool found = false;
         uint bucket_id = 0;
         if (index == 0) {
             bucket_id = hashtable[hashindex] = buckets.size();
-            buckets.emplace_back(move, context);
+            buckets.emplace_back(move, inserted, context);
         }
         else {
             uint collisions = 0;
@@ -42,7 +42,7 @@ public:
                 }
                 if (buckets[index].next == 0) {
                     bucket_id = buckets[index].next = buckets.size();
-                    buckets.emplace_back(move, context);
+                    buckets.emplace_back(move, inserted, context);
                     break;
                 }
                 index = buckets[index].next;
@@ -74,7 +74,7 @@ public:
         uint index = hashtable[hashindex];
         while (index != 0) {
             if (buckets[index].equals(move, context)) {
-                return true;
+                return buckets[index];
             }
             index = buckets[index].next;
         }
