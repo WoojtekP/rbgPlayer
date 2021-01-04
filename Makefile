@@ -54,7 +54,7 @@ ifeq (0, $(DEBUG))
 ifeq (0, $(RELEASE))
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 else
-COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Ofast -march=native -flto -std=c++17 -pthread -s -DNDEBUG -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
+COMMON_CFLAGS = -Wall -Wextra -Wpedantic -Wno-unused-variable -Wno-unused-parameter -Ofast -march=native -flto -std=c++17 -pthread -s -DNDEBUG -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
 endif
 else
 COMMON_CFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -pthread -g -DMAST=$(MAST) -DRAVE=$(RAVE) -DSTATS=$(STATS)
