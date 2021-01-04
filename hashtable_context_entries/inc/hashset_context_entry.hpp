@@ -8,9 +8,9 @@ struct HashsetContextEntry {
     reasoner::action_representation move;
     int context = 0;
     uint next = 0;
-    bool inserted = true;
+    bool inserted = false;
     HashsetContextEntry() = default;
-    HashsetContextEntry(const reasoner::action_representation mv, const bool ins, const int ctx = 0)
+    HashsetContextEntry(const reasoner::action_representation mv, const int ctx, const bool ins = false)
         : move(mv)
         , context(ctx)
         , next(0)
@@ -20,9 +20,6 @@ struct HashsetContextEntry {
     }
     int get_context() const {
         return context;
-    }
-    operator bool() const {
-        return inserted;
     }
 };
 

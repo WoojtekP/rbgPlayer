@@ -8,9 +8,9 @@
 struct HashmapEntry {
     reasoner::move move;
     uint next = 0;
-    score total_score;
+    score total_score {0.0, 0.0};
     HashmapEntry() = default;
-    HashmapEntry(const reasoner::move& mv, double sum, double weight, const int = 0)
+    HashmapEntry(const reasoner::move& mv, const int, double sum = 0.0, double weight = 0.0)
         : move(mv)
         , next(0)
         , total_score(sum, weight) {}

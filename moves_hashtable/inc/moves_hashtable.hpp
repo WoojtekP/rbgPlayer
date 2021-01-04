@@ -44,6 +44,47 @@ protected:
             }
         }
     }
+
+    template <typename T>
+    uint find_or_insert(const T& move, const int context = 0) {
+        uint hashindex = hash(move, context) % capacity;
+        uint index = hashtable[hashindex];
+        if (index == 0) {
+            hashtable[hashindex] = buckets.size();
+            buckets.emplace_back(move, context);
+        }
+        else {
+            while (true) {
+                if (buckets[index].equals(move, context)) {
+                    return index;
+                }
+                if (buckets[index].next == 0) {
+                    buckets[index].next = buckets.size();
+                    buckets.emplace_back(move, context);
+                    break;
+                }
+                index = buckets[index].next;
+            }
+        }
+        if (buckets.size() * HASH_OVERLOAD_FACTOR >= capacity) {
+            grow_hashtable();
+        }
+        return buckets.size() - 1;
+    }
+
+    template <typename T>
+    uint find_or_get_default(const T& move, const int context = 0) {
+        uint hashindex = hash(move, context) % capacity;
+        uint index = hashtable[hashindex];
+        while (index != 0) {
+            if (buckets[index].equals(move, context)) {
+                return index;
+            }
+            index = buckets[index].next;
+        }
+        return 0;
+    }
+
 public:
     MovesHashtable(const uint capacity_lvl)
         : capacity_level(capacity_lvl)
@@ -60,6 +101,13 @@ public:
     void operator=(const MovesHashtable&&) = delete;
     ~MovesHashtable() {
         delete [] hashtable;
+    }
+
+    uint get_context(const reasoner::action_representation action, const int context) {
+        if (action.index > 0) {
+            return reasoner::is_switch(action.index) ? 0 : find_or_insert(action, context);
+        }
+        return context;
     }
 };
 

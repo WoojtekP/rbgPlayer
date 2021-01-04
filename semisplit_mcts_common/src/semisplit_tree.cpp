@@ -4,6 +4,8 @@
 #include <iomanip>
 #endif
 
+#include <iostream>
+
 #include <boost/range/adaptor/reversed.hpp>
 
 #include "game_state.hpp"
@@ -151,7 +153,7 @@ uint SemisplitTree::perform_simulation() {
     uint node_sim_count = root_sim_count;
     int current_player;
     state = root_state;
-    #if RAVE
+    #if RAVE > 0
     static std::vector<int> context_stack;
     context_stack.clear();
     int context = 0;
@@ -165,9 +167,10 @@ uint SemisplitTree::perform_simulation() {
         move_chooser.switch_context(children[child_index].action, current_player);
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
-        #if RAVE >= 2
-        context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+        #if RAVE > 0
         context_stack.emplace_back(context);
+        context = moves_set.get_context(children[child_index].action, current_player - 1, context);
+        assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
         #endif
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
@@ -213,9 +216,11 @@ uint SemisplitTree::perform_simulation() {
                 move_chooser.switch_context(children[child_index].action, current_player);
                 complete_turn(state);
                 children_stack.emplace_back(node_index, child_index, current_player);
-                #if RAVE >= 2
-                context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+                #if RAVE > 0
                 context_stack.emplace_back(context);
+                context = moves_set.get_context(children[child_index].action, current_player - 1, context);
+                assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
+                assert(!state.is_nodal() || reasoner::is_switch(children[child_index].action.index));
                 #endif
                 node_index = children[child_index].index;
                 node_sim_count = children[child_index].sim_count;
@@ -239,9 +244,10 @@ uint SemisplitTree::perform_simulation() {
         }
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
-        #if RAVE >= 2
-        context = moves_set.insert(children[child_index].action, current_player - 1, false, context);
+        #if RAVE > 0
         context_stack.emplace_back(context);
+        context = moves_set.get_context(children[child_index].action, current_player - 1, context);
+        assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
         #endif
         ++state_count;
         auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
@@ -270,9 +276,10 @@ uint SemisplitTree::perform_simulation() {
                             std::swap(children[j], children[fst]);
                         }
                         children_stack.emplace_back(new_node_index, fst, current_player);
-                        #if RAVE >= 2
-                        context = moves_set.insert(children[fst].action, current_player - 1, false, context);
+                        #if RAVE > 0
                         context_stack.emplace_back(context);
+                        context = moves_set.get_context(children[fst].action, current_player - 1, context);
+                        assert(!reasoner::is_switch(children[fst].action.index) || context == 0);
                         #endif
                         break;
                     }
@@ -315,18 +322,12 @@ uint SemisplitTree::perform_simulation() {
     #if RAVE > 0
     if constexpr (!IS_NODAL) {
         for (const auto& action : path) {
-            [[maybe_unused]] int new_context = moves_set.insert(action, current_player - 1, context);
-            #if RAVE >= 2
-            context = new_context;
-            #endif
+            context = moves_set.insert(action, current_player - 1, context);
         }
     }
     assert(context == 0);
     for (const auto& [move, player] : move_chooser.get_path()) {
-        [[maybe_unused]] int new_context = moves_set.insert(move, player - 1, context);
-        #if RAVE >= 2
-        context = end_of_context(move) ? 0 : new_context;
-        #endif
+        context = moves_set.insert(move, player - 1, context);
     }
     assert(context == 0);
     #endif

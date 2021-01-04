@@ -8,7 +8,10 @@ template <typename T>
 struct move_hash_context {
 private:
     std::size_t hash(const reasoner::action_representation action, const int context) const noexcept {
-        return (action.index * 17 + action.cell) * 13 + context;
+        if (action.index > 0) {
+            return (action.index * 17 + action.cell) * 13 + context;
+        }
+        return context;
     }
 public:
     std::size_t operator()(const reasoner::action_representation action, const int context) const noexcept {
