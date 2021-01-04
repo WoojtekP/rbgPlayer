@@ -58,6 +58,7 @@ uint play(GameState& state,
         if (!apply_random_move_exhaustive(state, move_chooser, cache, 0)) {
             break;
         }
+        assert(move_chooser.get_context() == 0);
         ++state_count;
         while (state.get_current_player() == KEEPER) {
             if (!state.apply_any_move(cache)) {

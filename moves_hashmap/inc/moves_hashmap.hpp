@@ -30,8 +30,27 @@ public:
         const auto index = find_or_insert(move, context);
         buckets[index].total_score.sum += score;
         buckets[index].total_score.weight += 1.0;
-        return index;
+        #if MAST >= 2
+        if (move.index > 0) {
+            return reasoner::is_switch(move.index) ? 0 : index;
+        }
+        return context;
+        #endif
+        return 0;
     }
+
+    #if MAST >= 2 && defined(ORTHODOX_TREE)
+    int insert_or_update(const reasoner::move& move, const uint score, const int context = 0) {
+        assert(context == 0);
+        int bucket_id = context;
+        for (const auto action : move.mr) {
+            bucket_id = find_or_insert(action, bucket_id);
+            buckets[bucket_id].total_score.sum += score;
+            buckets[bucket_id].total_score.weight += 1.0;
+        }
+        return 0;
+    }
+    #endif
 
     template <typename T>
     score get_score_or_default_value(const T& move, const int context = 0) {
@@ -39,6 +58,21 @@ public:
         const auto index = find_or_get_default(move, context);
         return buckets[index].total_score.weight == 0.0 ? default_score : buckets[index].total_score;
     }
+
+    #if MAST >= 2 && defined(ORTHODOX_TREE)
+    score get_score_or_default_value(const reasoner::move& move, const int context = 0) {
+        static const score default_score(EXPECTED_MAX_SCORE, 1.0);
+        assert(context == 0);
+        int bucket_id = context;
+        for (const auto action : move.mr) {
+            bucket_id = find_or_get_default(action, bucket_id);
+            if (bucket_id == 0) {
+                return default_score;
+            }
+        }
+        return buckets[bucket_id].total_score.weight == 0 ? default_score : buckets[bucket_id].total_score;
+    }
+    #endif
 
     void apply_decay_factor() {
         for (uint i = 1; i < buckets.size(); i++) {

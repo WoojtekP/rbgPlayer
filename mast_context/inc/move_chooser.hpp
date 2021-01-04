@@ -19,6 +19,10 @@ private:
     bool end_of_context(const reasoner::action_representation action) const {
         return reasoner::is_switch(action.index);
     }
+    bool end_of_context(const reasoner::move& move) const {
+        assert(end_of_context(move.mr.back()));
+        return true;
+    }
 
 public:
     MoveChooser(void) = default;

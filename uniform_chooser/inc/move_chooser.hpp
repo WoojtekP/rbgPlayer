@@ -25,6 +25,10 @@ public:
     MoveChooser& operator=(MoveChooser&&) = default;
     ~MoveChooser(void) = default;
 
+    int get_context() {
+        return 0;
+    }
+
     const std::vector<std::pair<T, int>>& get_path() const {
         return path;
     }

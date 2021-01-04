@@ -30,6 +30,10 @@ public:
     MastChooser& operator=(MastChooser&&) = default;
     ~MastChooser(void) = default;
 
+    int get_context() {
+        return context;
+    }
+
     const std::vector<std::pair<T, int>>& get_path() const {
         return path;
     }

@@ -26,6 +26,7 @@ available_players = set([
     "orthodox_orthodox_mast_tgrave",
     "orthodox_semisplit",
     "orthodox_semisplit_mastsplit",
+    "orthodox_semisplit_mastcontext",
     "orthodox_semisplit_mastsplit_tgrave",
     "semisplit_semisplit",
     "semisplit_semisplit_mast",
