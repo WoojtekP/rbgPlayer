@@ -52,8 +52,8 @@ available_players = set([
     "rollup_orthodox"])
 
 split_strategies = {
-    "ModPlus"           : "splitStrategy_ModPlus.sh",
-    "noShifttablesDots" : "splitStrategy_PlusShift.sh"
+    "ModPlus"      : "splitStrategy_ModPlus.sh",
+    "ModPlusShift" : "splitStrategy_PlusShift.sh"
 }
 
 def gen_directory(player_id):
