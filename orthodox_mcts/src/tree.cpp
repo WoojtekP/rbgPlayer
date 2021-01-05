@@ -91,20 +91,23 @@ uint Tree::perform_simulation() {
         children[child_index].index = new_node_index;
     }
     #if RAVE > 0
-    [[maybe_unused]] reasoner::move_representation mr;
+    [[maybe_unused]] static reasoner::move mv;
+    mv.mr.clear();
     for (const auto& [move, player] : move_chooser.get_path()) {
         if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
             moves_set.insert(move, player - 1);
         }
         else {
-            mr.insert(mr.end(), move.mr.begin(), move.mr.end());
-            if (!move.mr.empty() && reasoner::is_switch(move.mr.back().index)) {
-                moves_set.insert(mr, player - 1);
-                mr.clear();
+            if (move.index > 0) {
+                mv.mr.push_back(move);
+                if (reasoner::is_switch(move.index)) {
+                    moves_set.insert(mv, player - 1);
+                    mv.mr.clear();
+                }
             }
         }
     }
-    assert(mr.empty());
+    assert(mv.mr.empty());
     #endif
     for (const auto [node_index, child_index, player] : boost::adaptors::reverse(children_stack)) {
         assert(children[child_index].index != 0);
