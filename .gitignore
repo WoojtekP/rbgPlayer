@@ -1,4 +1,5 @@
 # Directories
+.directory
 /.vscode
 /build
 
