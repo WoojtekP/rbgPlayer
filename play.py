@@ -17,6 +17,7 @@ from itertools import chain
 game_name = "game"
 script_dir = sys.path[0]
 compiler_dir = os.path.realpath(script_dir + "/../rbg2cpp/bin/rbg2cpp")
+split_strategies_dir = os.path.realpath(script_dir + "/split_strategies") + "/"
 build_dir = "build/"
 available_players = set([
     "orthodox_orthodox",
@@ -51,8 +52,8 @@ available_players = set([
     "rollup_orthodox"])
 
 split_strategies = {
-    "ModPlus"           : "--add_dots_in_alternatives true --disable_adding_dots_in_shifttables false",
-    "noShifttablesDots" : "--add_dots_in_alternatives true --disable_adding_dots_in_shifttables true"
+    "ModPlus"           : "splitStrategy_ModPlus.sh",
+    "noShifttablesDots" : "splitStrategy_PlusShift.sh"
 }
 
 def gen_directory(player_id):
@@ -236,10 +237,12 @@ def receive_player_name(server_socket, game):
 def apply_split_strategy(split_strategy, player_id):
     if split_strategy is not None:
         print("Using split strategy:", split_strategy)
-        splitter_run_list = ["../rbggamemanager/build/print", game_path(player_id)] + split_strategies[split_strategy].split()
-        result = subprocess.run(splitter_run_list, stdout=subprocess.PIPE)
-        with open(game_path(player_id), 'w') as out:
-            out.write(result.stdout.decode("utf-8") + "\n")
+        splitter_run_list = [split_strategies_dir + split_strategies[split_strategy], os.path.realpath(game_path(player_id))]
+        print(splitter_run_list)
+        result = subprocess.run(splitter_run_list)
+        if result.returncode != 0:
+            print("Error: split strategy wasn\'t applied properly")
+            exit(1);
 
 def compile_player(config_data, player_id):
     assert(config_data.player_strategy in available_players)
