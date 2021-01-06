@@ -94,18 +94,22 @@ uint Tree::perform_simulation() {
     [[maybe_unused]] static reasoner::move mv;
     mv.mr.clear();
     for (const auto& [move, player] : move_chooser.get_path()) {
-        if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
-            moves_set.insert(move, player - 1);
-        }
-        else {
-            if (move.index > 0) {
-                mv.mr.push_back(move);
-                if (reasoner::is_switch(move.index)) {
-                    moves_set.insert(mv, player - 1);
-                    mv.mr.clear();
-                }
+        // TODO: fix using if constexpt ()
+        #if defined(ORTHODOX_SIMULATOR)
+        // if constexpr (std::is_same<reasoner::move, simulation_move_type>::value) {
+        moves_set.insert(move, player - 1);
+        // }
+        // else {
+        #else
+        if (move.index > 0) {
+            mv.mr.push_back(move);
+            if (reasoner::is_switch(move.index)) {
+                moves_set.insert(mv, player - 1);
+                mv.mr.clear();
             }
         }
+        // }
+        #endif
     }
     assert(mv.mr.empty());
     #endif
