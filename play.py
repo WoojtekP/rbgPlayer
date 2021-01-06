@@ -52,7 +52,7 @@ available_players = set([
     "rollup_orthodox"])
 
 split_strategies = {
-    "ModPlus"      : "splitStrategy_ModPlus.sh",
+    "ModPlus"      : "splitStrategy_Plus.sh",
     "ModPlusShift" : "splitStrategy_PlusShift.sh"
 }
 
