@@ -367,14 +367,10 @@ uint SemisplitTree::perform_simulation() {
 
 void SemisplitTree::reparent_along_move(const reasoner::move& move) {
     #if STATS
-    auto current_player = root_state.get_current_player();
+    ++turn_number;
     #endif
     root_state.apply_move(move);
     complete_turn(root_state);
-    #if STATS
-    if (current_player != root_state.get_current_player())
-        ++turn_number;
-    #endif
     uint root_index = 0;
     static std::vector<std::tuple<uint, uint, uint>> stack;
     stack.clear();

@@ -141,14 +141,10 @@ uint Tree::perform_simulation() {
 
 void Tree::reparent_along_move(const reasoner::move& move) {
     #if STATS
-    auto current_player = root_state.get_current_player();
+    ++turn_number;
     #endif
     root_state.apply_move(move);
     complete_turn(root_state);
-    #if STATS
-    if (current_player != root_state.get_current_player())
-        ++turn_number;
-    #endif
     uint root_index = 0;
     const auto [fst, lst] = nodes.front().children_range;
     for (auto i = fst ; i < lst; ++i) {
@@ -179,7 +175,7 @@ reasoner::move Tree::choose_best_move() {
     assert(nodes.front().is_expanded());
     const auto best_child = get_top_ranked_child_index(0);
     #if STATS
-    std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
+    std::cout << "turn number " << turn_number << std::endl;
     #if RAVE > 0
     const double beta = std::sqrt(EQUIVALENCE_PARAMETER / static_cast<double>(3 * root_sim_count + EQUIVALENCE_PARAMETER));
     std::cout << "rave beta " << beta << std::endl;
@@ -196,7 +192,7 @@ reasoner::move Tree::choose_best_move() {
         if (children[i].amaf.count > 0) {
             double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf.score / children[i].amaf.count);
             std::cout << " (avg_with_rave " << priority << ")";
-        }   
+        }
         #endif
         std::cout << std::endl;
     }

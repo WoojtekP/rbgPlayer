@@ -97,7 +97,7 @@ uint Tree::perform_simulation() {
 
 reasoner::move Tree::choose_best_move() {
     #if STATS
-    std::cout << "turn number " << turn_number / 2 + 1 << std::endl;
+    std::cout << "turn number " << turn_number << std::endl;
     std::cout << std::fixed << std::setprecision(2);
     #endif
     static std::vector<uint> children_indices;
