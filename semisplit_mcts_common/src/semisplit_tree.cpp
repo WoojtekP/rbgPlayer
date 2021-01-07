@@ -384,7 +384,7 @@ void SemisplitTree::reparent_along_move(const reasoner::move& move) {
             break;
         }
         while (fst < lst) {
-            if (children[fst].action.index >= 0) {
+            if (children[fst].action.index <= 0) {
                 stack.emplace_back(root_index, fst, root_sim_count);
                 root_index = children[fst].index;
                 root_sim_count = children[fst].sim_count;
