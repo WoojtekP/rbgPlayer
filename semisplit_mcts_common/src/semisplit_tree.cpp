@@ -480,7 +480,7 @@ reasoner::move SemisplitTree::get_move_from_saved_path_with_random_suffix(std::v
     reasoner::move move;
     for (const auto child_index : children_indices) {
         const auto& action = children[child_index].action;
-        if (action.index >= 0) {
+        if (action.index > 0) {
             move.mr.emplace_back(action);
         }
         state.apply_action(action);
