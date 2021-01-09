@@ -238,7 +238,6 @@ def apply_split_strategy(split_strategy, player_id):
     if split_strategy is not None:
         print("Using split strategy:", split_strategy)
         splitter_run_list = [split_strategies_dir + split_strategies[split_strategy], os.path.realpath(game_path(player_id))]
-        print(splitter_run_list)
         result = subprocess.run(splitter_run_list)
         if result.returncode != 0:
             print("Error: split strategy wasn\'t applied properly")
