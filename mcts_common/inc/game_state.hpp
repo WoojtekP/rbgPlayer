@@ -6,7 +6,17 @@
 
 #if REASONING_OVERHEAD == 1
 
-typedef reasoner::game_state GameState;
+class GameState final : public reasoner::game_state {
+public:
+    void apply_move(const reasoner::move& move) {
+        reasoner::game_state::apply_move(move);
+    }
+    #if defined(SEMISPLIT_TREE) || defined(SEMISPLIT_SIMULATOR)
+    void apply_move(const reasoner::action_representation action) {
+        reasoner::game_state::apply_action(action);
+    }
+    #endif
+};
 
 #else
 
@@ -42,6 +52,12 @@ public:
             state.apply_action_with_revert(action);
         }
         return reasoner::game_state::apply_action_with_revert(action);
+    }
+    void apply_move(const reasoner::action_representation action) {
+        for (auto& state : states) {
+            state.apply_action(action);
+        }
+        reasoner::game_state::apply_action(action);
     }
     void apply_action(const reasoner::action_representation action) {
         for (auto& state : states) {

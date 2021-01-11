@@ -13,8 +13,9 @@
 class SemisplitTree : public MctsTree {
 protected:
     #if STATS
-    void print_node_stats(const semisplit_child&);
-    void print_action(const reasoner::action_representation);
+    void print_node_stats(const child&);
+    void print_move(const reasoner::move&);
+    void print_move(const reasoner::action_representation);
     #endif
     uint create_node(GameState&, const node_status = node_status::unknown);
     void create_children(const uint, GameState&);
@@ -22,7 +23,6 @@ protected:
     bool save_path_to_nodal_state(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
     bool random_walk_to_nodal(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
     void choose_best_greedy_move(std::vector<uint>&);
-    reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:
     SemisplitTree(void);
     SemisplitTree(const SemisplitTree&) = delete;
@@ -31,7 +31,6 @@ public:
     SemisplitTree& operator=(SemisplitTree&&) = default;
     ~SemisplitTree(void) = default;
     uint perform_simulation();
-    void reparent_along_move(const reasoner::move&);
     game_status_indication get_status(const int);
 };
 
