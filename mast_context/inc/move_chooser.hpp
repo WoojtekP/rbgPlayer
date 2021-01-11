@@ -32,11 +32,12 @@ public:
     MoveChooser& operator=(MoveChooser&&) = default;
     ~MoveChooser(void) = default;
 
-    template <typename M>
-    void update_move(const M& move, const simulation_result& results, const int player) {
+    void update_move(const reasoner::action_representation action, const simulation_result& results, const int player) {
         assert(player != KEEPER);
-        auto new_context = moves[player - 1].insert_or_update(move, results[player - 1], context);
-        context = end_of_context(move) ? 0 : new_context;
+        auto new_context = moves[player - 1].insert_or_update(action, results[player - 1], context);
+        if (action.index > 0) {
+            context = reasoner::is_switch(action.index) ? 0 : new_context;
+        }
     }
 
     void update_all_moves(const simulation_result& results) {

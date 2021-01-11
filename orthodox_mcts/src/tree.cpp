@@ -118,8 +118,14 @@ uint Tree::perform_simulation() {
         assert(player != KEEPER);
         ++children[child_index].sim_count;
         children[child_index].total_score += results[player - 1];
-        #if MAST > 0
+        #if MAST == 1
         move_chooser.update_move(children[child_index].move, results, player);
+        #elif MAST == 2 && defined(SEMISPLIT_SIMULATOR)
+        assert(move_chooser.get_context() == 0);
+        for (const auto action : children[child_index].move.mr) {
+            move_chooser.update_move(action, results, player);
+        }
+        assert(move_chooser.get_context() == 0);
         #endif
         #if RAVE > 0
         moves_set.update_amaf_scores(node_index, child_index, player - 1, results);
