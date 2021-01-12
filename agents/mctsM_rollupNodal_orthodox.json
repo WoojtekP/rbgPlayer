@@ -7,7 +7,7 @@
     "algorithm" : {
         "name" : "MCTS",
         "tree_strategy" : "rollup",
-        "simulation_strategy" : "semisplit",
+        "simulation_strategy" : "orthodox",
         "split_strategy" : "",
         "parameters" : {
             "exploration_constant" : 0.4,
