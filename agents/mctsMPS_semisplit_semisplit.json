@@ -1,0 +1,20 @@
+{
+    "general" : {
+        "buffer_time" : 100,
+        "simulate_during_opp_turn" : false,
+        "reasoning_overhead" : 1
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "semisplit",
+        "simulation_strategy" : "semisplit",
+        "split_strategy" : "ModPlusShift",
+        "parameters" : {
+            "exploration_constant" : 0.4,
+            "max_semidepth" : 50,
+            "is_nodal" : false,
+            "greedy_choice" : true
+        }
+    },
+    "heuristics" : []
+}
