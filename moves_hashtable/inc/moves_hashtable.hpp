@@ -45,8 +45,7 @@ protected:
         }
     }
 
-    template <typename T>
-    uint find_or_insert(const T& move, const int context = 0) {
+    uint find_or_insert(const decltype(E::move)& move, const int context = 0) {
         uint hashindex = hash(move, context) % capacity;
         uint index = hashtable[hashindex];
         if (index == 0) {
@@ -72,8 +71,7 @@ protected:
         return buckets.size() - 1;
     }
 
-    template <typename T>
-    uint find_or_get_default(const T& move, const int context = 0) {
+    uint find_or_get_default(const decltype(E::move)& move, const int context = 0) {
         uint hashindex = hash(move, context) % capacity;
         uint index = hashtable[hashindex];
         while (index != 0) {

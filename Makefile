@@ -39,7 +39,7 @@ MOVES_HASHSET_CONTEXT := moves_hashset moves_hashtable hashtable_context_entries
 
 TGRAVE_ORTHODOX := rave_orthodox moves_set $(MOVES_HASHSET)
 TGRAVE_SPLIT := rave_orthodox moves_set_split actions_set
-RAVE_CONTEXT := rave_orthodox moves_set_context $(MOVES_HASHSET_CONTEXT)
+RAVE_CONTEXT := rave_context moves_set_context $(MOVES_HASHSET_CONTEXT)
 RAVE_MIX := rave_mix moves_set_mix actions_set $(MOVES_HASHSET_CONTEXT)
 
 # SIMULATORS

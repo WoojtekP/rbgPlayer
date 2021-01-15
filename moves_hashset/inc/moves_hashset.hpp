@@ -24,15 +24,13 @@ public:
     void operator=(const MovesHashset&) = delete;
     void operator=(const MovesHashset&&) = delete;
 
-    template <typename T>
-    int insert(const T& move, const int context = 0) {
+    int insert(const decltype(E::move)& move, const int context = 0) {
         const auto index = find_or_insert(move, context);
         buckets[index].inserted = true;
         return index;
     }
 
-    template <typename T>
-    bool find(const T& move, const int context = 0) {
+    bool find(const decltype(E::move)& move, const int context = 0) {
         const auto index = find_or_get_default(move, context);
         return buckets[index].inserted;
     }

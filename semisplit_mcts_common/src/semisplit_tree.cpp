@@ -17,13 +17,7 @@
 
 
 namespace {
-    std::vector<reasoner::action_representation> legal_actions[MAX_SEMIDEPTH];
-
-#if RAVE >= 2
-    bool end_of_context(const reasoner::action_representation action) {
-        return reasoner::is_switch(action.index);
-    }
-#endif
+std::vector<reasoner::action_representation> legal_actions[MAX_SEMIDEPTH];
 }  // namespace
 
 #if STATS

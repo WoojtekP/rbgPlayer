@@ -21,40 +21,25 @@ public:
         , children(_children) {}
 
     template <typename M>
-    int get_context(const M& move, const int player, const int context) {
-        #if RAVE >= 2
-        return moves_set[player].get_context(move, context);
-        #endif
-        assert(context == 0);
+    int get_context(const M&, const int, const int = 0) {
         return 0;
     }
 
     template <typename M>
-    int insert(const M& move, const int player, const int context = 0) {
-        #if RAVE >= 2
-        const auto new_context = moves_set[player].insert(move, context);
-        if (move.index > 0) {
-            return reasoner::is_switch(move.index) ? 0 : new_context;
-        }
-        return context;
-        #endif
-        assert(context == 0);
-        moves_set[player].insert(move, context);
+    int insert(const M& move, const int player, const int = 0) {
+        moves_set[player].insert(move);
         return 0;
     }
 
-    void update_amaf_scores(const uint node_index, const uint child_index, const int player, const simulation_result& results, const int context = 0) {
-        #if RAVE < 2
-        assert(context == 0);
-        #endif
+    void update_amaf_scores(const uint node_index, const uint child_index, const int player, const simulation_result& results, const int = 0) {
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
-            if (moves_set[player].find(children[i].get_edge(), context)) {
+            if (moves_set[player].find(children[i].get_edge())) {
                 children[i].amaf.score += results[player];
                 ++children[i].amaf.count;
             }
         }
-        moves_set[player].insert(children[child_index].get_edge(), context);
+        insert(children[child_index].get_edge(), player);
     }
 
     void reset_moves() {
