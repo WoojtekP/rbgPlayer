@@ -56,11 +56,11 @@ public:
     bool find(const T& semimove, const int context = 0) {
         const auto i_node = get_index_node_by_move_representation_if_exists(semimove.mr, context);
         if (i_node == -1) {
-            return -1;
+            return false;
         }
         const auto c_node = index_nodes[i_node].cell[semimove.cell - 1];
         if (c_node == -1) {
-            return -1;
+            return false;
         }
         const auto& cell_node = cell_nodes[c_node];
         const auto end_it = states.begin() + cell_node.lst;
