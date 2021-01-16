@@ -52,6 +52,8 @@ public:
     }
 
     void update_amaf_scores(const uint node_index, const uint child_index, const int player, const simulation_result& results, const int context = 0) {
+        actions[player].insert(children[child_index].get_edge());
+        hashset[player].insert(children[child_index].get_edge(), context);
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             if (actions[player].find(children[i].get_edge())) {
@@ -63,8 +65,6 @@ public:
                 ++children[i].amaf.count;
             }
         }
-        actions[player].insert(children[child_index].get_edge());
-        hashset[player].insert(children[child_index].get_edge(), context);
     }
 
     void reset_moves() {
