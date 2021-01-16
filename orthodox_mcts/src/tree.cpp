@@ -195,10 +195,8 @@ reasoner::move Tree::choose_best_move() {
         print_move(children[i].get_actions());
         #if RAVE > 0
         std::cout << " amaf_avg " << (static_cast<double>(children[i].amaf.score) / children[i].amaf.count) << " amaf_count " << children[i].amaf.count;
-        if (children[i].amaf.count > 0) {
-            double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf.score / children[i].amaf.count);
-            std::cout << " (avg_with_rave " << priority << ")";
-        }
+        double priority = (1.0 - beta)*static_cast<double>(children[i].total_score) / children[i].sim_count + beta * (children[i].amaf.score / children[i].amaf.count);
+        std::cout << " (avg_with_rave " << priority << ")";
         #endif
         std::cout << std::endl;
     }
