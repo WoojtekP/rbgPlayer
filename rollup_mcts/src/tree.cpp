@@ -75,6 +75,7 @@ void Tree::roll_up(const uint node_index, std::vector<uint>& children_indices) {
         else {
             for (auto j = fst; j < lst; ++j) {
                 children.push_back(std::move(children[j]));
+                assert(children.back().move.mr.size() + mr_prefix.size() <= children.back().move.mr.max_size());
                 children.back().move.mr.insert(children.back().move.mr.begin(), mr_prefix.begin(), mr_prefix.end());
             }
         }
@@ -91,6 +92,9 @@ reasoner::move Tree::get_move_from_saved_path_with_random_suffix(std::vector<uin
     state = root_state;
     reasoner::move move;
     for (const auto child_index : children_indices) {
+        if (!move.mr.empty() && move.mr.back().index <= 0) {
+            move.mr.pop_back();
+        }
         const auto& mr = children[child_index].move.mr;
         move.mr.insert(move.mr.end(), mr.begin(), mr.end());
         state.apply_move(move);
