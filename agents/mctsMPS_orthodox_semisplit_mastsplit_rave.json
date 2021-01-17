@@ -8,7 +8,7 @@
         "name" : "MCTS",
         "tree_strategy" : "orthodox",
         "simulation_strategy" : "semisplit",
-        "split_strategy" : "",
+        "split_strategy" : "ModPlusShift",
         "parameters" : {
             "exploration_constant" : 0.2,
             "max_semidepth" : 50
@@ -25,9 +25,10 @@
             }
         },
         {
-            "name" : "RAVECONTEXT",
+            "name" : "TGRAVE",
             "parameters" : {
-                "equivalence_parameter" : 250
+                "equivalence_parameter" : 250,
+                "ref" : 0
             }
         }
     ]

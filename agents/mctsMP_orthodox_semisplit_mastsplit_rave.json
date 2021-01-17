@@ -1,0 +1,35 @@
+{
+    "general" : {
+        "buffer_time" : 100,
+        "simulate_during_opp_turn" : false,
+        "reasoning_overhead" : 1
+    },
+    "algorithm" : {
+        "name" : "MCTS",
+        "tree_strategy" : "orthodox",
+        "simulation_strategy" : "semisplit",
+        "split_strategy" : "ModPlus",
+        "parameters" : {
+            "exploration_constant" : 0.2,
+            "max_semidepth" : 50
+        }
+    },
+    "heuristics" : [
+        {
+            "name" : "MASTSPLIT",
+            "parameters" : {
+                "epsilon" : 0.4,
+                "decay_factor" : 0.2,
+                "tree_only" : false,
+                "only_states" : true
+            }
+        },
+        {
+            "name" : "TGRAVE",
+            "parameters" : {
+                "equivalence_parameter" : 250,
+                "ref" : 0
+            }
+        }
+    ]
+}
