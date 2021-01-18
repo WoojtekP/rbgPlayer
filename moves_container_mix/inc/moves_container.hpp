@@ -18,9 +18,9 @@ public:
     template <typename T>
     int insert_or_update(const T& move, const uint score, const int context = 0) {
         if constexpr (MAST_EQUIVALENCE_PARAMETER > 0) {
-            arr.insert_or_update(move, static_cast<double>(score), 1.0);
+            arr.insert_or_update(move, static_cast<double>(score));
         }
-        return moves.insert_or_update(move, static_cast<double>(score), 1.0, context);
+        return moves.insert_or_update(move, static_cast<double>(score), context);
     }
 
     template <typename T>
