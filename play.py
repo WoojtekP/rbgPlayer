@@ -55,6 +55,7 @@ available_players = set([
 split_strategies = {
     "ModPlus"      : "splitStrategy_Plus.sh",
     "ModPlusShift" : "splitStrategy_PlusShift.sh"
+    "ModShift"     : "splitStrategy_Shift.sh"
 }
 
 def gen_directory(player_id):
