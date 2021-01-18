@@ -54,7 +54,7 @@ available_players = set([
 
 split_strategies = {
     "ModPlus"      : "splitStrategy_Plus.sh",
-    "ModPlusShift" : "splitStrategy_PlusShift.sh"
+    "ModPlusShift" : "splitStrategy_PlusShift.sh",
     "ModShift"     : "splitStrategy_Shift.sh"
 }
 
