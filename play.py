@@ -20,7 +20,15 @@ script_dir = sys.path[0]
 compiler_dir = os.path.realpath(script_dir + "/../rbg2cpp/bin/rbg2cpp")
 split_strategies_dir = os.path.realpath(script_dir + "/split_strategies") + "/"
 build_dir = "build/"
-available_players = get_available_players()
+
+available_players = set()
+with open("Makefile", "r") as makefile:
+    reg = re.compile("(\$\(eval \$\(call PLAYER_KIND_RULES\,[A-Z_]+\,)([a-z_]+)")
+    for line in makefile.readlines():
+        match = reg.search(line)
+        if match:
+            available_players.add(match.group(2))
+
 split_strategies = {
     "ModPlus"      : "splitStrategy_Plus.sh",
     "ModPlusShift" : "splitStrategy_PlusShift.sh",
@@ -160,16 +168,6 @@ class PlayerConfig:
                     config_file.write("constexpr {} {} = {};\n".format(t, name, val))
             config_file.write("\n")
             config_file.write("#endif\n")
-
-def get_available_players():
-    players = set()
-    with open("Makefile", "r") as makefile:
-        reg = re.compile("(\$\(eval \$\(call PLAYER_KIND_RULES\,[A-Z_]+\,)([a-z_]+)")
-        for line in makefile.readlines():
-            match = reg.search(line)
-            if match:
-                players.add(match.group(2))
-    return players
 
 def get_player_kind(config):
     return config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
