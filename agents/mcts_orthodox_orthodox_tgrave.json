@@ -1,23 +1,23 @@
 {
-    "general" : {
-        "buffer_time" : 100,
-        "simulate_during_opp_turn" : false,
-        "reasoning_overhead" : 1
+    "general": {
+        "buffer_time": 100,
+        "simulate_during_opp_turn": false,
+        "reasoning_overhead": 1
     },
-    "algorithm" : {
-        "name" : "MCTS",
-        "tree_strategy" : "orthodox",
-        "simulation_strategy" : "orthodox",
-        "parameters" : {
-            "exploration_constant" : 0.2
+    "algorithm": {
+        "name": "MCTS",
+        "tree_strategy": "orthodox",
+        "simulation_strategy": "orthodox",
+        "parameters": {
+            "exploration_constant": 0.2
         }
     },
-    "heuristics" : [
+    "heuristics": [
         {
-            "name" : "TGRAVE",
-            "parameters" : {
-                "equivalence_parameter" : 250,
-                "ref" : 50
+            "name": "TGRAVE",
+            "parameters": {
+                "equivalence_parameter": 250,
+                "ref": 50
             }
         }
     ]

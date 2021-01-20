@@ -1,35 +1,35 @@
 {
     "heuristics": [
         {
-            "name": "MASTSPLIT", 
+            "name": "MASTSPLIT",
             "parameters": {
-                "decay_factor": 0.2, 
-                "epsilon": 0.4, 
-                "tree_only": false, 
+                "decay_factor": 0.2,
+                "epsilon": 0.4,
+                "tree_only": false,
                 "only_states": true
             }
-        }, 
+        },
         {
-            "name": "TGRAVE", 
+            "name": "TGRAVE",
             "parameters": {
-                "ref": 0, 
+                "ref": 0,
                 "equivalence_parameter": 250
             }
         }
-    ], 
+    ],
     "algorithm": {
-        "tree_strategy": "orthodox", 
-        "split_strategy": "ModPlusShift", 
-        "simulation_strategy": "semisplit", 
-        "name": "MCTS", 
+        "tree_strategy": "orthodox",
+        "split_strategy": "ModPlusShift",
+        "simulation_strategy": "semisplit",
+        "name": "MCTS",
         "parameters": {
-            "max_semidepth": 50, 
+            "max_semidepth": 50,
             "exploration_constant": 0.2
         }
-    }, 
+    },
     "general": {
-        "buffer_time": 100, 
-        "simulate_during_opp_turn": false, 
+        "buffer_time": 100,
+        "simulate_during_opp_turn": false,
         "reasoning_overhead": 1
     }
 }
