@@ -9,6 +9,7 @@ import argparse
 import signal
 import json
 import time
+import re
 from threading import Thread
 from argparse import RawTextHelpFormatter
 from itertools import chain
@@ -19,39 +20,7 @@ script_dir = sys.path[0]
 compiler_dir = os.path.realpath(script_dir + "/../rbg2cpp/bin/rbg2cpp")
 split_strategies_dir = os.path.realpath(script_dir + "/split_strategies") + "/"
 build_dir = "build/"
-available_players = set([
-    "orthodox_orthodox",
-    "orthodox_orthodox_mast",
-    "orthodox_orthodox_mastsplit",
-    "orthodox_orthodox_tgrave",
-    "orthodox_orthodox_mast_tgrave",
-    "orthodox_semisplit",
-    "orthodox_semisplit_mastsplit",
-    "orthodox_semisplit_mastsplit_tgrave",
-    "orthodox_semisplit_mastcontext",
-    "orthodox_semisplit_mastcontext_tgrave",
-    "semisplit_semisplit",
-    "semisplit_semisplit_mast",
-    "semisplit_semisplit_mastsplit",
-    "semisplit_semisplit_mastcontext",
-    "semisplit_semisplit_mastmix",
-    "semisplit_semisplit_tgrave",
-    "semisplit_semisplit_ravecontext",
-    "semisplit_semisplit_ravemix",
-    "semisplit_semisplit_mast_tgrave",
-    "semisplit_semisplit_mastcontext_tgrave",
-    "semisplit_semisplit_mast_ravecontext",
-    "semisplit_semisplit_mastsplit_tgrave",
-    "semisplit_semisplit_mastsplit_ravecontext",
-    "semisplit_semisplit_mastcontext_ravecontext",
-    "semisplit_semisplit_mastmix_ravecontext",
-    "semisplit_orthodox",
-    "semisplit_orthodox_mastsplit",
-    "rollup_semisplit",
-    "rollup_semisplit_mastcontext",
-    "rollup_semisplit_mastmix",
-    "rollup_orthodox"])
-
+available_players = get_available_players()
 split_strategies = {
     "ModPlus"      : "splitStrategy_Plus.sh",
     "ModPlusShift" : "splitStrategy_PlusShift.sh",
@@ -191,6 +160,16 @@ class PlayerConfig:
                     config_file.write("constexpr {} {} = {};\n".format(t, name, val))
             config_file.write("\n")
             config_file.write("#endif\n")
+
+def get_available_players():
+    players = set()
+    with open("Makefile", "r") as makefile:
+        reg = re.compile("(\$\(eval \$\(call PLAYER_KIND_RULES\,[A-Z_]+\,)([a-z_]+)")
+        for line in makefile.readlines():
+            match = reg.search(line)
+            if match:
+                players.add(match.group(2))
+    return players
 
 def get_player_kind(config):
     return config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
