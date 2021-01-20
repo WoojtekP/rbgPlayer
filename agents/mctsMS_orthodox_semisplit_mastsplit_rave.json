@@ -18,15 +18,13 @@
         }
     ], 
     "algorithm": {
-        "tree_strategy": "semisplit", 
-        "split_strategy": "ModPlusShift", 
+        "tree_strategy": "orthodox", 
+        "split_strategy": "ModShift", 
         "simulation_strategy": "semisplit", 
         "name": "MCTS", 
         "parameters": {
             "max_semidepth": 50, 
-            "is_nodal": true, 
-            "exploration_constant": 0.2, 
-            "greedy_choice": true
+            "exploration_constant": 0.2
         }
     }, 
     "general": {

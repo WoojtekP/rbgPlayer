@@ -19,7 +19,7 @@
     ], 
     "algorithm": {
         "tree_strategy": "semisplit", 
-        "split_strategy": "ModPlusShift", 
+        "split_strategy": "ModShift", 
         "simulation_strategy": "semisplit", 
         "name": "MCTS", 
         "parameters": {
