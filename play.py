@@ -15,10 +15,12 @@ from argparse import RawTextHelpFormatter
 from itertools import chain
 
 
-game_name = "game"
 script_dir = sys.path[0]
+os.chdir(script_dir)
+
 compiler_dir = os.path.realpath(script_dir + "/../rbg2cpp/bin/rbg2cpp")
 split_strategies_dir = os.path.realpath(script_dir + "/split_strategies") + "/"
+game_name = "game"
 build_dir = "build/"
 
 available_players = set()
@@ -293,7 +295,6 @@ def cleanup_process(player_process):
     player_process.terminate()
 
 
-os.chdir(script_dir)
 if not os.path.exists(build_dir):
     os.makedirs(build_dir)
 parser = argparse.ArgumentParser(description='Setup and start rbg player.', formatter_class=RawTextHelpFormatter)
