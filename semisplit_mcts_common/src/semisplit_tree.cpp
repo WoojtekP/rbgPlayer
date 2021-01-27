@@ -122,6 +122,9 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reaso
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         path.emplace_back(legal_actions[semidepth][chosen_action]);
         if (save_path_to_nodal_state(state, path, semidepth + 1)) {
+            if (chosen_action != 0) {
+                std::swap(legal_actions[semidepth].front(), legal_actions[semidepth][chosen_action]);
+            }
             return true;
         }
         legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
@@ -272,31 +275,24 @@ uint SemisplitTree::perform_simulation() {
             const uint size = path.size();
             for (uint i = 0; i < size; ++i) {
                 const auto& action = path[i];
-                if (!nodes[new_node_index].is_expanded()) {
-                    create_children(new_node_index, legal_actions[i]);
-                }
+                assert(!nodes[new_node_index].is_expanded());
+                create_children(new_node_index, legal_actions[i]);
                 auto [fst, lst] = nodes[new_node_index].children_range;
-                for (auto j = fst; j < lst; ++j) {
-                    if (children[j].get_action() == action) {
-                        if (i + 1 == size) {
-                            new_node_index = create_node(true, node_status::unknown);
-                        }
-                        else {
-                            new_node_index = create_node(false, node_status::nonterminal);
-                        }
-                        children[j].index = new_node_index;
-                        if (j != fst) {
-                            std::swap(children[j], children[fst]);
-                        }
-                        children_stack.emplace_back(new_node_index, fst, current_player);
-                        #if RAVE > 0
-                        context_stack.emplace_back(context);
-                        context = moves_set.get_context(children[fst].action, current_player - 1, context);
-                        assert(!reasoner::is_switch(children[fst].action.index) || context == 0);
-                        #endif
-                        break;
-                    }
+                assert(children[fst].get_action() == action);
+                if (i + 1 == size) {
+                    new_node_index = create_node(true, node_status::unknown);
                 }
+                else {
+                    new_node_index = create_node(false, node_status::nonterminal);
+                }
+                children[fst].index = new_node_index;
+                children_stack.emplace_back(new_node_index, fst, current_player);
+                #if RAVE > 0
+                context_stack.emplace_back(context);
+                context = moves_set.get_context(children[fst].action, current_player - 1, context);
+                assert(!reasoner::is_switch(children[fst].action.index) || context == 0);
+                #endif
+                break;
             }
         }
         assert(state.is_nodal());
