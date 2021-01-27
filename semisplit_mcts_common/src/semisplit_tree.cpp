@@ -277,20 +277,20 @@ uint SemisplitTree::perform_simulation() {
                 const auto& action = path[i];
                 assert(!nodes[new_node_index].is_expanded());
                 create_children(new_node_index, legal_actions[i]);
-                auto [fst, lst] = nodes[new_node_index].children_range;
-                assert(children[fst].get_action() == action);
+                const auto first_child = nodes[new_node_index].children_range.first;
+                assert(children[first_child].get_action() == action);
                 if (i + 1 == size) {
                     new_node_index = create_node(true, node_status::unknown);
                 }
                 else {
                     new_node_index = create_node(false, node_status::nonterminal);
                 }
-                children[fst].index = new_node_index;
-                children_stack.emplace_back(new_node_index, fst, current_player);
+                children[first_child].index = new_node_index;
+                children_stack.emplace_back(new_node_index, first_child, current_player);
                 #if RAVE > 0
                 context_stack.emplace_back(context);
-                context = moves_set.get_context(children[fst].action, current_player - 1, context);
-                assert(!reasoner::is_switch(children[fst].action.index) || context == 0);
+                context = moves_set.get_context(children[first_child].action, current_player - 1, context);
+                assert(!reasoner::is_switch(children[first_child].action.index) || context == 0);
                 #endif
                 break;
             }
