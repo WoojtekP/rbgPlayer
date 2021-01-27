@@ -43,7 +43,7 @@ SemisplitTree::SemisplitTree() {
     complete_turn(root_state);
     const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
     create_node(root_state, status);
-    create_children(0, root_state);
+    create_children(0, legal_actions[0]);
 }
 
 uint SemisplitTree::create_node(GameState& state, const node_status status) {
@@ -57,16 +57,29 @@ uint SemisplitTree::create_node(GameState& state, const node_status status) {
     return nodes.size() - 1;
 }
 
+uint SemisplitTree::create_node(const bool is_nodal, const node_status status) {
+    if (status == node_status::terminal) {
+        assert(is_nodal);
+        nodes.emplace_back(0, 0, true, node_status::terminal);
+    }
+    else {
+        nodes.emplace_back(is_nodal, status);
+    }
+    return nodes.size() - 1;
+}
+
 void SemisplitTree::create_children(const uint node_index, GameState& state) {
     static std::vector<reasoner::action_representation> actions;
     state.get_all_actions(cache, actions);
+    create_children(node_index, actions);
+}
+
+void SemisplitTree::create_children(const uint node_index, const std::vector<reasoner::action_representation>& actions) {
     if (actions.empty() || nodes[node_index].status == node_status::terminal) {
-        assert(state.is_nodal());
         nodes[node_index].status = node_status::terminal;
         nodes[node_index].children_range = {0, 0};
     }
     else {
-        assert(state.get_current_player() != KEEPER);
         nodes[node_index].children_range.first = children.size();
         for (const auto& action : actions) {
             children.emplace_back(action);
@@ -109,7 +122,6 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<reaso
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         path.emplace_back(legal_actions[semidepth][chosen_action]);
         if (save_path_to_nodal_state(state, path, semidepth + 1)) {
-            state.revert(ri);
             return true;
         }
         legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
@@ -194,6 +206,7 @@ uint SemisplitTree::perform_simulation() {
         path.clear();
         while (!save_path_to_nodal_state(state, path)) {
             assert(path.empty());
+            assert(!state.is_nodal());
             state.revert(ri);
             move_chooser.revert_context();
             auto& [fst, lst] = nodes[node_index].children_range;
@@ -242,6 +255,7 @@ uint SemisplitTree::perform_simulation() {
             ri = state.apply_action_with_revert(children[child_index].get_action());
             move_chooser.switch_context(children[child_index].get_action(), current_player);
         }
+        assert(state.is_nodal());
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
         #if RAVE > 0
@@ -251,25 +265,24 @@ uint SemisplitTree::perform_simulation() {
         #endif
         ++state_count;
         auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
-        auto new_node_index = create_node(state, status);
+        auto is_nodal = path.empty();
+        auto new_node_index = create_node(is_nodal, status);
         children[child_index].index = new_node_index;
         if constexpr (IS_NODAL) {
             const uint size = path.size();
             for (uint i = 0; i < size; ++i) {
                 const auto& action = path[i];
                 if (!nodes[new_node_index].is_expanded()) {
-                    create_children(new_node_index, state);
+                    create_children(new_node_index, legal_actions[i]);
                 }
                 auto [fst, lst] = nodes[new_node_index].children_range;
                 for (auto j = fst; j < lst; ++j) {
                     if (children[j].get_action() == action) {
-                        state.apply_action(action);
                         if (i + 1 == size) {
-                            complete_turn(state);
-                            new_node_index = create_node(state, node_status::unknown);
+                            new_node_index = create_node(true, node_status::unknown);
                         }
                         else {
-                            new_node_index = create_node(state, node_status::nonterminal);
+                            new_node_index = create_node(false, node_status::nonterminal);
                         }
                         children[j].index = new_node_index;
                         if (j != fst) {
@@ -285,12 +298,6 @@ uint SemisplitTree::perform_simulation() {
                     }
                 }
             }
-        }
-        else {
-            for (const auto action : path) {
-                state.apply_action(action);
-            }
-            complete_turn(state);
         }
         assert(state.is_nodal());
         auto states_in_simulation = play(state, move_chooser, cache, results);

@@ -18,7 +18,9 @@ protected:
     void print_move(const reasoner::action_representation);
     #endif
     uint create_node(GameState&, const node_status = node_status::unknown);
+    uint create_node(const bool, const node_status = node_status::unknown);
     void create_children(const uint, GameState&);
+    void create_children(const uint, const std::vector<reasoner::action_representation>&);
     bool has_nodal_successor(GameState&, uint = 0);
     bool save_path_to_nodal_state(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
     bool random_walk_to_nodal(GameState&, std::vector<reasoner::action_representation>&, uint = 0);
