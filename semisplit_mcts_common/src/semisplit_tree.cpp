@@ -274,11 +274,10 @@ uint SemisplitTree::perform_simulation() {
         if constexpr (IS_NODAL) {
             const uint size = path.size();
             for (uint i = 0; i < size; ++i) {
-                const auto& action = path[i];
                 assert(!nodes[new_node_index].is_expanded());
                 create_children(new_node_index, legal_actions[i]);
                 const auto first_child = nodes[new_node_index].children_range.first;
-                assert(children[first_child].get_action() == action);
+                assert(children[first_child].get_action() == path[i]);
                 if (i + 1 == size) {
                     new_node_index = create_node(true, node_status::unknown);
                 }
@@ -292,7 +291,6 @@ uint SemisplitTree::perform_simulation() {
                 context = moves_set.get_context(children[first_child].action, current_player - 1, context);
                 assert(!reasoner::is_switch(children[first_child].action.index) || context == 0);
                 #endif
-                break;
             }
         }
         assert(state.is_nodal());
