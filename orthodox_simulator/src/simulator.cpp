@@ -28,7 +28,7 @@ uint play(GameState& state,
             move_chooser.save_move(moves[chosen_move], state.get_current_player());
         }
         #endif
-        state.apply_move(moves[chosen_move]);
+        state.apply(moves[chosen_move]);
         ++state_count;
         while (state.get_current_player() == KEEPER) {
             if (!state.apply_any_move(cache)) {

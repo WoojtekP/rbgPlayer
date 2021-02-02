@@ -128,6 +128,14 @@ class ConfigData:
                     exit(1)
             else:
                 self.split_strategy = None
+            self.getters = list()
+            if self.simulation_strategy == "orthodox" or self.tree_strategy == "orthodox":
+                self.getters.append("m")
+            if self.simulation_strategy == "semisplit" or self.tree_strategy in ["semisplit", "rollup"]:
+                if self.split_strategy is None or "Mod" in self.split_strategy:
+                    self.getters.append("a")
+                else:
+                    self.getters.append("s")
 
 class PlayerConfig:
     def __init__(self, program_args, config_data, player_name, player_port):
@@ -152,6 +160,9 @@ class PlayerConfig:
             config_file.write("\n")
             config_file.write("#define {}_TREE\n".format(self.config_data.tree_strategy.upper()))
             config_file.write("#define {}_SIMULATOR\n".format(self.config_data.simulation_strategy.upper()))
+            for getter in ['m', 's', 'a']:
+                if getter in self.config_data.getters:
+                    config_file.write("#define GETTER_{}\n".format(getter.upper()))
             config_file.write("#define REASONING_OVERHEAD {}\n".format(self.config_data.reasoning_overhead))
             config_file.write("\n")
             config_file.write("#include \"types.hpp\"\n")
@@ -169,6 +180,10 @@ class PlayerConfig:
                 for name, val in variables.items():
                     config_file.write("constexpr {} {} = {};\n".format(t, name, val))
             config_file.write("\n")
+            if 's' in self.config_data.getters:
+                config_file.write("typedef reasoner::move semimove;\n\n")
+            elif 'a' in self.config_data.getters:
+                config_file.write("typedef reasoner::action_representation semimove;\n\n")
             config_file.write("#endif\n")
 
 def get_player_kind(config):
@@ -227,12 +242,7 @@ def apply_split_strategy(split_strategy, player_id):
 def compile_player(config_data, player_id):
     assert(config_data.player_strategy in available_players)
     with Cd(gen_directory(player_id)):
-        getters = list()
-        if config_data.simulation_strategy == "orthodox" or config_data.tree_strategy == "orthodox":
-            getters.append("m")
-        if config_data.simulation_strategy == "semisplit" or config_data.tree_strategy in ["semisplit", "rollup"]:
-            getters.append("a")
-        compiler_run_list = [compiler_dir, "-getters", ''.join(getters), "-o", "reasoner", "../../"+game_path(player_id)]
+        compiler_run_list = [compiler_dir, "-getters", ''.join(config_data.getters), "-o", "reasoner", "../../"+game_path(player_id)]
         subprocess.run(compiler_run_list)
     shutil.move(gen_directory(player_id)+"/reasoner.cpp", gen_src_directory(player_id)+"/reasoner.cpp")
     shutil.move(gen_directory(player_id)+"/reasoner.hpp", gen_inc_directory(player_id)+"/reasoner.hpp")

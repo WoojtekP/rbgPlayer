@@ -8,12 +8,13 @@
 
 class GameState final : public reasoner::game_state {
 public:
-    void apply_move(const reasoner::move& move) {
-        reasoner::game_state::apply_move(move);
+    #if defined(GETTER_S)
+    void get_all_semimoves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::move>& semimoves) {
+        reasoner::game_state::get_all_semimoves(cache, semimoves);
     }
-    #if defined(SEMISPLIT_TREE) || defined(SEMISPLIT_SIMULATOR)
-    void apply_move(const reasoner::action_representation action) {
-        reasoner::game_state::apply_action(action);
+    #elif defined(GETTER_A)
+    void get_all_semimoves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::action_representation>& actions) {
+        reasoner::game_state::get_all_actions(cache, actions);
     }
     #endif
 };
@@ -34,56 +35,65 @@ public:
         }
         return reasoner::game_state::apply_any_move(cache);
     }
-    void apply_move(const reasoner::move& m) {
+    void apply(const reasoner::move& move) {
         for (auto& state : states) {
-            state.apply_move(m);
+            state.apply(move);
         }
-        reasoner::game_state::apply_move(m);
+        reasoner::game_state::apply(move);
     }
+    void apply(const reasoner::action_representation action) {
+        for (auto& state : states) {
+            state.apply(action);
+        }
+        reasoner::game_state::apply(action);
+    }
+    reasoner::move_reverter apply_with_revert(const reasoner::move& move) {
+        for (auto& state : states) {
+            state.apply_with_revert(move);
+        }
+        return reasoner::game_state::apply_with_revert(move);
+    }
+    reasoner::action_reverter apply_with_revert(const reasoner::action_representation action) {
+        for (auto& state : states) {
+            state.apply_with_revert(action);
+        }
+        return reasoner::game_state::apply_with_revert(action);
+    }
+    void revert(const reasoner::move_reverter& moverev) {
+        for (auto& state : states) {
+            state.revert(moverev);
+        }
+        reasoner::game_state::revert(moverev);
+    }
+    void revert(const reasoner::action_reverter& actionrev) {
+        for (auto& state : states) {
+            state.revert(actionrev);
+        }
+        reasoner::game_state::revert(actionrev);
+    }
+    #if defined(GETTER_M)
     void get_all_moves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::move>& moves) {
         for (auto& state : states) {
             state.get_all_moves(cache, moves);
         }
         reasoner::game_state::get_all_moves(cache, moves);
     }
-#if defined(SEMISPLIT_TREE) || defined(SEMISPLIT_SIMULATOR)
-    reasoner::revert_information apply_action_with_revert(const reasoner::action_representation action) {
+    #endif
+    #if defined(GETTER_S)
+    void get_all_semimoves(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::move>& semimoves) {
         for (auto& state : states) {
-            state.apply_action_with_revert(action);
+            state.get_all_semimoves(cache, semimoves);
         }
-        return reasoner::game_state::apply_action_with_revert(action);
+        reasoner::game_state::get_all_semimoves(cache, semimoves);
     }
-    void apply_move(const reasoner::action_representation action) {
-        for (auto& state : states) {
-            state.apply_action(action);
-        }
-        reasoner::game_state::apply_action(action);
-    }
-    void apply_action(const reasoner::action_representation action) {
-        for (auto& state : states) {
-            state.apply_action(action);
-        }
-        reasoner::game_state::apply_action(action);
-    }
-    void fast_apply_action(const reasoner::action_representation action) {
-        for (auto& state : states) {
-            state.fast_apply_action(action);
-        }
-        reasoner::game_state::fast_apply_action(action);
-    }
+    #elif defined(GETTER_A)
     void get_all_actions(reasoner::resettable_bitarray_stack& cache, std::vector<reasoner::action_representation>& actions) {
         for (auto& state : states) {
             state.get_all_actions(cache, actions);
         }
         reasoner::game_state::get_all_actions(cache, actions);
     }
-    void revert(const reasoner::revert_information& ri) {
-        for (auto& state : states) {
-            state.revert(ri);
-        }
-        reasoner::game_state::revert(ri);
-    }
-#endif
+    #endif
 public:
     GameState(void) = default;
     GameState(const GameState&) = default;

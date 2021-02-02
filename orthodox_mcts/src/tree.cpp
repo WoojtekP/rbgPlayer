@@ -65,7 +65,7 @@ uint Tree::perform_simulation() {
     while (!nodes[node_index].is_terminal() && is_node_fully_expanded(node_index)) {
         const auto child_index = get_best_uct_child_index(node_index, node_sim_count);
         const auto current_player = state.get_current_player();
-        state.apply_move(children[child_index].move);
+        state.apply(children[child_index].move);
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
         node_index = children[child_index].index;
@@ -82,7 +82,7 @@ uint Tree::perform_simulation() {
     else {
         const auto current_player = state.get_current_player();
         const auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
-        state.apply_move(children[child_index].move);
+        state.apply(children[child_index].move);
         complete_turn(state);
         children_stack.emplace_back(node_index, child_index, current_player);
         auto new_node_index = create_node(state);
@@ -149,7 +149,7 @@ void Tree::reparent_along_move(const reasoner::move& move) {
     #if STATS
     ++turn_number;
     #endif
-    root_state.apply_move(move);
+    root_state.apply(move);
     complete_turn(root_state);
     uint root_index = 0;
     const auto [fst, lst] = nodes.front().children_range;

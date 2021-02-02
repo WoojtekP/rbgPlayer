@@ -7,17 +7,17 @@
 
 
 namespace {
-std::vector<reasoner::action_representation> legal_actions[MAX_SEMIDEPTH];
+std::vector<simulation_move_type> legal_actions[MAX_SEMIDEPTH];
 
 bool apply_random_move_exhaustive(GameState& state,
                                   MoveChooser<simulation_move_type>& move_chooser,
                                   reasoner::resettable_bitarray_stack& cache,
                                   uint semidepth) {
-    state.get_all_actions(cache, legal_actions[semidepth]);
+    state.get_all_semimoves(cache, legal_actions[semidepth]);
     while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
         const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player);
-        const auto ri = state.apply_action_with_revert(legal_actions[semidepth][chosen_action]);
+        const auto ri = state.apply_with_revert(legal_actions[semidepth][chosen_action]);
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         #if RAVE > 0
         move_chooser.save_move(legal_actions[semidepth][chosen_action], current_player);

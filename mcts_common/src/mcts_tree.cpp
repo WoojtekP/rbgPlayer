@@ -148,6 +148,7 @@ uint MctsTree::get_top_ranked_child_index(const uint node_index) {
     double max_score = -1.0;
     uint max_sim = 0;
     const auto [fst, lst] = nodes[node_index].children_range;
+    assert(fst < lst);
     for (auto i = fst; i < lst; ++i) {
         if (children[i].sim_count == 0)
             continue;

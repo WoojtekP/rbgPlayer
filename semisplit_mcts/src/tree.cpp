@@ -14,7 +14,7 @@
 void Tree::print_rolledup_move(const std::vector<uint>& children_indices) {
     std::cout << "[";
     for (const auto child_index : children_indices) {
-        print_move(children[child_index].action);
+        print_move(children[child_index].get_edge());
     }
     std::cout << "]" << std::endl;
 }
@@ -60,110 +60,6 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const ui
         max_score = 0;
         move_path.clear();
     }
-}
-
-reasoner::move Tree::get_move_from_saved_path_with_random_suffix(std::vector<uint>& children_indices) {
-    static GameState state;
-    state = root_state;
-    reasoner::move move;
-    for (const auto child_index : children_indices) {
-        const auto action = children[child_index].action;
-        if (action.index > 0) {
-            move.mr.emplace_back(action);
-        }
-        state.apply_action(action);
-    }
-    if (!state.is_nodal()) {
-        #if STATS
-        std::cout << "random continuation..." << std::endl << std::endl;
-        #endif
-        static std::vector<reasoner::action_representation> move_suffix;
-        move_suffix.clear();
-        random_walk_to_nodal(state, move_suffix);
-        assert(!move_suffix.empty());
-        for (const auto action : move_suffix) {
-            if (action.index > 0) {
-                move.mr.push_back(action);
-            }
-        }
-    }
-    return move;
-}
-
-void Tree::reparent_along_move(const reasoner::move& move) {
-    #if STATS
-    ++turn_number;
-    #endif
-    root_state.apply_move(move);
-    complete_turn(root_state);
-    uint root_index = 0;
-    static std::vector<std::tuple<uint, uint, uint>> stack;
-    stack.clear();
-    const auto& mr = move.mr;
-    const uint size = mr.size();
-    uint i = 0;
-    auto [fst, lst] = nodes.front().children_range;
-    while (i < size) {
-        if (!nodes[root_index].is_expanded()) {
-            root_index = 0;
-            break;
-        }
-        while (fst < lst) {
-            if (children[fst].action.index <= 0) {
-                stack.emplace_back(root_index, fst, root_sim_count);
-                root_index = children[fst].index;
-                root_sim_count = children[fst].sim_count;
-                break;
-            }
-            else if (children[fst].action == mr[i]) {
-                root_index = children[fst].index;
-                root_sim_count = children[fst].sim_count;
-                ++i;
-                stack.clear();
-                break;
-            }
-            ++fst;
-        }
-        if (fst == lst || root_index == 0) {
-            if (!stack.empty()) {
-                std::tie(root_index, fst, root_sim_count) = stack.back();
-                stack.pop_back();
-                ++fst;
-                lst = nodes[root_index].children_range.second;
-                continue;
-            }
-            else {
-                root_index = 0;
-                break;
-            }
-        }
-        std::tie(fst, lst) = nodes[root_index].children_range;
-    }
-    if (root_index == 0) {
-        root_sim_count = 0;
-        nodes.clear();
-        children.clear();
-        const auto status = has_nodal_successor(root_state) ? node_status::nonterminal : node_status::terminal;
-        create_node(root_state, status);
-    }
-    else {
-        root_at_index(root_index);
-        if (nodes.front().status == node_status::unknown) {
-            if (has_nodal_successor(root_state)) {
-                nodes.front().status = node_status::nonterminal;
-            }
-            else {
-                nodes.front().status = node_status::terminal;
-                nodes.front().children_range = {0, 0};
-            }
-        }
-    }
-    if (!nodes.front().is_expanded()) {
-        create_children(0, root_state);
-    }
-    #if MAST > 0
-    move_chooser.complete_turn();
-    #endif
 }
 
 reasoner::move Tree::choose_best_move() {

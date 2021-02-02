@@ -12,7 +12,6 @@ class Tree final : public SemisplitTree {
 private:
     void choose_children_for_rolling_up(const uint, std::vector<uint>&);
     void roll_up(const uint, std::vector<uint>&);
-    reasoner::move get_move_from_saved_path_with_random_suffix(std::vector<uint>&);
 public:
     Tree(void) = default;
     Tree(const Tree&) = delete;
@@ -21,7 +20,6 @@ public:
     Tree& operator=(Tree&&) = default;
     ~Tree(void) = default;
     uint perform_simulation();
-    void reparent_along_move(const reasoner::move&);
     reasoner::move choose_best_move();
 };
 
