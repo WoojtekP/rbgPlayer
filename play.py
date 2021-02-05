@@ -112,7 +112,6 @@ class ConfigData:
             for heuristic in config["heuristics"]:
                 if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
                     constants["uint"]["REF"] = "0"
-            self.player_strategy = get_player_strategy(config)
             self.constants = constants
             self.tree_strategy = config["algorithm"]["tree_strategy"].lower()
             self.simulation_strategy = config["algorithm"]["simulation_strategy"].lower()
@@ -136,6 +135,16 @@ class ConfigData:
                     self.getters.append("a")
                 else:
                     self.getters.append("s")
+            self.player_strategy = self.get_player_strategy(config);
+    def get_player_strategy(self, config):
+        player_kind = config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
+        heuristics = set(heuristic["name"].lower() for heuristic in config["heuristics"])
+        if len(heuristics) == 0:
+            return player_kind
+        if player_kind == "semisplit_semisplit" and 'a' in self.getters and "mast" in heuristics:
+            heuristics.remove("mast")
+            heuristics.add("mastsplit")
+        return player_kind + "_" + "_".join(sorted(heuristics))
 
 class PlayerConfig:
     def __init__(self, program_args, config_data, player_name, player_port):
@@ -185,14 +194,6 @@ class PlayerConfig:
             elif 'a' in self.config_data.getters:
                 config_file.write("typedef reasoner::action_representation semimove;\n\n")
             config_file.write("#endif\n")
-
-def get_player_kind(config):
-    return config["algorithm"]["tree_strategy"].lower() + "_" + config["algorithm"]["simulation_strategy"].lower()
-
-def get_player_strategy(config):
-    heuristics = [heuristic["name"].lower() for heuristic in config["heuristics"]]
-    heuristics.sort()
-    return get_player_kind(config) + ("" if not heuristics else "_" + "_".join(heuristics))
 
 def get_game_section(game, section):
     game_sections = game.split("#")
