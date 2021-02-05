@@ -40,6 +40,12 @@ public:
         }
     }
 
+    void update_move(const reasoner::move& move, const simulation_result& results, const int player) {
+        for (const auto action : move.mr) {
+            update_move(action, results, player);
+        }
+    }
+
     void update_all_moves(const simulation_result& results) {
         for (const auto& [move, player] : path) {
             update_move(move, results, player);
@@ -47,15 +53,22 @@ public:
         assert(context == 0);
     }
 
-    template <typename M>
-    void switch_context(const M& move, const int current_player) {
-        if (end_of_context(move)) {
+    void switch_context(const reasoner::action_representation action, const int current_player) {
+        if (end_of_context(action)) {
             reset_context();
         }
         else {
             context_stack.push_back(context);
-            context = moves[current_player - 1].get_context(move, context);
+            context = moves[current_player - 1].get_context(action, context);
         }
+    }
+
+    void switch_context(const reasoner::move& move, const int current_player) {
+        for (auto it = move.mr.begin(); it < move.mr.end() - 1; ++it) {
+            assert(!end_of_context(*it));
+            context = moves[current_player - 1].get_context(*it, context);
+        }
+        switch_context(move.mr.back(), current_player);
     }
 
     void revert_context() {

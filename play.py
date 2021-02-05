@@ -144,6 +144,9 @@ class ConfigData:
         if player_kind == "semisplit_semisplit" and 'a' in self.getters and "mast" in heuristics:
             heuristics.remove("mast")
             heuristics.add("mastsplit")
+        if player_kind == "orthodox_orthodox" and "mastcontext" in heuristics:
+            heuristics.remove("mastcontext")
+            heuristics.add("mast")
         return player_kind + "_" + "_".join(sorted(heuristics))
 
 class PlayerConfig:
