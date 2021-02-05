@@ -251,6 +251,8 @@ def compile_player(config_data, player_id):
 def connect_to_server(server_address, server_port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.connect((server_address, server_port))
+    server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
     return server_socket
 
 def wait_for_player_connection(player_address, return_value_queue):
@@ -260,6 +262,8 @@ def wait_for_player_connection(player_address, return_value_queue):
     return_value_queue.put(accept_socket.getsockname()[1])
     accept_socket.listen(1)
     player_socket, _ = accept_socket.accept()
+    player_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    player_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
     return_value_queue.put(player_socket)
 
 def start_player(player_config):

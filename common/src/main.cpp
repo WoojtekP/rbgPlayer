@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 
 #include "concurrent_queue.hpp"
 #include "config.hpp"
@@ -20,6 +21,9 @@ int connect_to_play() {
     if (socket_descriptor < 0) {
         return 0;
     }
+    int yes = 1;
+    if (setsockopt(socket_descriptor, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&yes), sizeof(yes)) < 0) exit(1);
+    if (setsockopt(socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, reinterpret_cast<char*>(&yes), sizeof(yes)) < 0) exit(1);
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(PORT);
