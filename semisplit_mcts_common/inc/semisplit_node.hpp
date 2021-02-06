@@ -48,7 +48,6 @@ struct semisplit_child : child_base {
 
     template <typename M = T>
     typename std::enable_if<std::is_same<M, reasoner::move>::value, reasoner::action_representation>::type get_action() const {
-        assert(semimove.mr.size() == 1);
         return semimove.mr.back();
     }
 

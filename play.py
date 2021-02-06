@@ -147,6 +147,9 @@ class ConfigData:
         if player_kind == "orthodox_orthodox" and "mastcontext" in heuristics:
             heuristics.remove("mastcontext")
             heuristics.add("mast")
+        if player_kind == "orthodox_orthodox" and "ravecontext" in heuristics:
+            heuristics.remove("ravecontext")
+            heuristics.add("tgrave")
         return player_kind + "_" + "_".join(sorted(heuristics))
 
 class PlayerConfig:

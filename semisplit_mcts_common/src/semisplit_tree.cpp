@@ -184,8 +184,8 @@ uint SemisplitTree::perform_simulation() {
         children_stack.emplace_back(node_index, child_index, current_player);
         #if RAVE > 0
         context_stack.emplace_back(context);
-        context = moves_set.get_context(children[child_index].action, current_player - 1, context);
-        assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
+        context = moves_set.get_context(children[child_index].get_edge(), current_player - 1, context);
+        assert(!reasoner::is_switch(children[child_index].get_action().index) || context == 0);
         #endif
         node_index = children[child_index].index;
         node_sim_count = children[child_index].sim_count;
@@ -234,9 +234,9 @@ uint SemisplitTree::perform_simulation() {
                 children_stack.emplace_back(node_index, child_index, current_player);
                 #if RAVE > 0
                 context_stack.emplace_back(context);
-                context = moves_set.get_context(children[child_index].action, current_player - 1, context);
-                assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
-                assert(!state.is_nodal() || reasoner::is_switch(children[child_index].action.index));
+                context = moves_set.get_context(children[child_index].get_edge(), current_player - 1, context);
+                assert(!reasoner::is_switch(children[child_index].get_action().index) || context == 0);
+                assert(!state.is_nodal() || reasoner::is_switch(children[child_index].get_action().index));
                 #endif
                 node_index = children[child_index].index;
                 node_sim_count = children[child_index].sim_count;
@@ -263,8 +263,8 @@ uint SemisplitTree::perform_simulation() {
         children_stack.emplace_back(node_index, child_index, current_player);
         #if RAVE > 0
         context_stack.emplace_back(context);
-        context = moves_set.get_context(children[child_index].action, current_player - 1, context);
-        assert(!reasoner::is_switch(children[child_index].action.index) || context == 0);
+        context = moves_set.get_context(children[child_index].get_edge(), current_player - 1, context);
+        assert(!reasoner::is_switch(children[child_index].get_action().index) || context == 0);
         #endif
         ++state_count;
         auto status = path.empty() ? node_status::unknown : node_status::nonterminal;
@@ -288,8 +288,8 @@ uint SemisplitTree::perform_simulation() {
                 children_stack.emplace_back(new_node_index, first_child, current_player);
                 #if RAVE > 0
                 context_stack.emplace_back(context);
-                context = moves_set.get_context(children[first_child].action, current_player - 1, context);
-                assert(!reasoner::is_switch(children[first_child].action.index) || context == 0);
+                context = moves_set.get_context(children[first_child].get_edge(), current_player - 1, context);
+                assert(!reasoner::is_switch(children[first_child].get_action().index) || context == 0);
                 #endif
             }
         }
