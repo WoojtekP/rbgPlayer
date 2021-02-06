@@ -130,7 +130,9 @@ class ConfigData:
             self.getters = list()
             if self.simulation_strategy == "orthodox" or self.tree_strategy == "orthodox":
                 self.getters.append("m")
-            if self.simulation_strategy == "semisplit" or self.tree_strategy in ["semisplit", "rollup"]:
+            if self.tree_strategy == "rollup":
+                self.getters.append("s")
+            elif self.simulation_strategy == "semisplit" or self.tree_strategy == "semisplit":
                 if self.split_strategy is None or "Mod" in self.split_strategy:
                     self.getters.append("a")
                 else:
