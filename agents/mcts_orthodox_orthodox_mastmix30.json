@@ -1,0 +1,26 @@
+{
+    "general": {
+        "buffer_time": 100,
+        "simulate_during_opp_turn": false,
+        "reasoning_overhead": 1
+    },
+    "algorithm": {
+        "name": "MCTS",
+        "tree_strategy": "orthodox",
+        "simulation_strategy": "orthodox",
+        "parameters": {
+            "exploration_constant": 0.4
+        }
+    },
+    "heuristics": [
+        {
+            "name": "MASTMIX",
+            "parameters": {
+                "epsilon": 0.4,
+                "decay_factor": 0.2,
+                "tree_only": false,
+                "mast_equivalence_parameter": 30
+            }
+        }
+    ]
+}
