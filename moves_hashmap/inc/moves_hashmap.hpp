@@ -29,7 +29,7 @@ public:
         const auto index = find_or_insert(move, context);
         buckets[index].total_score.sum += score;
         buckets[index].total_score.weight += 1.0;
-        #if MAST >= 2
+        #if MAST >= 2 && !defined(ORTHODOX_SIMULATOR)
         if (move.index > 0) {
             return reasoner::is_switch(move.index) ? 0 : index;
         }
@@ -46,7 +46,7 @@ public:
     }
 
     // TODO: use enable_if
-    #if MAST >= 2
+    #if MAST >= 2 && !defined(ORTHODOX_SIMULATOR)
     score get_score_or_default_value(const reasoner::move& move, const int context = 0) {
         static const score default_score(EXPECTED_MAX_SCORE, 1.0);
         int bucket_id = context;

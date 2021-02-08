@@ -31,7 +31,8 @@ MOVES_HASHMAP_CONTEXT := moves_hashmap moves_hashtable hashtable_context_entries
 MAST_ORTHODOX := mast_common moves_container mast_orthodox $(MOVES_HASHMAP)
 MAST_SPLIT := mast_common moves_container_split mast_orthodox actions_map
 MAST_CONTEXT := mast_common moves_container_context mast_context $(MOVES_HASHMAP_CONTEXT)
-MAST_MIX := mast_common moves_container_mix mast_context actions_map $(MOVES_HASHMAP_CONTEXT)
+MAST_MIX := mast_common moves_container_mix_context mast_context actions_map $(MOVES_HASHMAP_CONTEXT)
+MAST_MIX_JOIN := mast_common moves_container_mix_join mast_orthodox actions_map $(MOVES_HASHMAP)
 
 # RAVE
 MOVES_HASHSET := moves_hashset moves_hashtable hashtable_entries
@@ -97,6 +98,9 @@ $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MAST,orthodox_orthodox_mast,\
 
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MASTSPLIT,orthodox_orthodox_mastsplit,\
 			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(MAST_SPLIT) $(COMMON) $(GEN_DIR)))
+
+$(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_MASTMIX,orthodox_orthodox_mastmix,\
+			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(MAST_MIX_JOIN) $(COMMON) $(GEN_DIR)))
 
 $(eval $(call PLAYER_KIND_RULES,ORTHODOX_ORTHODOX_TGRAVE,orthodox_orthodox_tgrave,\
 			$(ORTHODOX_MCTS) $(ORTHODOX_SIMULATOR) $(UNIFORM_CHOOSER) $(TGRAVE_ORTHODOX) $(COMMON) $(GEN_DIR)))
