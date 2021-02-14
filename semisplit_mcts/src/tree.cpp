@@ -73,10 +73,14 @@ reasoner::move Tree::choose_best_move() {
     if constexpr (!GREEDY_CHOICE) {
         const auto last_child = children_indices.back();
         const double threshold = static_cast<double>(children[last_child].sim_count) * FINAL_ROLLUP_FACTOR;
-        children_indices.clear();
-        choose_best_rolledup_move(children_indices, threshold);
+        static std::vector<uint> children_indices_finalrollup;
+        children_indices_finalrollup.clear();
+        choose_best_rolledup_move(children_indices_finalrollup, threshold);
         #if STATS
         std::cout << std::endl << "chosen move:" << std::endl;
+        print_node_stats(children[children_indices_finalrollup.back()]);
+        print_rolledup_move(children_indices_finalrollup);
+        std::cout << std::endl << "greedy move:" << std::endl;
         print_node_stats(children[children_indices.back()]);
         print_rolledup_move(children_indices);
         std::cout << std::endl;
