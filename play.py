@@ -108,7 +108,7 @@ class ConfigData:
             constants["uint"]["BUFFER_TIME"] = config["general"]["buffer_time"].__str__()
             constants["bool"]["SIMULATE_DURING_OPP_TURN"] = config["general"]["simulate_during_opp_turn"].__str__().lower()
             if "GREEDY_CHOICE" in constants["bool"] and constants["bool"]["GREEDY_CHOICE"] == "true":
-                constants["uint"]["ROLLUP_THRESHOLD"] = "0"
+                constants["uint"]["FINAL_ROLLUP_FACTOR"] = "0"
             for heuristic in config["heuristics"]:
                 if heuristic["name"].upper() in ["RAVEMIX", "RAVECONTEXT"]:
                     constants["uint"]["REF"] = "0"

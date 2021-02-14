@@ -13,7 +13,7 @@ private:
     #if STATS
     void print_rolledup_move(const std::vector<uint>&);
     #endif
-    void choose_best_rolledup_move(std::vector<uint>&, const uint = 0);
+    void choose_best_rolledup_move(std::vector<uint>&, const double, const uint = 0);
 public:
     Tree(void) = default;
     Tree(const Tree&) = delete;

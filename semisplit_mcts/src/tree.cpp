@@ -20,7 +20,7 @@ void Tree::print_rolledup_move(const std::vector<uint>& children_indices) {
 }
 #endif
 
-void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const uint node_index) {
+void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const double threshold, const uint node_index) {
     static std::vector<uint> move_path;
     static uint max_sim = 0;
     static double max_score = 0;
@@ -29,9 +29,9 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const ui
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
             if (children[i].index > 0) {
-                if (children[i].sim_count > ROLLUP_THRESHOLD) {
+                if (static_cast<double>(children[i].sim_count) >= threshold) {
                     move_path.push_back(i);
-                    choose_best_rolledup_move(best_move_path, children[i].index);
+                    choose_best_rolledup_move(best_move_path, threshold, children[i].index);
                     move_path.pop_back();
                     all_children_below_limit = false;
                 }
@@ -69,8 +69,12 @@ reasoner::move Tree::choose_best_move() {
     #endif
     static std::vector<uint> children_indices;
     children_indices.clear();
+    choose_best_greedy_move(children_indices);
     if constexpr (!GREEDY_CHOICE) {
-        choose_best_rolledup_move(children_indices);
+        const auto last_child = children_indices.back();
+        const double threshold = static_cast<double>(children[last_child].sim_count) / root_sim_count * FINAL_ROLLUP_FACTOR;
+        children_indices.clear();
+        choose_best_rolledup_move(children_indices, threshold);
         #if STATS
         std::cout << std::endl << "chosen move:" << std::endl;
         print_node_stats(children[children_indices.back()]);
@@ -78,6 +82,5 @@ reasoner::move Tree::choose_best_move() {
         std::cout << std::endl;
         #endif
     }
-    choose_best_greedy_move(children_indices);
     return get_move_from_saved_path_with_random_suffix(children_indices);
 }
