@@ -72,7 +72,7 @@ reasoner::move Tree::choose_best_move() {
     choose_best_greedy_move(children_indices);
     if constexpr (!GREEDY_CHOICE) {
         const auto last_child = children_indices.back();
-        const double threshold = static_cast<double>(children[last_child].sim_count) / root_sim_count * FINAL_ROLLUP_FACTOR;
+        const double threshold = static_cast<double>(children[last_child].sim_count) * FINAL_ROLLUP_FACTOR;
         children_indices.clear();
         choose_best_rolledup_move(children_indices, threshold);
         #if STATS
