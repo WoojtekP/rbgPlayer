@@ -24,7 +24,6 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const do
     static std::vector<uint> move_path;
     static uint max_sim = 0;
     static double max_score = 0;
-    bool all_children_below_limit = true;
     if (!nodes[node_index].is_nodal || node_index == 0) {
         const auto [fst, lst] = nodes[node_index].children_range;
         for (auto i = fst; i < lst; ++i) {
@@ -33,27 +32,24 @@ void Tree::choose_best_rolledup_move(std::vector<uint>& best_move_path, const do
                     move_path.push_back(i);
                     choose_best_rolledup_move(best_move_path, threshold, children[i].index);
                     move_path.pop_back();
-                    all_children_below_limit = false;
                 }
             }
         }
     }
-    if (all_children_below_limit) {
-        if (node_index > 0) {
-            uint child_index = move_path.back();
-            assert(children[child_index].sim_count > 0);
-            double score = static_cast<double>(children[child_index].total_score) / children[child_index].sim_count;
-            // if (children[child_index].sim_count > max_sim || (children[child_index].sim_count == max_sim && score > max_score)) {
-            if (score > max_score || (score == max_score && children[child_index].sim_count > max_sim)) {
-                max_score = score;
-                max_sim = children[child_index].sim_count;
-                best_move_path = move_path;
-            }
-            #if STATS
-            print_node_stats(children[child_index]);
-            print_rolledup_move(move_path);
-            #endif
+    else {
+        uint child_index = move_path.back();
+        assert(children[child_index].sim_count > 0);
+        double score = static_cast<double>(children[child_index].total_score) / children[child_index].sim_count;
+        // if (children[child_index].sim_count > max_sim || (children[child_index].sim_count == max_sim && score > max_score)) {
+        if (score > max_score || (score == max_score && children[child_index].sim_count > max_sim)) {
+            max_score = score;
+            max_sim = children[child_index].sim_count;
+            best_move_path = move_path;
         }
+        #if STATS
+        print_node_stats(children[child_index]);
+        print_rolledup_move(move_path);
+        #endif
     }
     if (node_index == 0) {
         max_sim = 0;
@@ -72,19 +68,30 @@ reasoner::move Tree::choose_best_move() {
     choose_best_greedy_move(children_indices);
     if constexpr (!GREEDY_CHOICE) {
         const auto last_child = children_indices.back();
-        const double threshold = static_cast<double>(children[last_child].sim_count) * FINAL_ROLLUP_FACTOR;
+        const double threshold = std::ceil(static_cast<double>(children[last_child].sim_count) * FINAL_ROLLUP_FACTOR);
         static std::vector<uint> children_indices_finalrollup;
         children_indices_finalrollup.clear();
         choose_best_rolledup_move(children_indices_finalrollup, threshold);
-        #if STATS
-        std::cout << std::endl << "chosen move:" << std::endl;
-        print_node_stats(children[children_indices_finalrollup.back()]);
-        print_rolledup_move(children_indices_finalrollup);
-        std::cout << std::endl << "greedy move:" << std::endl;
-        print_node_stats(children[children_indices.back()]);
-        print_rolledup_move(children_indices);
-        std::cout << std::endl;
-        #endif
+        if (children_indices_finalrollup.empty()) {
+            #if STATS
+            std::cout << std::endl << "chosen move:" << std::endl;
+            print_node_stats(children[children_indices.back()]);
+            print_rolledup_move(children_indices);
+            #endif
+            return get_move_from_saved_path_with_random_suffix(children_indices);
+        }
+        else {
+            #if STATS
+            std::cout << std::endl << "chosen move:" << std::endl;
+            print_node_stats(children[children_indices_finalrollup.back()]);
+            print_rolledup_move(children_indices_finalrollup);
+            std::cout << std::endl << "greedy move:" << std::endl;
+            print_node_stats(children[children_indices.back()]);
+            print_rolledup_move(children_indices);
+            std::cout << std::endl;
+            #endif
+            return get_move_from_saved_path_with_random_suffix(children_indices_finalrollup);
+        }
     }
     return get_move_from_saved_path_with_random_suffix(children_indices);
 }
