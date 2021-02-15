@@ -68,13 +68,14 @@ reasoner::move Tree::choose_best_move() {
     choose_best_greedy_move(children_indices);
     if constexpr (!GREEDY_CHOICE) {
         const auto last_child = children_indices.back();
+        double greedy_score = static_cast<double>(children[last_child].total_score) / children[last_child].sim_count;
         const double threshold = std::ceil(static_cast<double>(children[last_child].sim_count) * FINAL_ROLLUP_FACTOR);
         static std::vector<uint> children_indices_finalrollup;
         children_indices_finalrollup.clear();
         choose_best_rolledup_move(children_indices_finalrollup, threshold);
-        if (children_indices_finalrollup.empty()) {
+        if (children_indices_finalrollup.empty() || static_cast<double>(children[children_indices_finalrollup.back()].total_score) / children[children_indices_finalrollup.back()].sim_count <= greedy_score) {
             #if STATS
-            std::cout << std::endl << "chosen move:" << std::endl;
+            std::cout << std::endl << "greedy move:" << std::endl;
             print_node_stats(children[children_indices.back()]);
             print_rolledup_move(children_indices);
             #endif
@@ -82,7 +83,7 @@ reasoner::move Tree::choose_best_move() {
         }
         else {
             #if STATS
-            std::cout << std::endl << "chosen move:" << std::endl;
+            std::cout << std::endl << "finalrollup move:" << std::endl;
             print_node_stats(children[children_indices_finalrollup.back()]);
             print_rolledup_move(children_indices_finalrollup);
             std::cout << std::endl << "greedy move:" << std::endl;
