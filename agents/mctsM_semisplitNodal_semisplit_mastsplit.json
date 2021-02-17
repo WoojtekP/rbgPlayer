@@ -22,8 +22,7 @@
             "parameters": {
                 "epsilon": 0.4,
                 "decay_factor": 0.2,
-                "tree_only": false,
-                "only_states": true
+                "tree_only": false
             }
         }
     ]

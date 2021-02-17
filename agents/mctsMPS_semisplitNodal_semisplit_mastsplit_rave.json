@@ -5,8 +5,7 @@
             "parameters": {
                 "decay_factor": 0.2,
                 "epsilon": 0.4,
-                "tree_only": false,
-                "only_states": true
+                "tree_only": false
             }
         },
         {

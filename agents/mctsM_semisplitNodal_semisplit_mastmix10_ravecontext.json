@@ -23,8 +23,7 @@
                 "epsilon": 0.4,
                 "decay_factor": 0.2,
                 "tree_only": false,
-                "mastmix_threshold": 10,
-                "only_states": true
+                "mastmix_threshold": 10
             }
         },
         {
