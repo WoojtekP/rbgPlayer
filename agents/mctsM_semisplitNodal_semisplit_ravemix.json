@@ -21,7 +21,7 @@
             "name": "RAVEMIX",
             "parameters": {
                 "equivalence_parameter": 250,
-                "mix_equivalence_parameter": 10
+                "ravemix_threshold": 10
             }
         }
     ]

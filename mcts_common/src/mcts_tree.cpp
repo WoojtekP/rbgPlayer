@@ -122,7 +122,7 @@ uint MctsTree::get_best_uct_child_index(const uint node_index, const uint node_s
             const auto& amaf = (rave || amaf_scores.empty()) ? children[i].amaf : std::get<0>(amaf_scores[i - fst]);
             double amaf_score;
             #if RAVE == 3
-            if (amaf.count < MIX_EQUIVALENCE_PARAMETER)
+            if (amaf.count < RAVEMIX_THRESHOLD)
                 amaf_score = static_cast<double>(amaf.score_base) / EXPECTED_MAX_SCORE / amaf.count_base; else
             #endif
             amaf_score = static_cast<double>(amaf.score) / EXPECTED_MAX_SCORE / amaf.count;

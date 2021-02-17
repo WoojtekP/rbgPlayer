@@ -17,7 +17,7 @@ private:
 public:
     template <typename T>
     int insert_or_update(const T& move, const uint score, const int context = 0) {
-        if constexpr (MAST_EQUIVALENCE_PARAMETER > 0) {
+        if constexpr (MASTMIX_THRESHOLD > 0) {
             arr.insert_or_update(move, static_cast<double>(score));
         }
         return moves.insert_or_update(move, static_cast<double>(score), context);
@@ -26,17 +26,17 @@ public:
     template <typename T>
     score get_score_or_default_value(const T& move, const int context = 0) {
         auto context_score = moves.get_score_or_default_value(move, context);
-        if constexpr (MAST_EQUIVALENCE_PARAMETER == 0) {
+        if constexpr (MASTMIX_THRESHOLD == 0) {
             return context_score;
         }
-        if (context_score.weight < MAST_EQUIVALENCE_PARAMETER)
+        if (context_score.weight < MASTMIX_THRESHOLD)
             return arr.get_score_or_default_value(move);
         else
             return context_score;
         /*
         // Smooth mix
         double split_score = arr.get_score_or_default_value(move);
-        double beta = std::sqrt(MAST_EQUIVALENCE_PARAMETER / (3.0 * context_score.weight  + MAST_EQUIVALENCE_PARAMETER)); // Normal
+        double beta = std::sqrt(MASTMIX_THRESHOLD / (3.0 * context_score.weight  + MASTMIX_THRESHOLD)); // Normal
         return beta * split_score + (1.0 - beta) * context_score.get_score();
         */
     }

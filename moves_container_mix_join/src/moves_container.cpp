@@ -2,7 +2,7 @@
 
 
 void MovesContainer::apply_decay_factor() {
-    if constexpr (MAST_EQUIVALENCE_PARAMETER > 0) {
+    if constexpr (MASTMIX_THRESHOLD > 0) {
         arr.apply_decay_factor();
     }
     moves.apply_decay_factor();
