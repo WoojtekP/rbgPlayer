@@ -34,13 +34,13 @@ public:
     }
 
     template <typename M>
-    uint get_random_move(const std::vector<M>& legal_moves, [[maybe_unused]] const int current_player) {
+    uint get_random_move(const std::vector<M>& legal_moves, [[maybe_unused]] const int current_player, const bool = false) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         return rand_gen.uniform_choice(legal_moves.size());
     }
 
-    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int) {
+    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int, const bool = false) {
         auto [fst, lst] = node.children_range;
         assert(fst < lst);
         auto lower = std::min(fst + node_sim_count, lst - 1);

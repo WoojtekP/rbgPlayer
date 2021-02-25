@@ -39,10 +39,10 @@ public:
     }
 
     template <typename M>
-    uint get_random_move(const std::vector<M>& legal_moves, const int current_player) {
+    uint get_random_move(const std::vector<M>& legal_moves, const int current_player, const bool greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
-        if (rand_gen.random_real_number() >= EPSILON) {
+        if (greedy_choice) {
             double best_score = moves[current_player - 1].get_score_or_default_value(legal_moves.front(), context).get_score();
             indices.resize(1);
             indices[0] = 0;
@@ -63,7 +63,7 @@ public:
         return rand_gen.uniform_choice(legal_moves.size());
     }
 
-    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int current_player) {
+    uint get_unvisited_child_index(std::vector<child>& children, const node& node, const uint node_sim_count, const int current_player, const bool greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON) {
         assert(current_player != KEEPER);
         auto [fst, lst] = node.children_range;
         assert(fst < lst);
@@ -81,7 +81,7 @@ public:
         #endif
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
         uint chosen_child;
-        if (rand_gen.random_real_number() >= EPSILON) {
+        if (greedy_choice) {
             indices.clear();
             indices.reserve(lst - lower);
             double best_score = 0.0;
