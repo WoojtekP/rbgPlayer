@@ -14,9 +14,13 @@ bool apply_random_move_exhaustive(GameState& state,
                                   reasoner::resettable_bitarray_stack& cache,
                                   uint semidepth) {
     state.get_all_semimoves(cache, legal_actions[semidepth]);
+    bool greedy_choice;
+    #if MAST
+    greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+    #endif
     while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player, greedy_choice);
         const auto ri = state.apply_with_revert(legal_actions[semidepth][chosen_action]);
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         #if RAVE > 0

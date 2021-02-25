@@ -115,9 +115,13 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<semim
         return true;
     }
     state.get_all_semimoves(cache, legal_actions[semidepth]);
+    bool greedy_choice;
+    #if MAST
+    greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+    #endif
     while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player, greedy_choice);
         const auto ri = state.apply_with_revert(legal_actions[semidepth][chosen_action]);
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         path.emplace_back(legal_actions[semidepth][chosen_action]);
@@ -203,7 +207,11 @@ uint SemisplitTree::perform_simulation() {
     }
     else {
         current_player = state.get_current_player();
-        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
+        bool greedy_choice;
+        #if MAST
+        greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+        #endif
+        auto child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player, greedy_choice);
         auto ri = state.apply_with_revert(children[child_index].get_edge());
         move_chooser.switch_context(children[child_index].get_edge(), current_player);
         path.clear();
@@ -253,8 +261,11 @@ uint SemisplitTree::perform_simulation() {
                     get_scores_from_state(state, results);
                     goto terminal;
                 }
+                #if MAST
+                greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+                #endif
             }
-            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player);
+            child_index = move_chooser.get_unvisited_child_index(children, nodes[node_index], node_sim_count, current_player, greedy_choice);
             ri = state.apply_with_revert(children[child_index].get_edge());
             move_chooser.switch_context(children[child_index].get_edge(), current_player);
         }
