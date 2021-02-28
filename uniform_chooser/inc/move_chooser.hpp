@@ -34,6 +34,11 @@ public:
     }
 
     template <typename M>
+    uint get_random_move(const std::vector<M>& legal_moves, const std::vector<double>&, [[maybe_unused]] const int current_player, const bool = false) {
+        return get_random_move(legal_moves, current_player);
+    }
+
+    template <typename M>
     uint get_random_move(const std::vector<M>& legal_moves, [[maybe_unused]] const int current_player, const bool = false) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
@@ -75,6 +80,8 @@ public:
     void clear_path() {
         path.clear();
     }
+
+    void invalidate_scores(const std::vector<double>&) {};
 
     template <typename M>
     void switch_context(const M&, const int) {}

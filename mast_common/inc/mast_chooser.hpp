@@ -39,6 +39,49 @@ public:
     }
 
     template <typename M>
+    void get_scores(std::vector<double>& scores, std::vector<M>& legal_moves, const int current_player) {
+        if (scores.empty() || scores.front() < 0) {
+            const uint size = legal_moves.size();
+            scores.resize(size);
+            for (uint i = 0; i < size; ++i) {
+                scores[i] = moves[current_player - 1].get_score_or_default_value(legal_moves[i], context).get_score();
+            }
+        }
+    }
+
+    void invalidate_scores(std::vector<double>& scores) {
+        if (!scores.empty()) {
+            scores.front() = -1.0;
+        }
+    }
+
+    template <typename M>
+    uint get_random_move(const std::vector<M>& legal_moves, std::vector<double>& scores, const int current_player, const bool greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON) {
+        assert(current_player != KEEPER);
+        RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();
+        if (greedy_choice) {
+            assert(scores.size() == legal_moves.size());
+            double best_score = scores.front();
+            indices.resize(1);
+            indices[0] = 0;
+            const uint size = legal_moves.size();
+            for (uint i = 1; i < size; ++i) {
+                const double score = scores[i];
+                if (score > best_score) {
+                    best_score = score;
+                    indices.resize(1);
+                    indices[0] = i;
+                }
+                else if (score == best_score) {
+                    indices.push_back(i);
+                }
+            }
+            return indices[rand_gen.uniform_choice(indices.size())];
+        }
+        return rand_gen.uniform_choice(legal_moves.size());
+    }
+
+    template <typename M>
     uint get_random_move(const std::vector<M>& legal_moves, const int current_player, const bool greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON) {
         assert(current_player != KEEPER);
         RBGRandomGenerator& rand_gen = RBGRandomGenerator::get_instance();

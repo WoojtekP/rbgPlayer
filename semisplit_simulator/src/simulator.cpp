@@ -8,6 +8,7 @@
 
 namespace {
 std::vector<simulation_move_type> legal_actions[MAX_SEMIDEPTH];
+std::vector<double> scores[MAX_SEMIDEPTH];
 
 bool apply_random_move_exhaustive(GameState& state,
                                   MoveChooser<simulation_move_type>& move_chooser,
@@ -17,10 +18,13 @@ bool apply_random_move_exhaustive(GameState& state,
     bool greedy_choice;
     #if MAST
     greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+    if (greedy_choice) {
+        move_chooser.get_scores(scores[semidepth], legal_actions[semidepth], state.get_current_player());
+    }
     #endif
     while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player, greedy_choice);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], scores[semidepth], current_player, greedy_choice);
         const auto ri = state.apply_with_revert(legal_actions[semidepth][chosen_action]);
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         #if RAVE > 0
@@ -30,10 +34,14 @@ bool apply_random_move_exhaustive(GameState& state,
             move_chooser.save_move(legal_actions[semidepth][chosen_action], current_player);
         }
         #endif
-        if (state.is_nodal())
+        if (state.is_nodal()) {
+            move_chooser.invalidate_scores(scores[semidepth]);
             return true;
-        if (apply_random_move_exhaustive(state, move_chooser, cache, semidepth+1))
+        }
+        if (apply_random_move_exhaustive(state, move_chooser, cache, semidepth+1)) {
+            move_chooser.invalidate_scores(scores[semidepth]);
             return true;
+        }
         state.revert(ri);
         move_chooser.revert_context();
         legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
@@ -41,6 +49,10 @@ bool apply_random_move_exhaustive(GameState& state,
         #if RAVE > 0
         move_chooser.revert_move();
         #elif MAST > 0
+        if (greedy_choice) {
+            scores[semidepth][chosen_action] = scores[semidepth].back();
+            scores[semidepth].pop_back();
+        }
         if constexpr (!TREE_ONLY) {
             move_chooser.revert_move();
         }
