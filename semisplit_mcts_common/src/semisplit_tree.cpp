@@ -18,6 +18,7 @@
 
 namespace {
 std::vector<semimove> legal_actions[MAX_SEMIDEPTH];
+std::vector<double> scores[MAX_SEMIDEPTH];
 }  // namespace
 
 #if STATS
@@ -118,10 +119,13 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<semim
     bool greedy_choice;
     #if MAST
     greedy_choice = RBGRandomGenerator::get_instance().random_real_number() >= EPSILON;
+    if (greedy_choice) {
+        move_chooser.get_scores(scores[semidepth], legal_actions[semidepth], state.get_current_player());
+    }
     #endif
     while (!legal_actions[semidepth].empty()) {
         const auto current_player = state.get_current_player();
-        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], current_player, greedy_choice);
+        const auto chosen_action = move_chooser.get_random_move(legal_actions[semidepth], scores[semidepth], current_player, greedy_choice);
         const auto ri = state.apply_with_revert(legal_actions[semidepth][chosen_action]);
         move_chooser.switch_context(legal_actions[semidepth][chosen_action], current_player);
         path.emplace_back(legal_actions[semidepth][chosen_action]);
@@ -129,10 +133,17 @@ bool SemisplitTree::save_path_to_nodal_state(GameState& state, std::vector<semim
             if (chosen_action != 0) {
                 std::swap(legal_actions[semidepth].front(), legal_actions[semidepth][chosen_action]);
             }
+            move_chooser.invalidate_scores(scores[semidepth]);
             return true;
         }
         legal_actions[semidepth][chosen_action] = legal_actions[semidepth].back();
         legal_actions[semidepth].pop_back();
+        #if MAST
+        if (greedy_choice) {
+            scores[semidepth][chosen_action] = scores[semidepth].back();
+            scores[semidepth].pop_back();
+        }
+        #endif
         path.pop_back();
         state.revert(ri);
         move_chooser.revert_context();
