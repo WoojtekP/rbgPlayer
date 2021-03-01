@@ -26,7 +26,7 @@ unsigned int RBGRandomGenerator::uniform_choice(const uint32_t upper_bound) {
 }
 
 double RBGRandomGenerator::random_real_number() {
-    return dist(random_generator);
+    return random_generator() / 4294967296.0;
 }
 
 RBGRandomGenerator::RBGRandomGenerator() : random_generator(std::random_device{}()) {}
